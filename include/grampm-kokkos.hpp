@@ -3,6 +3,7 @@
 
 #include <Kokkos_Core.hpp>
 #include <grampm.hpp>
+#include <array>
 
 /*============================================================================================================*/
 
@@ -23,7 +24,10 @@ namespace GraMPM {
         class MPM_system {
 
             protected:
-                size_t m_p_size;
+                const size_t m_p_size;
+                const F m_g_cell_size;
+                const std::array<F, dims> m_mingrid, m_maxgrid;
+                const std::array<size_t, dims> m_ngrid;
 
                 // device views
                 spatial_view_type<F> d_p_x, d_p_v, d_p_a, d_p_dxdt;
@@ -42,8 +46,16 @@ namespace GraMPM {
 
             public:
                 // vector of particles
-                MPM_system(std::vector<particle<F>> &pv)
+                MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
                 : m_p_size {pv.size()}
+                , m_g_cell_size {dcell}
+                , m_mingrid {mingrid}
+                , m_maxgrid {maxgrid}
+                , m_ngrid{
+                    static_cast<size_t>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
+                    static_cast<size_t>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
+                    static_cast<size_t>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
+                }
                 , d_p_x("Particles' 3D positions", m_p_size)
                 , d_p_v("Particles' 3D velocity", m_p_size)
                 , d_p_a("Particles' 3D accelerations", m_p_size)
@@ -84,8 +96,16 @@ namespace GraMPM {
                     }
                 }
 
-                MPM_system(const size_t n)
+                MPM_system(const size_t n, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
                 : m_p_size {n}
+                , m_g_cell_size {dcell}
+                , m_mingrid {mingrid}
+                , m_maxgrid {maxgrid}
+                , m_ngrid{
+                    static_cast<size_t>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
+                    static_cast<size_t>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
+                    static_cast<size_t>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
+                }
                 , d_p_x("Particles' 3D positions", m_p_size)
                 , d_p_v("Particles' 3D velocity", m_p_size)
                 , d_p_a("Particles' 3D accelerations", m_p_size)
@@ -134,6 +154,20 @@ namespace GraMPM {
                 }
 
                 size_t p_size() const {return m_p_size;}
+                F g_cell_size() const {return m_g_cell_size;}
+                std::array<F, dims> g_mingrid() const {return m_mingrid;}
+                std::array<F, dims> g_maxgrid() const {return m_maxgrid;}
+                std::array<size_t, dims> g_ngrid() const { return m_ngrid;}
+                F g_mingridx() const {return m_mingrid[0];}
+                F g_mingridy() const {return m_mingrid[1];}
+                F g_mingridz() const {return m_mingrid[2];}
+                F g_maxgridx() const {return m_maxgrid[0];}
+                F g_maxgridy() const {return m_maxgrid[1];}
+                F g_maxgridz() const {return m_maxgrid[2];}
+                size_t g_ngridx() const {return m_ngrid[0];}
+                size_t g_ngridy() const {return m_ngrid[1];}
+                size_t g_ngridz() const {return m_ngrid[2];}
+                size_t g_size() const {return m_ngrid[0]*m_ngrid[1]*m_ngrid[2];}
                 F& p_x(const size_t i) {return h_p_x(i, 0);}
                 F& p_y(const size_t i) {return h_p_x(i, 1);}
                 F& p_z(const size_t i) {return h_p_x(i, 2);}

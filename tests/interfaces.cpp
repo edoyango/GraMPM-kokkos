@@ -8,47 +8,46 @@
 #include <gtest/gtest.h>
 #include <Kokkos_Core.hpp>
 
-// const std::array<double, 3> mingridx_in {-0.1, 0.05, 0.15}, maxgridx_in {0.1, 0.3, 0.5};
-// const double dcell_in = 0.1;
+const std::array<double, 3> mingridx_in {-0.1, 0.05, 0.15}, maxgridx_in {0.1, 0.3, 0.5};
+const double dcell_in = 0.1;
 // const std::array<double, 3> bf {1., 2., 3.};
 
 // GraMPM::kernel_linear_bspline<double> knl(dcell_in);
 
 // GraMPM::MPM_system<double> myMPM(5, bf, knl, mingridx_in, maxgridx_in, dcell_in);
 
-// TEST_CASE("grid intialized correctly", "[grid]") {
+TEST(initialization_getters_setters, grid_init) {
 
-//     REQUIRE(myMPM.g_cell_size()==dcell_in);
+    GraMPM::Kokkos::MPM_system<double> myMPM(0, mingridx_in, maxgridx_in, dcell_in);
 
-//     // test array get interface
-//     std::array<double, 3> mingridx_out {myMPM.g_mingrid()}, maxgridx_out {myMPM.g_maxgrid()};
+    ASSERT_EQ(myMPM.g_cell_size(), dcell_in);
 
-//     REQUIRE(mingridx_out[0]==mingridx_in[0]);
-//     REQUIRE(mingridx_out[1]==mingridx_in[1]);
-//     REQUIRE(mingridx_out[2]==mingridx_in[2]);
+    // test array get interface
+    std::array<double, dims> mingridx_out {myMPM.g_mingrid()}, maxgridx_out {myMPM.g_maxgrid()};
 
-//     REQUIRE(maxgridx_out[0]==maxgridx_in[0]);
-//     REQUIRE(maxgridx_out[1]==maxgridx_in[1]);
-//     REQUIRE(maxgridx_out[2]==maxgridx_in[2]);
+    for (int d = 0; d < dims; ++d) {
+        EXPECT_EQ(mingridx_out[d], mingridx_in[d]) << "min extents of grid not saved properly in " << d << "th dim";
+        EXPECT_EQ(maxgridx_out[d], maxgridx_in[d]) << "max extents of grid not saved properly in " << d << "th dim";
+    }
 
-//     std::array<size_t, 3> ngridx_out = myMPM.g_ngrid();
-//     REQUIRE(ngridx_out[0]==3);
-//     REQUIRE(ngridx_out[1]==4);
-//     REQUIRE(ngridx_out[2]==5);
+    std::array<size_t, 3> ngridx_out = myMPM.g_ngrid();
+    ASSERT_EQ(ngridx_out[0], 3) << "number of cells in x direction does not match expected";
+    ASSERT_EQ(ngridx_out[1], 4) << "number of cells in y direction does not match expected";
+    ASSERT_EQ(ngridx_out[2], 5) << "number of cells in z direction does not match expected";
 
-//     // test element-by-element get interface
-//     REQUIRE(myMPM.g_mingridx()==mingridx_in[0]);
-//     REQUIRE(myMPM.g_mingridy()==mingridx_in[1]);
-//     REQUIRE(myMPM.g_mingridz()==mingridx_in[2]);
+    // test element-by-element get interface
+    ASSERT_EQ(myMPM.g_mingridx(), mingridx_in[0]) << "x grid min extent not retrieved correctly";
+    ASSERT_EQ(myMPM.g_mingridy(), mingridx_in[1]) << "y grid min extent not retrieved correctly";
+    ASSERT_EQ(myMPM.g_mingridz(), mingridx_in[2]) << "z grid min extent not retrieved correctly";
     
-//     REQUIRE(myMPM.g_maxgridx()==maxgridx_in[0]);
-//     REQUIRE(myMPM.g_maxgridy()==maxgridx_in[1]);
-//     REQUIRE(myMPM.g_maxgridz()==maxgridx_in[2]);
+    ASSERT_EQ(myMPM.g_maxgridx(), maxgridx_in[0]) << "x grid max extent not retrieved correctly";
+    ASSERT_EQ(myMPM.g_maxgridy(), maxgridx_in[1]) << "y grid max extent not retrieved correctly";
+    ASSERT_EQ(myMPM.g_maxgridz(), maxgridx_in[2]) << "z grid max extent not retrieved correctly";
 
-//     REQUIRE(myMPM.g_ngridx()==3);
-//     REQUIRE(myMPM.g_ngridy()==4);
-//     REQUIRE(myMPM.g_ngridz()==5);
-//     REQUIRE(myMPM.g_size()==60);
+    ASSERT_EQ(myMPM.g_ngridx(), 3) << "number of cells not retrieved correctly in x direction";
+    ASSERT_EQ(myMPM.g_ngridy(), 4) << "number of cells not retrieved correctly in y direction";
+    ASSERT_EQ(myMPM.g_ngridz(), 5) << "number of cells not retrieved correctly in z direction";
+    ASSERT_EQ(myMPM.g_size(), 60) << "total number of cells not retrieved correctly";
 
 //     for (size_t i = 0; i < myMPM.g_size(); ++i) {
 //         REQUIRE(myMPM.g_mass(i)==0.);
@@ -78,9 +77,9 @@
 //                 myMPM.g_forcez(i, j, k) = (i+j+k)*7.;
 //                 REQUIRE(myMPM.g_forcez(i, j, k)==(i+j+k)*7.);
 //             }
-// }
+}
 
-TEST(initialiation_getters_setters, particles_aggregate_init) {
+TEST(initialization_getters_setters, particles_aggregate_init) {
 
     // create vector of particles
     std::vector<GraMPM::particle<double>> pv;
@@ -93,7 +92,7 @@ TEST(initialiation_getters_setters, particles_aggregate_init) {
         );
     }
 
-    GraMPM::Kokkos::MPM_system<double> myMPM(pv);
+    GraMPM::Kokkos::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.p_size(), 5) << "Particle number not assigned expected value";
 
@@ -131,9 +130,9 @@ TEST(initialiation_getters_setters, particles_aggregate_init) {
 
 }
 
-TEST(initialiation_getters_setters, particles_post_init) {
+TEST(initialization_getters_setters, particles_post_init) {
 
-    GraMPM::Kokkos::MPM_system<double> myMPM(5);
+    GraMPM::Kokkos::MPM_system<double> myMPM(5, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.p_size(), 5) << "Particle number not assigned expected value";
 
@@ -205,7 +204,7 @@ TEST(initialiation_getters_setters, particles_post_init) {
     
 }
 
-TEST(initializiation_getters_setters, particles_transfer) {
+TEST(initialization_getters_setters, particles_transfer) {
 
     // create vector of particles
     std::vector<GraMPM::particle<double>> pv;
@@ -218,7 +217,7 @@ TEST(initializiation_getters_setters, particles_transfer) {
         );
     }
 
-    GraMPM::Kokkos::MPM_system<double> myMPM(pv);
+    GraMPM::Kokkos::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     // send data to device
     myMPM.h2d();
