@@ -262,7 +262,7 @@ namespace GraMPM {
                 }
 
                 size_t calc_idx(const size_t i, const size_t j, const size_t k) {
-                    return i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[1] + k;
+                    return i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[2] + k;
                 }
         };
     }

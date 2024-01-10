@@ -79,6 +79,23 @@ TEST(initialization_getters_setters, grid_init) {
                 myMPM.g_forcez(i, j, k) = (i+j+k)*7.;
                 EXPECT_EQ(myMPM.g_forcez(i, j, k), (i+j+k)*7.) << "grid z force at index " << i << " not set properly";
             }
+
+    // checking that transfers between host to device work
+    myMPM.h2d();
+    myMPM.h_zero_grid();
+    myMPM.d2h();
+
+    for (size_t i = 0; i < myMPM.g_ngridx(); ++i) 
+        for (size_t j = 0; j < myMPM.g_ngridy(); ++j)
+            for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
+                EXPECT_EQ(myMPM.g_mass(i, j, k), (i+j+k)*1.) << "grid mass at index " << i << " not set properly";
+                EXPECT_EQ(myMPM.g_momentumx(i, j, k), (i+j+k)*2.) << "grid x momentum at index " << i << " not set properly";
+                EXPECT_EQ(myMPM.g_momentumy(i, j, k), (i+j+k)*3.) << "grid y momentum at index " << i << " not set properly";
+                EXPECT_EQ(myMPM.g_momentumz(i, j, k), (i+j+k)*4.) << "grid z momentum at index " << i << " not set properly";
+                EXPECT_EQ(myMPM.g_forcex(i, j, k), (i+j+k)*5.) << "grid x force at index " << i << " not set properly";
+                EXPECT_EQ(myMPM.g_forcey(i, j, k), (i+j+k)*6.) << "grid y force at index " << i << " not set properly";
+                EXPECT_EQ(myMPM.g_forcez(i, j, k), (i+j+k)*7.) << "grid z force at index " << i << " not set properly";
+            }
 }
 
 TEST(initialization_getters_setters, particles_aggregate_init) {
