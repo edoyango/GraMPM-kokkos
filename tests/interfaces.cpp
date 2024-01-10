@@ -18,7 +18,7 @@ const double dcell_in = 0.1;
 
 TEST(initialization_getters_setters, grid_init) {
 
-    GraMPM::Kokkos::MPM_system<double> myMPM(0, mingridx_in, maxgridx_in, dcell_in);
+    GraMPM::accelerated::MPM_system<double> myMPM(0, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.g_cell_size(), dcell_in);
 
@@ -49,34 +49,36 @@ TEST(initialization_getters_setters, grid_init) {
     ASSERT_EQ(myMPM.g_ngridz(), 5) << "number of cells not retrieved correctly in z direction";
     ASSERT_EQ(myMPM.g_size(), 60) << "total number of cells not retrieved correctly";
 
-//     for (size_t i = 0; i < myMPM.g_size(); ++i) {
-//         REQUIRE(myMPM.g_mass(i)==0.);
-//         REQUIRE(myMPM.g_momentumx(i)==0.);
-//         REQUIRE(myMPM.g_momentumy(i)==0.);
-//         REQUIRE(myMPM.g_momentumz(i)==0.);
-//         REQUIRE(myMPM.g_forcex(i)==0.);
-//         REQUIRE(myMPM.g_forcey(i)==0.);
-//         REQUIRE(myMPM.g_forcez(i)==0.);
-//     }
+    myMPM.h_zero_grid();
 
-//     for (size_t i = 0; i < myMPM.g_ngridx(); ++i) 
-//         for (size_t j = 0; j < myMPM.g_ngridy(); ++j)
-//             for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
-//                 myMPM.g_mass(i, j, k) = (i+j+k)*1.;
-//                 REQUIRE(myMPM.g_mass(i, j, k)==(i+j+k)*1.);
-//                 myMPM.g_momentumx(i, j, k) = (i+j+k)*2.;
-//                 REQUIRE(myMPM.g_momentumx(i, j, k)==(i+j+k)*2.);
-//                 myMPM.g_momentumy(i, j, k) = (i+j+k)*3.;
-//                 REQUIRE(myMPM.g_momentumy(i, j, k)==(i+j+k)*3.);
-//                 myMPM.g_momentumz(i, j, k) = (i+j+k)*4.;
-//                 REQUIRE(myMPM.g_momentumz(i, j, k)==(i+j+k)*4.);
-//                 myMPM.g_forcex(i, j, k) = (i+j+k)*5.;
-//                 REQUIRE(myMPM.g_forcex(i, j, k)==(i+j+k)*5.);
-//                 myMPM.g_forcey(i, j, k) = (i+j+k)*6.;
-//                 REQUIRE(myMPM.g_forcey(i, j, k)==(i+j+k)*6.);
-//                 myMPM.g_forcez(i, j, k) = (i+j+k)*7.;
-//                 REQUIRE(myMPM.g_forcez(i, j, k)==(i+j+k)*7.);
-//             }
+    for (size_t i = 0; i < myMPM.g_size(); ++i) {
+        EXPECT_EQ(myMPM.g_mass(i), 0.) << "grid mass at index " << i << " not zeroed properly";
+        EXPECT_EQ(myMPM.g_momentumx(i), 0.) << "grid x momentum at index " << i << " not zeroed properly";
+        EXPECT_EQ(myMPM.g_momentumy(i), 0.) << "grid y momentum at index " << i << " not zeroed properly";
+        EXPECT_EQ(myMPM.g_momentumz(i), 0.) << "grid z momentum at index " << i << " not zeroed properly";
+        EXPECT_EQ(myMPM.g_forcex(i), 0.) << "grid x force at index " << i << " not zeroed properly";
+        EXPECT_EQ(myMPM.g_forcey(i), 0.) << "grid y force at index " << i << " not zeroed properly";
+        EXPECT_EQ(myMPM.g_forcez(i), 0.) << "grid z force at index " << i << " not zeroed properly";
+    }
+
+    for (size_t i = 0; i < myMPM.g_ngridx(); ++i) 
+        for (size_t j = 0; j < myMPM.g_ngridy(); ++j)
+            for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
+                myMPM.g_mass(i, j, k) = (i+j+k)*1.;
+                EXPECT_EQ(myMPM.g_mass(i, j, k), (i+j+k)*1.) << "grid mass at index " << i << " not set properly";
+                myMPM.g_momentumx(i, j, k) = (i+j+k)*2.;
+                EXPECT_EQ(myMPM.g_momentumx(i, j, k), (i+j+k)*2.) << "grid x momentum at index " << i << " not set properly";
+                myMPM.g_momentumy(i, j, k) = (i+j+k)*3.;
+                EXPECT_EQ(myMPM.g_momentumy(i, j, k), (i+j+k)*3.) << "grid y momentum at index " << i << " not set properly";;
+                myMPM.g_momentumz(i, j, k) = (i+j+k)*4.;
+                EXPECT_EQ(myMPM.g_momentumz(i, j, k), (i+j+k)*4.) << "grid z momentum at index " << i << " not set properly";;
+                myMPM.g_forcex(i, j, k) = (i+j+k)*5.;
+                EXPECT_EQ(myMPM.g_forcex(i, j, k), (i+j+k)*5.) << "grid x force at index " << i << " not set properly";
+                myMPM.g_forcey(i, j, k) = (i+j+k)*6.;
+                EXPECT_EQ(myMPM.g_forcey(i, j, k), (i+j+k)*6.) << "grid y force at index " << i << " not set properly";
+                myMPM.g_forcez(i, j, k) = (i+j+k)*7.;
+                EXPECT_EQ(myMPM.g_forcez(i, j, k), (i+j+k)*7.) << "grid z force at index " << i << " not set properly";
+            }
 }
 
 TEST(initialization_getters_setters, particles_aggregate_init) {
@@ -92,7 +94,7 @@ TEST(initialization_getters_setters, particles_aggregate_init) {
         );
     }
 
-    GraMPM::Kokkos::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
+    GraMPM::accelerated::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.p_size(), 5) << "Particle number not assigned expected value";
 
@@ -132,7 +134,7 @@ TEST(initialization_getters_setters, particles_aggregate_init) {
 
 TEST(initialization_getters_setters, particles_post_init) {
 
-    GraMPM::Kokkos::MPM_system<double> myMPM(5, mingridx_in, maxgridx_in, dcell_in);
+    GraMPM::accelerated::MPM_system<double> myMPM(5, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.p_size(), 5) << "Particle number not assigned expected value";
 
@@ -191,15 +193,15 @@ TEST(initialization_getters_setters, particles_post_init) {
         EXPECT_EQ(p.sigma[3], -0.4*i) << "sigmaxy not assigned correct value for index " << i;
         EXPECT_EQ(p.sigma[4], -0.5*i) << "sigmaxz not assigned correct value for index " << i;
         EXPECT_EQ(p.sigma[5], -0.6*i) << "sigmayz not assigned correct value for index " << i;
-        EXPECT_EQ(p.strainrate[0], -0.7*i) << "sigmaxx not assigned correct value for index " << i;
-        EXPECT_EQ(p.strainrate[1], -0.8*i) << "sigmayy not assigned correct value for index " << i;
-        EXPECT_EQ(p.strainrate[2], -0.9*i) << "sigmazz not assigned correct value for index " << i;
-        EXPECT_EQ(p.strainrate[3], -1.0*i) << "sigmaxy not assigned correct value for index " << i;
-        EXPECT_EQ(p.strainrate[4], -1.1*i) << "sigmaxz not assigned correct value for index " << i;
-        EXPECT_EQ(p.strainrate[5], -1.2*i) << "sigmayz not assigned correct value for index " << i;
-        EXPECT_EQ(p.spinrate[0], -1.3*i) << "sigmaxy not assigned correct value for index " << i;
-        EXPECT_EQ(p.spinrate[1], -1.4*i) << "sigmaxz not assigned correct value for index " << i;
-        EXPECT_EQ(p.spinrate[2], -1.5*i) << "sigmayz not assigned correct value for index " << i;
+        EXPECT_EQ(p.strainrate[0], -0.7*i) << "strainratexx not assigned correct value for index " << i;
+        EXPECT_EQ(p.strainrate[1], -0.8*i) << "strainrateyy not assigned correct value for index " << i;
+        EXPECT_EQ(p.strainrate[2], -0.9*i) << "strainratezz not assigned correct value for index " << i;
+        EXPECT_EQ(p.strainrate[3], -1.0*i) << "strainratexy not assigned correct value for index " << i;
+        EXPECT_EQ(p.strainrate[4], -1.1*i) << "strainratexz not assigned correct value for index " << i;
+        EXPECT_EQ(p.strainrate[5], -1.2*i) << "strainrateyz not assigned correct value for index " << i;
+        EXPECT_EQ(p.spinrate[0], -1.3*i) << "spinratexy not assigned correct value for index " << i;
+        EXPECT_EQ(p.spinrate[1], -1.4*i) << "spinratexz not assigned correct value for index " << i;
+        EXPECT_EQ(p.spinrate[2], -1.5*i) << "spinrateyz not assigned correct value for index " << i;
     }
     
 }
@@ -217,7 +219,7 @@ TEST(initialization_getters_setters, particles_transfer) {
         );
     }
 
-    GraMPM::Kokkos::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
+    GraMPM::accelerated::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     // send data to device
     myMPM.h2d();
@@ -256,6 +258,8 @@ TEST(initialization_getters_setters, particles_transfer) {
     }
 
     // retrieve data from device
+    myMPM.d2h();
+
     for (int i = 0; i < myMPM.p_size(); ++i) {
         EXPECT_EQ(myMPM.p_x(i), 1.*i) << "x coordinate not assigned correct value for index " << i;
         EXPECT_EQ(myMPM.p_y(i), 2.*i) << "y coordinate not assigned correct value for index " << i;

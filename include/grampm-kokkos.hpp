@@ -4,6 +4,7 @@
 #include <Kokkos_Core.hpp>
 #include <grampm.hpp>
 #include <array>
+#include <Kokkos_StdAlgorithms.hpp>
 
 /*============================================================================================================*/
 
@@ -19,7 +20,7 @@ using intscalar_view_type = Kokkos::View<int*>;
 
 namespace GraMPM {
 
-    namespace Kokkos {
+    namespace accelerated {
         template<typename F>
         class MPM_system {
 
@@ -28,19 +29,20 @@ namespace GraMPM {
                 const F m_g_cell_size;
                 const std::array<F, dims> m_mingrid, m_maxgrid;
                 const std::array<size_t, dims> m_ngrid;
+                const size_t m_g_size;
 
                 // device views
-                spatial_view_type<F> d_p_x, d_p_v, d_p_a, d_p_dxdt;
+                spatial_view_type<F> d_p_x, d_p_v, d_p_a, d_p_dxdt, d_g_momentum, d_g_force;
                 cauchytensor_view_type<F> d_p_sigma, d_p_strainrate;
                 spintensor_view_type<F> d_p_spinrate;
-                scalar_view_type<F> d_p_mass, d_p_rho;
+                scalar_view_type<F> d_p_mass, d_p_rho, d_g_mass;
 
                 intscalar_view_type d_p_grid_idx;
 
-                typename spatial_view_type<F>::HostMirror h_p_x, h_p_v, h_p_a, h_p_dxdt;
+                typename spatial_view_type<F>::HostMirror h_p_x, h_p_v, h_p_a, h_p_dxdt, h_g_momentum, h_g_force;
                 typename cauchytensor_view_type<F>::HostMirror h_p_sigma, h_p_strainrate;
                 typename spintensor_view_type<F>::HostMirror h_p_spinrate;
-                typename scalar_view_type<F>::HostMirror h_p_mass, h_p_rho;
+                typename scalar_view_type<F>::HostMirror h_p_mass, h_p_rho, h_g_mass;
 
                 typename intscalar_view_type::HostMirror h_p_grid_idx;
 
@@ -56,25 +58,32 @@ namespace GraMPM {
                     static_cast<size_t>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
                     static_cast<size_t>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
                 }
+                , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
                 , d_p_x("Particles' 3D positions", m_p_size)
                 , d_p_v("Particles' 3D velocity", m_p_size)
                 , d_p_a("Particles' 3D accelerations", m_p_size)
                 , d_p_dxdt("Particles' 3D dxdt", m_p_size)
+                , d_g_momentum("Grid cells' 3D momentum", m_g_size)
+                , d_g_force("Grid cells' 3D force", m_g_size)
                 , d_p_sigma("Particles' 3D cauchy stress tensor", m_p_size)
                 , d_p_strainrate("Particles' 3D cauchy strain rate tensor", m_p_size)
                 , d_p_spinrate("Particles' 3D cauchy spin rate tensor (off-axis elements only)", m_p_size)
                 , d_p_mass("Particles' mass", m_p_size)
                 , d_p_rho("Particles' mass", m_p_size)
+                , d_g_mass("Grid cells' mass", m_g_size)
                 , d_p_grid_idx("Particles' hashed grid indices", m_p_size)
                 , h_p_x {create_mirror_view(d_p_x)}
                 , h_p_v {create_mirror_view(d_p_v)}
                 , h_p_a {create_mirror_view(d_p_a)}
                 , h_p_dxdt{create_mirror_view(d_p_dxdt)}
+                , h_g_momentum{create_mirror_view(d_g_momentum)}
+                , h_g_force{create_mirror_view(d_g_force)}
                 , h_p_sigma{create_mirror_view(d_p_sigma)}
                 , h_p_strainrate{create_mirror_view(d_p_strainrate)}
                 , h_p_spinrate{create_mirror_view(d_p_spinrate)}
                 , h_p_mass{create_mirror_view(d_p_mass)}
                 , h_p_rho{create_mirror_view(d_p_rho)}
+                , h_g_mass{create_mirror_view(d_g_mass)}
                 , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
                 {
                     for (int i = 0; i < m_p_size; ++i) {
@@ -106,25 +115,32 @@ namespace GraMPM {
                     static_cast<size_t>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
                     static_cast<size_t>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
                 }
+                , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
                 , d_p_x("Particles' 3D positions", m_p_size)
                 , d_p_v("Particles' 3D velocity", m_p_size)
                 , d_p_a("Particles' 3D accelerations", m_p_size)
                 , d_p_dxdt("Particles' 3D dxdt", m_p_size)
+                , d_g_momentum("Grid cells' 3D momentum", m_g_size)
+                , d_g_force("Grid cells' 3D force", m_g_size)
                 , d_p_sigma("Particles' 3D cauchy stress tensor", m_p_size)
                 , d_p_strainrate("Particles' 3D cauchy strain rate tensor", m_p_size)
                 , d_p_spinrate("Particles' 3D cauchy spin rate tensor (off-axis elements only)", m_p_size)
                 , d_p_mass("Particles' mass", m_p_size)
                 , d_p_rho("Particles' mass", m_p_size)
+                , d_g_mass("Grid cells' mass", m_g_size)
                 , d_p_grid_idx("Particles' hashed grid indices", m_p_size)
                 , h_p_x {create_mirror_view(d_p_x)}
                 , h_p_v {create_mirror_view(d_p_v)}
                 , h_p_a {create_mirror_view(d_p_a)}
                 , h_p_dxdt{create_mirror_view(d_p_dxdt)}
+                , h_g_momentum{create_mirror_view(d_g_momentum)}
+                , h_g_force{create_mirror_view(d_g_force)}
                 , h_p_sigma{create_mirror_view(d_p_sigma)}
                 , h_p_strainrate{create_mirror_view(d_p_strainrate)}
                 , h_p_spinrate{create_mirror_view(d_p_spinrate)}
                 , h_p_mass{create_mirror_view(d_p_mass)}
                 , h_p_rho{create_mirror_view(d_p_rho)}
+                , h_g_mass{create_mirror_view(d_g_mass)}
                 , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
                 {
                 }
@@ -134,11 +150,14 @@ namespace GraMPM {
                     deep_copy(d_p_v, h_p_v);
                     deep_copy(d_p_a, h_p_a);
                     deep_copy(d_p_dxdt, h_p_dxdt);
+                    deep_copy(d_g_momentum, h_g_momentum);
+                    deep_copy(d_g_force, h_g_force);
                     deep_copy(d_p_sigma, h_p_sigma);
                     deep_copy(d_p_strainrate, h_p_strainrate);
                     deep_copy(d_p_spinrate, h_p_spinrate);
                     deep_copy(d_p_mass, h_p_mass);
                     deep_copy(d_p_rho, h_p_rho);
+                    deep_copy(d_g_mass, h_g_mass);
                 }
 
                 void d2h() {
@@ -146,11 +165,14 @@ namespace GraMPM {
                     deep_copy(h_p_v, d_p_v);
                     deep_copy(h_p_a, d_p_a);
                     deep_copy(h_p_dxdt, d_p_dxdt);
+                    deep_copy(h_g_momentum, d_g_momentum);
+                    deep_copy(h_g_force, d_g_force);
                     deep_copy(h_p_sigma, d_p_sigma);
                     deep_copy(h_p_strainrate, d_p_strainrate);
                     deep_copy(h_p_spinrate, d_p_spinrate);
                     deep_copy(h_p_mass, d_p_mass);
                     deep_copy(h_p_rho, d_p_rho);
+                    deep_copy(h_g_mass, d_g_mass);
                 }
 
                 size_t p_size() const {return m_p_size;}
@@ -158,6 +180,7 @@ namespace GraMPM {
                 std::array<F, dims> g_mingrid() const {return m_mingrid;}
                 std::array<F, dims> g_maxgrid() const {return m_maxgrid;}
                 std::array<size_t, dims> g_ngrid() const { return m_ngrid;}
+                size_t g_size() const {return m_g_size;}
                 F g_mingridx() const {return m_mingrid[0];}
                 F g_mingridy() const {return m_mingrid[1];}
                 F g_mingridz() const {return m_mingrid[2];}
@@ -167,7 +190,7 @@ namespace GraMPM {
                 size_t g_ngridx() const {return m_ngrid[0];}
                 size_t g_ngridy() const {return m_ngrid[1];}
                 size_t g_ngridz() const {return m_ngrid[2];}
-                size_t g_size() const {return m_ngrid[0]*m_ngrid[1]*m_ngrid[2];}
+                F& g_mass(size_t i) const {return h_g_mass(i);}
                 F& p_x(const size_t i) {return h_p_x(i, 0);}
                 F& p_y(const size_t i) {return h_p_x(i, 1);}
                 F& p_z(const size_t i) {return h_p_x(i, 2);}
@@ -180,8 +203,22 @@ namespace GraMPM {
                 F& p_dxdt(const size_t i) {return h_p_dxdt(i, 0);}
                 F& p_dydt(const size_t i) {return h_p_dxdt(i, 1);}
                 F& p_dzdt(const size_t i) {return h_p_dxdt(i, 2);}
+                F& g_momentumx(const size_t i) {return h_g_momentum(i, 0);}
+                F& g_momentumx(const size_t i, const size_t j, const size_t k) {return h_g_momentum(calc_idx(i, j, k), 0);}
+                F& g_momentumy(const size_t i) {return h_g_momentum(i, 1);}
+                F& g_momentumy(const size_t i, const size_t j, const size_t k) {return h_g_momentum(calc_idx(i, j, k), 1);}
+                F& g_momentumz(const size_t i) {return h_g_momentum(i, 2);}
+                F& g_momentumz(const size_t i, const size_t j, const size_t k) {return h_g_momentum(calc_idx(i, j, k), 2);}
+                F& g_forcex(const size_t i) {return h_g_force(i, 0);}
+                F& g_forcex(const size_t i, const size_t j, const size_t k) {return h_g_force(calc_idx(i, j, k), 0);}
+                F& g_forcey(const size_t i) {return h_g_force(i, 1);}
+                F& g_forcey(const size_t i, const size_t j, const size_t k) {return h_g_force(calc_idx(i, j, k), 1);}
+                F& g_forcez(const size_t i) {return h_g_force(i, 2);}
+                F& g_forcez(const size_t i, const size_t j, const size_t k) {return h_g_force(calc_idx(i, j, k), 2);}
                 F& p_mass(const size_t i) {return h_p_mass(i);}
                 F& p_rho(const size_t i) {return h_p_rho(i);}
+                F& g_mass(const size_t i) {return h_g_mass(i);}
+                F& g_mass(const size_t i, const size_t j, const size_t k) {return h_g_mass(calc_idx(i, j, k));}
                 F& p_sigmaxx(const size_t i) {return h_p_sigma(i, 0);}
                 F& p_sigmayy(const size_t i) {return h_p_sigma(i, 1);}
                 F& p_sigmazz(const size_t i) {return h_p_sigma(i, 2);}
@@ -202,9 +239,30 @@ namespace GraMPM {
                     return particle<F>(h_p_x(i, 0), h_p_x(i, 1), h_p_x(i, 2), h_p_v(i, 0), h_p_v(i, 1), h_p_v(i, 2), 
                         h_p_mass(i), h_p_rho(i), h_p_sigma(i, 0), h_p_sigma(i, 1), h_p_sigma(i, 2), h_p_sigma(i, 3),
                         h_p_sigma(i, 4), h_p_sigma(i, 5), h_p_a(i, 0), h_p_a(i, 1), h_p_a(i, 2), h_p_dxdt(i, 0), 
-                        h_p_dxdt(i, 1), h_p_dxdt(i, 2), h_p_strainrate(i, 0), h_p_strainrate(i, 0), 
-                        h_p_strainrate(i, 0), h_p_strainrate(i, 0), h_p_strainrate(i, 0), h_p_strainrate(i, 0), 
+                        h_p_dxdt(i, 1), h_p_dxdt(i, 2), h_p_strainrate(i, 0), h_p_strainrate(i, 1), 
+                        h_p_strainrate(i, 2), h_p_strainrate(i, 3), h_p_strainrate(i, 4), h_p_strainrate(i, 5), 
                         h_p_spinrate(i, 0), h_p_spinrate(i, 1), h_p_spinrate(i, 2));
+                }
+
+                void d_zero_grid() {
+                    Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_momentum, 0.);
+                    Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_force, 0.);
+                    Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_mass, 0.);
+                }
+                void h_zero_grid() {
+                    for (size_t i = 0; i < m_p_size; ++i) {
+                        h_g_momentum(i, 0) = 0.;
+                        h_g_momentum(i, 1) = 0.;
+                        h_g_momentum(i, 2) = 0.;
+                        h_g_force(i, 0) = 0.;
+                        h_g_force(i, 1) = 0.;
+                        h_g_force(i, 2) = 0.;
+                        h_g_mass(i) = 0.;
+                    }
+                }
+
+                size_t calc_idx(const size_t i, const size_t j, const size_t k) {
+                    return i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[1] + k;
                 }
         };
     }
