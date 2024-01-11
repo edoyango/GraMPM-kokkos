@@ -6,6 +6,7 @@
 
 // fast (?) sign function from SO https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
 template <typename T>
+KOKKOS_INLINE_FUNCTION
 static int sgn_kokkos(T val) {
     return (T(0.) < val) - (val < T(0.));
 }

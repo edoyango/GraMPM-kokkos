@@ -60,9 +60,10 @@ namespace GraMPM {
 
                 typename intscalar_view_type::HostMirror h_p_grid_idx;
 
-                kernels::kernel<F> knl;
-
             public:
+
+                kernels::kernel<F> knl;
+                
                 // vector of particles
                 MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
                     : m_p_size {pv.size()}
