@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <grampm-kokkos-kernels.hpp>
 
 /*============================================================================================================*/
 
@@ -25,14 +26,15 @@ using intscalar_view_type = Kokkos::View<int*>;
 static size_t count_line(std::string fname) {
     size_t n = 0;
     std::string tmp;
-    std::ifstream s(fname);
-    while (std::getline(s, tmp)) n++;
+    std::ifstream ifs(fname);
+    while (std::getline(ifs, tmp)) n++;
     return n;
 }
 
 namespace GraMPM {
 
     namespace accelerated {
+
         template<typename F>
         class MPM_system {
 
@@ -57,6 +59,8 @@ namespace GraMPM {
                 typename scalar_view_type<F>::HostMirror h_p_mass, h_p_rho, h_g_mass;
 
                 typename intscalar_view_type::HostMirror h_p_grid_idx;
+
+                kernels::kernel<F> knl;
 
             public:
                 // vector of particles
@@ -97,6 +101,7 @@ namespace GraMPM {
                     , h_p_rho{create_mirror_view(d_p_rho)}
                     , h_g_mass{create_mirror_view(d_g_mass)}
                     , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
+                    , knl(dcell)
                     {
                         for (int i = 0; i < m_p_size; ++i) {
                             for (int d = 0; d < dims; ++d) {
@@ -154,6 +159,7 @@ namespace GraMPM {
                     , h_p_rho{create_mirror_view(d_p_rho)}
                     , h_g_mass{create_mirror_view(d_g_mass)}
                     , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
+                    , knl(dcell)
                     {
                     }
 
@@ -168,6 +174,7 @@ namespace GraMPM {
                         static_cast<size_t>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
                     }
                     , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
+                    , knl(dcell)
                 {
                     std::ifstream file(fname);
                     std::string line, header;
