@@ -12,5 +12,5 @@ mpm.x: $(SRCFILEPATHS)
 
 tests: tests/interfaces.x
 
-tests/%.x: tests/%.cpp
+tests/%.x: tests/%.cpp include/grampm-kokkos.hpp
 	$(CXX) -o $@ $^ -IGraMPM/include -Iinclude -I$(INCLUDEDIR) $(CXXFLAGS) -I$(KOKKOS_ROOT)/include -L$(KOKKOS_ROOT)/lib -lkokkoscore -I/usr/local/gtest -I/usr/local/gmock -L/usr/local/lib -lgtest
