@@ -10,6 +10,7 @@
 #include <iostream>
 #include <sstream>
 #include <grampm-kokkos-kernels.hpp>
+#include <grampm-kokkos-functors.hpp>
 
 /*============================================================================================================*/
 
@@ -165,7 +166,7 @@ namespace GraMPM {
                     }
 
                 MPM_system(std::string fname, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
-                    : m_p_size {count_line(fname)}
+                    : m_p_size {count_line(fname)-1}
                     , m_g_cell_size {dcell}
                     , m_mingrid {mingrid}
                     , m_maxgrid {maxgrid}
@@ -175,6 +176,32 @@ namespace GraMPM {
                         static_cast<size_t>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
                     }
                     , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
+                    , d_p_x("Particles' 3D positions", m_p_size)
+                    , d_p_v("Particles' 3D velocity", m_p_size)
+                    , d_p_a("Particles' 3D accelerations", m_p_size)
+                    , d_p_dxdt("Particles' 3D dxdt", m_p_size)
+                    , d_g_momentum("Grid cells' 3D momentum", m_g_size)
+                    , d_g_force("Grid cells' 3D force", m_g_size)
+                    , d_p_sigma("Particles' 3D cauchy stress tensor", m_p_size)
+                    , d_p_strainrate("Particles' 3D cauchy strain rate tensor", m_p_size)
+                    , d_p_spinrate("Particles' 3D cauchy spin rate tensor (off-axis elements only)", m_p_size)
+                    , d_p_mass("Particles' mass", m_p_size)
+                    , d_p_rho("Particles' mass", m_p_size)
+                    , d_g_mass("Grid cells' mass", m_g_size)
+                    , d_p_grid_idx("Particles' hashed grid indices", m_p_size)
+                    , h_p_x {create_mirror_view(d_p_x)}
+                    , h_p_v {create_mirror_view(d_p_v)}
+                    , h_p_a {create_mirror_view(d_p_a)}
+                    , h_p_dxdt{create_mirror_view(d_p_dxdt)}
+                    , h_g_momentum{create_mirror_view(d_g_momentum)}
+                    , h_g_force{create_mirror_view(d_g_force)}
+                    , h_p_sigma{create_mirror_view(d_p_sigma)}
+                    , h_p_strainrate{create_mirror_view(d_p_strainrate)}
+                    , h_p_spinrate{create_mirror_view(d_p_spinrate)}
+                    , h_p_mass{create_mirror_view(d_p_mass)}
+                    , h_p_rho{create_mirror_view(d_p_rho)}
+                    , h_g_mass{create_mirror_view(d_g_mass)}
+                    , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
                     , knl(dcell)
                 {
                     std::ifstream file(fname);
@@ -185,7 +212,8 @@ namespace GraMPM {
                     while (std::getline(file, line)) {
                         std::istringstream iss(line);
                         GraMPM::particle<F> p;
-                        iss >> p.x[0] >> p.x[1] >> p.x[2] >> p.v[0] >> p.v[1] >> p.v[2] >> p.mass >> p.rho >> p.sigma[0] >> p.sigma[1] >> 
+                        int idx;
+                        iss >> idx >> p.x[0] >> p.x[1] >> p.x[2] >> p.v[0] >> p.v[1] >> p.v[2] >> p.mass >> p.rho >> p.sigma[0] >> p.sigma[1] >> 
                             p.sigma[2] >> p.sigma[3] >> p.sigma[4] >> p.sigma[5] >> p.a[0] >> p.a[1] >> p.a[2] >> p.dxdt[0] >> p.dxdt[1] >>
                             p.dxdt[2] >> p.strainrate[0] >> p.strainrate[1] >> p.strainrate[2] >> p.strainrate[3] >> p.strainrate[4] >>
                             p.strainrate[5] >> p.spinrate[0] >> p.spinrate[1] >> p.spinrate[2];

@@ -329,11 +329,37 @@ TEST(initialization_getters_setters, IO) {
     std::vector<GraMPM::particle<double>> pv;
 
     for (int i = 0; i < 5; ++i) {
-        pv.push_back(
-            GraMPM::particle<double>(1.*i, 2.*i, 3.*i, 4.*i, 5.*i, 6.*i, 10.*i, 100.*i, -0.1*i, -0.2*i, -0.3*i, -0.4*i, 
-                -0.5*i, -0.6*i, 7.*i, 8.*i, 9.*i, 10.*i, 11.*i, 12.*i, -0.7*i, -0.8*i, -0.9*i, -1.0*i, -1.1*i, -1.2*i,
-                -1.3*i, -1.4*i, -1.5*i)
-        );
+        GraMPM::particle<double> p;
+        p.x[0] = 1.*i;
+        p.x[1] = 2.*i;
+        p.x[2] = 3.*i;
+        p.v[0] = 4.*i;
+        p.v[1] = 5.*i;
+        p.v[2] = 6.*i;
+        p.a[0] = 7.*i;
+        p.a[1] = 8.*i;
+        p.a[2] = 9.*i;
+        p.dxdt[0] = 10.*i;
+        p.dxdt[1] = 11.*i;
+        p.dxdt[2] = 12.*i;
+        p.mass = 30.*i;
+        p.rho = 40.*i;
+        p.sigma[0] = -0.1*i;
+        p.sigma[1] = -0.2*i;
+        p.sigma[2] = -0.3*i;
+        p.sigma[3] = -0.4*i;
+        p.sigma[4] = -0.5*i;
+        p.sigma[5] = -0.6*i;
+        p.strainrate[0] = -0.7*i;
+        p.strainrate[1] = -0.8*i;
+        p.strainrate[2] = -0.9*i;
+        p.strainrate[3] = -1.0*i;
+        p.strainrate[4] = -1.1*i;
+        p.strainrate[5] = -1.2*i;
+        p.spinrate[0] = -1.3*i;
+        p.spinrate[1] = -1.4*i;
+        p.spinrate[2] = -1.5*i;
+        pv.push_back(p);
     }
 
     GraMPM::accelerated::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
@@ -345,36 +371,36 @@ TEST(initialization_getters_setters, IO) {
     ASSERT_EQ(myMPM2.p_size(), 5);
 
     // check that manual setter functions work
-    for (int i = 0; i < 1; ++i) {
-        EXPECT_EQ(myMPM2.p_x(i), -1.*i);
-        EXPECT_EQ(myMPM2.p_y(i), -2.*i);
-        EXPECT_EQ(myMPM2.p_z(i), -3.*i);
-        EXPECT_EQ(myMPM2.p_vx(i), -4.*i);
-        EXPECT_EQ(myMPM2.p_vy(i), -5.*i);
-        EXPECT_EQ(myMPM2.p_vz(i), -6.*i);
-        EXPECT_EQ(myMPM2.p_ax(i), -7.*i);
-        EXPECT_EQ(myMPM2.p_ay(i), -8.*i);
-        EXPECT_EQ(myMPM2.p_az(i), -9.*i);
-        EXPECT_EQ(myMPM2.p_dxdt(i), -10.*i);
-        EXPECT_EQ(myMPM2.p_dydt(i), -11.*i);
-        EXPECT_EQ(myMPM2.p_dzdt(i), -12.*i);
-        EXPECT_EQ(myMPM2.p_mass(i), 30.*i);
-        EXPECT_EQ(myMPM2.p_rho(i), 40.*i);
-        EXPECT_EQ(myMPM2.p_sigmaxx(i), -0.1*i);
-        EXPECT_EQ(myMPM2.p_sigmayy(i), -0.2*i);
-        EXPECT_EQ(myMPM2.p_sigmazz(i), -0.3*i);
-        EXPECT_EQ(myMPM2.p_sigmaxy(i), -0.4*i);
-        EXPECT_EQ(myMPM2.p_sigmaxz(i), -0.5*i);
-        EXPECT_EQ(myMPM2.p_sigmayz(i), -0.6*i);
-        EXPECT_EQ(myMPM2.p_strainratexx(i), -0.7*i);
-        EXPECT_EQ(myMPM2.p_strainrateyy(i), -0.8*i);
-        EXPECT_EQ(myMPM2.p_strainratezz(i), -0.9*i);
-        EXPECT_EQ(myMPM2.p_strainratexy(i), -1.0*i);
-        EXPECT_EQ(myMPM2.p_strainratexz(i), -1.1*i);
-        EXPECT_EQ(myMPM2.p_strainrateyz(i), -1.2*i);
-        EXPECT_EQ(myMPM2.p_spinratexy(i), -1.3*i);
-        EXPECT_EQ(myMPM2.p_spinratexz(i), -1.4*i);
-        EXPECT_EQ(myMPM2.p_spinrateyz(i), -1.5*i);
+    for (int i = 0; i < myMPM2.p_size(); ++i) {
+        EXPECT_DOUBLE_EQ(myMPM2.p_x(i), 1.*i) << "read/write of x at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_y(i), 2.*i) << "read/write of y at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_z(i), 3.*i) << "read/write of z at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_vx(i), 4.*i) << "read/write of vx at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_vy(i), 5.*i) << "read/write of vy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_vz(i), 6.*i) << "read/write of vz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_ax(i), 7.*i) << "read/write of ax at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_ay(i), 8.*i) << "read/write of ay at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_az(i), 9.*i) << "read/write of az at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_dxdt(i), 10.*i) << "read/write of dxdt at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_dydt(i), 11.*i) << "read/write of dydt at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_dzdt(i), 12.*i) << "read/write of dzdt at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_mass(i), 30.*i) << "read/write of mass at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_rho(i), 40.*i) << "read/write of rho at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_sigmaxx(i), -0.1*i) << "read/write of sigmaxx at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_sigmayy(i), -0.2*i) << "read/write of sigmayy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_sigmazz(i), -0.3*i) << "read/write of sigmazz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_sigmaxy(i), -0.4*i) << "read/write of sigmaxy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_sigmaxz(i), -0.5*i) << "read/write of sigmaxz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_sigmayz(i), -0.6*i) << "read/write of sigmayz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_strainratexx(i), -0.7*i) << "read/write of strainratexx at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_strainrateyy(i), -0.8*i) << "read/write of strainrateyy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_strainratezz(i), -0.9*i) << "read/write of strainratezz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_strainratexy(i), -1.0*i) << "read/write of strainratexy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_strainratexz(i), -1.1*i) << "read/write of strainratexz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_strainrateyz(i), -1.2*i) << "read/write of strainrateyz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_spinratexy(i), -1.3*i) << "read/write of spinratexy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_spinratexz(i), -1.4*i) << "read/write of spinratexz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM2.p_spinrateyz(i), -1.5*i) << "read/write of spinrateyz at " << i << "incorrect";
     }
 }
 
@@ -464,8 +490,9 @@ TEST(initialization_getters_setters, IO) {
 // }
 
 int main(int argc, char **argv) {
-    Kokkos::initialize(argc, argv);
     testing::InitGoogleTest(&argc, argv);
+    std::cout << "tests\n";
+    Kokkos::initialize(argc, argv);
     int success = RUN_ALL_TESTS();
     Kokkos::finalize();
     return success;
