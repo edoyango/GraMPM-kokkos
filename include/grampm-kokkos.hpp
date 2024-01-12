@@ -63,7 +63,8 @@ namespace GraMPM {
 
             public:
 
-                kernels::kernel<F> knl;
+                const kernels::kernel<F> knl;
+                const functors::map_gidx<F> f_map_gidx;
                 
                 // vector of particles
                 MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
@@ -104,6 +105,8 @@ namespace GraMPM {
                     , h_g_mass{create_mirror_view(d_g_mass)}
                     , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
                     , knl(dcell)
+                    , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
+                        m_ngrid[2], d_p_x, d_p_grid_idx)
                     {
                         for (int i = 0; i < m_p_size; ++i) {
                             for (int d = 0; d < dims; ++d) {
@@ -162,6 +165,8 @@ namespace GraMPM {
                     , h_g_mass{create_mirror_view(d_g_mass)}
                     , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
                     , knl(dcell)
+                    , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
+                        m_ngrid[2], d_p_x, d_p_grid_idx)
                     {
                     }
 
@@ -203,6 +208,8 @@ namespace GraMPM {
                     , h_g_mass{create_mirror_view(d_g_mass)}
                     , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
                     , knl(dcell)
+                    , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
+                        m_ngrid[2], d_p_x, d_p_grid_idx)
                 {
                     std::ifstream file(fname);
                     std::string line, header;
