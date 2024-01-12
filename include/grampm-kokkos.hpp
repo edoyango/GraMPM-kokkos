@@ -218,27 +218,17 @@ namespace GraMPM {
                     size_t i = 0;
                     while (std::getline(file, line)) {
                         std::istringstream iss(line);
-                        GraMPM::particle<F> p;
                         int idx;
-                        iss >> idx >> p.x[0] >> p.x[1] >> p.x[2] >> p.v[0] >> p.v[1] >> p.v[2] >> p.mass >> p.rho >> p.sigma[0] >> p.sigma[1] >> 
-                            p.sigma[2] >> p.sigma[3] >> p.sigma[4] >> p.sigma[5] >> p.a[0] >> p.a[1] >> p.a[2] >> p.dxdt[0] >> p.dxdt[1] >>
-                            p.dxdt[2] >> p.strainrate[0] >> p.strainrate[1] >> p.strainrate[2] >> p.strainrate[3] >> p.strainrate[4] >>
-                            p.strainrate[5] >> p.spinrate[0] >> p.spinrate[1] >> p.spinrate[2];
-                        for (int d = 0; d < dims; ++d) {
-                            h_p_x(i, d) = p.x[d];
-                            h_p_v(i, d) = p.v[d];
-                            h_p_a(i, d) = p.a[d];
-                            h_p_dxdt(i, d) = p.dxdt[d];
-                        }
-                        for (int d = 0; d < voigt_tens_elems; ++d) {
-                            h_p_sigma(i, d) = p.sigma[d];
-                            h_p_strainrate(i, d) = p.strainrate[d];
-                        }
-                        for (int d = 0; d < spin_tens_elems; ++d) {
-                            h_p_spinrate(i, d) = p.spinrate[d];
-                        }
-                        h_p_mass(i) = p.mass;
-                        h_p_rho(i) = p.rho;
+                        iss >> idx 
+                            >> h_p_x(i, 0) >> h_p_x(i, 1) >> h_p_x(i, 2) 
+                            >> h_p_v(i, 0) >> h_p_v(i, 1) >> h_p_v(i, 2) 
+                            >> h_p_mass(i) 
+                            >> h_p_rho(i) 
+                            >> h_p_sigma(i, 0) >> h_p_sigma(i, 1) >> h_p_sigma(i, 2)>> h_p_sigma(i, 3)>> h_p_sigma(i, 4)>> h_p_sigma(i, 5)
+                            >> h_p_a(i, 0) >> h_p_a(i, 1) >> h_p_a(i, 2)
+                            >> h_p_dxdt(i, 0) >> h_p_dxdt(i, 1) >> h_p_dxdt(i, 2)
+                            >> h_p_strainrate(i, 0) >> h_p_strainrate(i, 1) >> h_p_strainrate(i, 2) >> h_p_strainrate(i, 3) >> h_p_strainrate(i, 4) >> h_p_strainrate(i, 5)
+                            >> h_p_spinrate(i, 0) >> h_p_spinrate(i, 1) >> h_p_spinrate(i, 2);
                         i++;
                     }
                 }
