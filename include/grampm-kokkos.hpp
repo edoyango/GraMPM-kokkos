@@ -39,6 +39,9 @@ namespace GraMPM {
         template<typename F>
         class MPM_system {
 
+            public:
+                const kernels::kernel<F> knl;
+
             protected:
                 const size_t m_p_size;
                 const F m_g_cell_size;
@@ -54,6 +57,11 @@ namespace GraMPM {
 
                 intscalar_view_type d_p_grid_idx;
 
+                const int pg_npp;
+                intscalar_view_type d_pg_nn;
+                scalar_view_type<F> d_pg_w;
+                spatial_view_type<F> d_pg_dwdx;
+
                 typename spatial_view_type<F>::HostMirror h_p_x, h_p_v, h_p_a, h_p_dxdt, h_g_momentum, h_g_force;
                 typename cauchytensor_view_type<F>::HostMirror h_p_sigma, h_p_strainrate;
                 typename spintensor_view_type<F>::HostMirror h_p_spinrate;
@@ -61,14 +69,18 @@ namespace GraMPM {
 
                 typename intscalar_view_type::HostMirror h_p_grid_idx;
 
-            public:
+                typename intscalar_view_type::HostMirror h_pg_nn;
+                typename scalar_view_type<F>::HostMirror h_pg_w;
+                typename spatial_view_type<F>::HostMirror h_pg_dwdx;
 
-                const kernels::kernel<F> knl;
+            public:
                 const functors::map_gidx<F> f_map_gidx;
+                const functors::find_neighbour_nodes<F> f_find_neighbour_nodes;
                 
                 // vector of particles
                 MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
-                    : m_p_size {pv.size()}
+                    : knl(dcell)
+                    , m_p_size {pv.size()}
                     , m_g_cell_size {dcell}
                     , m_mingrid {mingrid}
                     , m_maxgrid {maxgrid}
@@ -91,6 +103,10 @@ namespace GraMPM {
                     , d_p_rho("Particles' mass", m_p_size)
                     , d_g_mass("Grid cells' mass", m_g_size)
                     , d_p_grid_idx("Particles' hashed grid indices", m_p_size)
+                    , pg_npp {static_cast<int>(8*knl.radius*knl.radius*knl.radius)}
+                    , d_pg_nn("Particles' grid neighbour nodes", m_p_size*pg_npp)
+                    , d_pg_w("Particles' grid neighbour nodes' kernel values", m_p_size*pg_npp)
+                    , d_pg_dwdx("Particles' grid neighbour nodes' kernel gradient values", m_p_size*pg_npp)
                     , h_p_x {create_mirror_view(d_p_x)}
                     , h_p_v {create_mirror_view(d_p_v)}
                     , h_p_a {create_mirror_view(d_p_a)}
@@ -104,9 +120,13 @@ namespace GraMPM {
                     , h_p_rho{create_mirror_view(d_p_rho)}
                     , h_g_mass{create_mirror_view(d_g_mass)}
                     , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
-                    , knl(dcell)
+                    , h_pg_nn {create_mirror_view(d_pg_nn)}
+                    , h_pg_w {create_mirror_view(d_pg_w)}
+                    , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
                     , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
                         m_ngrid[2], d_p_x, d_p_grid_idx)
+                    , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
+                        m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
                     {
                         for (int i = 0; i < m_p_size; ++i) {
                             for (int d = 0; d < dims; ++d) {
@@ -128,7 +148,8 @@ namespace GraMPM {
                     }
 
                 MPM_system(const size_t n, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
-                    : m_p_size {n}
+                    : knl(dcell)
+                    , m_p_size {n}
                     , m_g_cell_size {dcell}
                     , m_mingrid {mingrid}
                     , m_maxgrid {maxgrid}
@@ -151,6 +172,10 @@ namespace GraMPM {
                     , d_p_rho("Particles' mass", m_p_size)
                     , d_g_mass("Grid cells' mass", m_g_size)
                     , d_p_grid_idx("Particles' hashed grid indices", m_p_size)
+                    , pg_npp {static_cast<int>(8*knl.radius*knl.radius*knl.radius)}
+                    , d_pg_nn("Particles' grid neighbour nodes", m_p_size*pg_npp)
+                    , d_pg_w("Particles' grid neighbour nodes' kernel values", m_p_size*pg_npp)
+                    , d_pg_dwdx("Particles' grid neighbour nodes' kernel gradient values", m_p_size*pg_npp)
                     , h_p_x {create_mirror_view(d_p_x)}
                     , h_p_v {create_mirror_view(d_p_v)}
                     , h_p_a {create_mirror_view(d_p_a)}
@@ -164,14 +189,19 @@ namespace GraMPM {
                     , h_p_rho{create_mirror_view(d_p_rho)}
                     , h_g_mass{create_mirror_view(d_g_mass)}
                     , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
-                    , knl(dcell)
+                    , h_pg_nn {create_mirror_view(d_pg_nn)}
+                    , h_pg_w {create_mirror_view(d_pg_w)}
+                    , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
                     , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
                         m_ngrid[2], d_p_x, d_p_grid_idx)
+                    , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
+                        m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
                     {
                     }
 
                 MPM_system(std::string fname, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
-                    : m_p_size {count_line(fname)-1}
+                    : knl(dcell)
+                    , m_p_size {count_line(fname)-1}
                     , m_g_cell_size {dcell}
                     , m_mingrid {mingrid}
                     , m_maxgrid {maxgrid}
@@ -194,6 +224,10 @@ namespace GraMPM {
                     , d_p_rho("Particles' mass", m_p_size)
                     , d_g_mass("Grid cells' mass", m_g_size)
                     , d_p_grid_idx("Particles' hashed grid indices", m_p_size)
+                    , pg_npp {static_cast<int>(8*knl.radius*knl.radius*knl.radius)}
+                    , d_pg_nn("Particles' grid neighbour nodes", m_p_size*pg_npp)
+                    , d_pg_w("Particles' grid neighbour nodes' kernel values", m_p_size*pg_npp)
+                    , d_pg_dwdx("Particles' grid neighbour nodes' kernel gradient values", m_p_size*pg_npp)
                     , h_p_x {create_mirror_view(d_p_x)}
                     , h_p_v {create_mirror_view(d_p_v)}
                     , h_p_a {create_mirror_view(d_p_a)}
@@ -207,9 +241,13 @@ namespace GraMPM {
                     , h_p_rho{create_mirror_view(d_p_rho)}
                     , h_g_mass{create_mirror_view(d_g_mass)}
                     , h_p_grid_idx{create_mirror_view(d_p_grid_idx)}
-                    , knl(dcell)
+                    , h_pg_nn {create_mirror_view(d_pg_nn)}
+                    , h_pg_w {create_mirror_view(d_pg_w)}
+                    , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
                     , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
                         m_ngrid[2], d_p_x, d_p_grid_idx)
+                    , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
+                        m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
                 {
                     std::ifstream file(fname);
                     std::string line, header;
@@ -246,6 +284,10 @@ namespace GraMPM {
                     deep_copy(d_p_mass, h_p_mass);
                     deep_copy(d_p_rho, h_p_rho);
                     deep_copy(d_g_mass, h_g_mass);
+                    deep_copy(d_p_grid_idx, h_p_grid_idx);
+                    deep_copy(d_pg_nn, h_pg_nn);
+                    deep_copy(d_pg_w, h_pg_w);
+                    deep_copy(d_pg_dwdx, h_pg_dwdx);
                 }
 
                 void d2h() {
@@ -261,6 +303,10 @@ namespace GraMPM {
                     deep_copy(h_p_mass, d_p_mass);
                     deep_copy(h_p_rho, d_p_rho);
                     deep_copy(h_g_mass, d_g_mass);
+                    deep_copy(h_p_grid_idx, d_p_grid_idx);
+                    deep_copy(h_pg_nn, d_pg_nn);
+                    deep_copy(h_pg_w, d_pg_w);
+                    deep_copy(h_pg_dwdx, d_pg_dwdx);
                 }
 
                 size_t p_size() const {return m_p_size;}
@@ -322,6 +368,23 @@ namespace GraMPM {
                 F& p_spinratexy(const size_t i) {return h_p_spinrate(i, 0);}
                 F& p_spinratexz(const size_t i) {return h_p_spinrate(i, 1);}
                 F& p_spinrateyz(const size_t i) {return h_p_spinrate(i, 2);}
+                int p_grid_idx(const size_t i) {return h_p_grid_idx(i);}
+                template<typename I>
+                std::array<I, dims> unravel_idx(const I &idx) const {
+                    std::array<I, dims> unravelled_idx;
+                    // div_t tmp = std::div(idx, m_g_ngridy*m_g_ngridz);
+                    // unravelled_idx[0] = tmp.quot;
+                    // tmp = std::div(tmp.rem, m_g_ngridz);
+                    // unravelled_idx[1] = tmp.quot;
+                    // unravelled_idx[2] = tmp.rem;
+                    // return unravelled_idx;
+                    unravelled_idx[0] = idx / (m_ngrid[1]*m_ngrid[2]);
+                    I rem = idx % (m_ngrid[1]*m_ngrid[2]);
+                    unravelled_idx[1] = rem / m_ngrid[2];
+                    unravelled_idx[2] = rem % m_ngrid[2];
+                    return unravelled_idx;
+                }
+                std::array<int, dims> p_grid_idx_unravelled(const int i) {return unravel_idx<int>(h_p_grid_idx(i));}
 
                 particle<F> p_at(const size_t i) {
                     return particle<F>(h_p_x(i, 0), h_p_x(i, 1), h_p_x(i, 2), h_p_v(i, 0), h_p_v(i, 1), h_p_v(i, 2), 
@@ -331,6 +394,17 @@ namespace GraMPM {
                         h_p_strainrate(i, 2), h_p_strainrate(i, 3), h_p_strainrate(i, 4), h_p_strainrate(i, 5), 
                         h_p_spinrate(i, 0), h_p_spinrate(i, 1), h_p_spinrate(i, 2));
                 }
+
+                int pg_nn(const size_t i) {return h_pg_nn(i);}
+                int pg_nn(const size_t i, const size_t j) {return h_pg_nn(i*pg_npp+j);}
+                F pg_w(const size_t i) {return h_pg_w(i);}
+                F pg_w(const size_t i, const size_t j) {return h_pg_w(i*pg_npp+j);}
+                F pg_dwdx(const size_t i) {return h_pg_dwdx(i, 0);}
+                F pg_dwdx(const size_t i, const size_t j) {return h_pg_dwdx(i*pg_npp+j, 0);}
+                F pg_dwdy(const size_t i) {return h_pg_dwdx(i, 1);}
+                F pg_dwdy(const size_t i, const size_t j) {return h_pg_dwdx(i*pg_npp+j, 1);}
+                F pg_dwdz(const size_t i) {return h_pg_dwdx(i, 2);}
+                F pg_dwdz(const size_t i, const size_t j) {return h_pg_dwdx(i*pg_npp+j, 2);}
 
                 void d_zero_grid() {
                     Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_momentum, 0.);
@@ -430,6 +504,14 @@ namespace GraMPM {
                                 << std::setw(f_width) << std::fixed << h_p_spinrate(i, 2) << ' '
                                 << '\n';
                     }
+                }
+
+                void update_particle_to_cell_map() {
+                    Kokkos::parallel_for("map particles to grid", m_p_size, f_map_gidx);
+                }
+
+                void find_neighbour_nodes() {
+                    Kokkos::parallel_for("find neighbour nodes", m_p_size, f_find_neighbour_nodes);
                 }
         };
     }

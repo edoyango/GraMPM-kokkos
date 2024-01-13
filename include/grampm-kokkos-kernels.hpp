@@ -69,6 +69,7 @@ namespace GraMPM {
                 {
                 }
 
+                KOKKOS_INLINE_FUNCTION
                 void operator()(const F &dx, const F&dy, const F &dz, F &w, F &dwdx, F &dwdy, F &dwdz) const {
                     const F qx = Kokkos::abs(dx)/dcell, qy = Kokkos::abs(dy)/dcell, qz = Kokkos::abs(dz)/dcell;
                     const F w1x = w1(qx), w1y = w1(qy), w1z = w1(qz);
