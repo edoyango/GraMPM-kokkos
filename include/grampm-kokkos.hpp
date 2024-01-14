@@ -36,11 +36,11 @@ namespace GraMPM {
 
     namespace accelerated {
 
-        template<typename F>
+        template<typename F, typename kernel>
         class MPM_system {
 
             public:
-                const kernels::kernel<F> knl;
+                const kernel knl;
 
             protected:
                 const size_t m_p_size;
@@ -75,7 +75,7 @@ namespace GraMPM {
 
             public:
                 const functors::map_gidx<F> f_map_gidx;
-                const functors::find_neighbour_nodes<F> f_find_neighbour_nodes;
+                const functors::find_neighbour_nodes<F, kernel> f_find_neighbour_nodes;
                 
                 // vector of particles
                 MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)

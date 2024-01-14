@@ -17,14 +17,13 @@ namespace GraMPM {
     namespace accelerated {
         namespace kernels {
 
-#ifdef KERNEL_LINEAR_BSPLINE
             template<typename F>
-            struct kernel {
+            struct linear_bspline {
 
                 // change me (radius)
                 const F radius = 1., dcell;
 
-                kernel(const F dc)
+                linear_bspline(const F dc)
                     : dcell {dc}
                 {
                 }
@@ -57,15 +56,13 @@ namespace GraMPM {
                         return sgn_kokkos(dr)/dcell;
                     }
             };
-#endif
 
-#ifdef KERNEL_CUBIC_BSPLINE
             template<typename F>
-            struct kernel {
+            struct cubic_bspline {
 
                 const F radius = 2., dcell;
 
-                kernel(const F dc)
+                cubic_bspline(const F dc)
                     : dcell {dc}
                 {
                 }
@@ -99,7 +96,7 @@ namespace GraMPM {
                         return sgn_kokkos(dr)/dcell;
                     }
             };
-#endif
+
         }
     }
 }

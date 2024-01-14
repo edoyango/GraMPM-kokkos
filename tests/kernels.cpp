@@ -1,17 +1,17 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "grampm_kernels.hpp"
+#include <grampm_kernels.hpp>
 #include <cmath>
 #include <grampm-kokkos.hpp>
 #include <gtest/gtest.h>
 #include <array>
 
+using namespace GraMPM::accelerated;
+
 std::array<double, 3> mingrid {0., 0., 0.}, maxgrid {1., 1., 1.};
 double cell_size = 0.1;
 
-#ifdef KERNEL_LINEAR_BSPLINE
 TEST(kernels, linear) {
 
-    GraMPM::accelerated::MPM_system<double> myMPM(0, mingrid, maxgrid, cell_size);
+    MPM_system<double, kernels::linear_bspline<double>> myMPM(0, mingrid, maxgrid, cell_size);
 
     // check attributes are set correctly
     ASSERT_EQ(myMPM.knl.radius, 1.) << "kernel radius not set correctly";
@@ -61,12 +61,10 @@ TEST(kernels, linear) {
     ASSERT_DOUBLE_EQ(dwdy, 0.) << "kernel gradient y centre value not calculated correctly";
     ASSERT_DOUBLE_EQ(dwdz, 0.) << "kernel gradient z centre value not calculated correctly";
 }
-#endif
 
-#ifdef KERNEL_CUBIC_BSPLINE
 TEST(kernels, cubic) {
 
-    GraMPM::accelerated::MPM_system<double> myMPM(0, mingrid, maxgrid, cell_size);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(0, mingrid, maxgrid, cell_size);
 
     // check attributes are set correctly
     ASSERT_EQ(myMPM.knl.radius, 2.) << "kernel radius not set correctly";
@@ -121,7 +119,6 @@ TEST(kernels, cubic) {
     ASSERT_DOUBLE_EQ(dwdy, 0.) << "kernel gradient y centre value not calculated correctly";
     ASSERT_DOUBLE_EQ(dwdz, 0.) << "kernel gradient z centre value not calculated correctly";
 }
-#endif
 
 int main(int argc, char **argv) {
     Kokkos::initialize(argc, argv);

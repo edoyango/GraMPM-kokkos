@@ -39,7 +39,7 @@ namespace GraMPM {
                 }
             };
 
-            template<typename F>
+            template<typename F, typename kernel>
             struct find_neighbour_nodes {
 
                 const F dcell, minx, miny, minz;
@@ -49,11 +49,11 @@ namespace GraMPM {
                 const Kokkos::View<int*> pg;
                 const Kokkos::View<F*> w;
                 const Kokkos::View<F*[3]> dwdx;
-                const kernels::kernel<F> knl;
+                const kernel knl;
 
                 find_neighbour_nodes(F dcell_, F minx_, F miny_, F minz_, int nx_, int ny_, int nz_, int r, 
                     Kokkos::View<F*[3]> x_, Kokkos::View<int*> gidx_, Kokkos::View<int*> pg_, Kokkos::View<F*> w_, 
-                    Kokkos::View<F*[3]> dwdx_, kernels::kernel<F> knl_)
+                    Kokkos::View<F*[3]> dwdx_, kernel knl_)
                     : dcell {dcell_}
                     , minx {minx_} 
                     , miny {miny_}

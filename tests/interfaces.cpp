@@ -8,6 +8,8 @@
 #include <gtest/gtest.h>
 #include <Kokkos_Core.hpp>
 
+using namespace GraMPM::accelerated;
+
 const std::array<double, 3> mingridx_in {-0.1, 0.05, 0.15}, maxgridx_in {0.1, 0.3, 0.5};
 const double dcell_in = 0.1;
 // const std::array<double, 3> bf {1., 2., 3.};
@@ -18,7 +20,7 @@ const double dcell_in = 0.1;
 
 TEST(initialization_getters_setters, grid_init) {
 
-    GraMPM::accelerated::MPM_system<double> myMPM(0, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(0, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.g_cell_size(), dcell_in);
 
@@ -122,7 +124,7 @@ TEST(initialization_getters_setters, particles_aggregate_init) {
         );
     }
 
-    GraMPM::accelerated::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.p_size(), 5) << "Particle number not assigned expected value";
 
@@ -162,7 +164,7 @@ TEST(initialization_getters_setters, particles_aggregate_init) {
 
 TEST(initialization_getters_setters, particles_post_init) {
 
-    GraMPM::accelerated::MPM_system<double> myMPM(5, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(5, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.p_size(), 5) << "Particle number not assigned expected value";
 
@@ -247,7 +249,7 @@ TEST(initialization_getters_setters, particles_transfer) {
         );
     }
 
-    GraMPM::accelerated::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     // send data to device
     myMPM.h2d();
@@ -362,11 +364,11 @@ TEST(initialization_getters_setters, IO) {
         pv.push_back(p);
     }
 
-    GraMPM::accelerated::MPM_system<double> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     myMPM.p_save_to_file("testfile", 1);
 
-    GraMPM::accelerated::MPM_system<double> myMPM2("testfile0000001", mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM2("testfile0000001", mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM2.p_size(), 5);
 
@@ -491,7 +493,6 @@ TEST(initialization_getters_setters, IO) {
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
-    std::cout << "tests\n";
     Kokkos::initialize(argc, argv);
     int success = RUN_ALL_TESTS();
     Kokkos::finalize();
