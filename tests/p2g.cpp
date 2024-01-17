@@ -64,40 +64,41 @@ TEST(p2g_mass, linear_bspline) {
     ASSERT_FLOAT_EQ(myMPM.g_mass(5, 10, 15), 562.5) << "grid mass at i=5, j=10, k=15 not calculated correctly";
 }
 
-// TEST_CASE("Map particles masses to grid (cubic bspline)") {
-//     const double dcell = 0.2;
-//     std::array<double, 3> bf, mingrid {-0.2, -0.2, -0.2}, maxgrid {1.19, 2.19, 3.19};
+TEST(p2g_mass, cubic_bspline) {
+    const double dcell = 0.2;
+    std::array<double, 3> bf, mingrid {-dcell, -dcell, -dcell}, maxgrid {0.99+dcell, 1.99+dcell, 2.99+dcell};
 
-//     GraMPM::kernel_cubic_bspline<double> knl(dcell);
+    std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-//     GraMPM::MPM_system<double> p(bf, knl, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
     
-//     CHECK(p.g_ngridx()==8);
-//     CHECK(p.g_ngridy()==13);
-//     CHECK(p.g_ngridz()==18);
+    ASSERT_EQ(myMPM.g_ngridx(), 8)  << "ngridx not calculated correctly";
+    ASSERT_EQ(myMPM.g_ngridy(), 13) << "ngridy not calculated correctly";
+    ASSERT_EQ(myMPM.g_ngridz(), 18) << "ngridz not calculated correctly";
 
-//     generate_particles(p);
+    myMPM.h2d();
+    myMPM.update_particle_to_cell_map();
+    myMPM.find_neighbour_nodes();
+    myMPM.map_p2g_mass();
+    myMPM.d2h();
 
-//     p.map_particles_to_grid();
-//     p.map_p2g_mass();
+    // check total mass conservation
+    // sum particles' mass
+    double psum {0.}, gsum {0.};
+    for (size_t i = 0; i < myMPM.p_size(); ++i)
+        psum += myMPM.p_mass(i);
+    // sum grid's mass
+    for (size_t i = 0; i < myMPM.g_size(); ++i)
+        gsum += myMPM.g_mass(i);
 
-//     // check total mass conservation
-//     // sum particles' mass
-//     double psum = 0., gsum = 0.;
-//     for (size_t i = 0; i < p.p_size(); ++i)
-//         psum += p.p_mass(i);
-//     // sum grid's mass
-//     for (size_t i = 0; i < p.g_size(); ++i)
-//         gsum += p.g_mass(i);
+    // should be correct to 14 sigfigs
+    ASSERT_FLOAT_EQ(psum, gsum) << "sum of particles' mass not equal to sum of grid mass";
 
-//     // should be correct to 14 sigfigs
-//     REQUIRE(psum*1e7==std::round(gsum*1e7));
-
-//     // check a few nodal values
-//     REQUIRE(std::round(p.g_mass(2, 2, 2)*1e10)==3426422542996);
-//     REQUIRE(std::round(p.g_mass(4, 5, 6))==1800.);
-//     REQUIRE(std::round(p.g_mass(6, 11, 16)*1e5)==55609375);
-// }
+    // check a few nodal values
+    ASSERT_FLOAT_EQ(myMPM.g_mass(2, 2, 2), 342.6422542996); // should be correct to 10 sigfigs
+    ASSERT_FLOAT_EQ(myMPM.g_mass(4, 5, 6), 1800.); // should be correct to around 12 sigfigs
+    ASSERT_FLOAT_EQ(myMPM.g_mass(6, 11, 16), 556.09375); // should be correct to around 14 sigfigs
+}
 
 // TEST_CASE("Map particles momentums to grid (linear bspline)") {
 //     const double dcell = 0.2;
