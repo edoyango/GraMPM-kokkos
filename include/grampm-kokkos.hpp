@@ -36,7 +36,24 @@ namespace GraMPM {
 
     namespace accelerated {
 
-        template<typename F, typename kernel>
+        template<typename F>
+        struct empty_boundary_func {
+            int itimestep;
+            F dt;
+            const double ngridx, ngridy, ngridz;
+            const Kokkos::View<F*[3]> data;
+            empty_boundary_func(Kokkos::View<F*[3]> data_, F ngridx_, F ngridy_, F ngridz_)
+                : data {data_} 
+                , ngridx {ngridx_}
+                , ngridy {ngridy_}
+                , ngridz {ngridz_}
+            {};
+            KOKKOS_INLINE_FUNCTION
+            void operator()(const int i, const int j, const int k) const {
+            }
+        };
+
+        template<typename F, typename kernel, typename momentum_boundary = empty_boundary_func<F>, typename force_boundary = empty_boundary_func<F>>
         class MPM_system {
 
             public:
@@ -72,6 +89,9 @@ namespace GraMPM {
                 typename intscalar_view_type::HostMirror h_pg_nn;
                 typename scalar_view_type<F>::HostMirror h_pg_w;
                 typename spatial_view_type<F>::HostMirror h_pg_dwdx;
+
+                momentum_boundary f_momentum_boundary;
+                force_boundary f_force_boundary;
 
             public:
                 const functors::map_gidx<F> f_map_gidx;
@@ -123,6 +143,8 @@ namespace GraMPM {
                     , h_pg_nn {create_mirror_view(d_pg_nn)}
                     , h_pg_w {create_mirror_view(d_pg_w)}
                     , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
+                    , f_momentum_boundary(d_g_momentum, m_ngrid[0], m_ngrid[1], m_ngrid[2])
+                    , f_force_boundary(d_g_force, m_ngrid[0], m_ngrid[1], m_ngrid[2])
                     , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
                         m_ngrid[2], d_p_x, d_p_grid_idx)
                     , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
@@ -192,6 +214,8 @@ namespace GraMPM {
                     , h_pg_nn {create_mirror_view(d_pg_nn)}
                     , h_pg_w {create_mirror_view(d_pg_w)}
                     , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
+                    , f_momentum_boundary(d_g_momentum, m_ngrid[0], m_ngrid[1], m_ngrid[2])
+                    , f_force_boundary(d_g_force, m_ngrid[0], m_ngrid[1], m_ngrid[2])
                     , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
                         m_ngrid[2], d_p_x, d_p_grid_idx)
                     , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
@@ -244,6 +268,8 @@ namespace GraMPM {
                     , h_pg_nn {create_mirror_view(d_pg_nn)}
                     , h_pg_w {create_mirror_view(d_pg_w)}
                     , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
+                    , f_momentum_boundary(d_g_momentum, m_ngrid[0], m_ngrid[1], m_ngrid[2])
+                    , f_force_boundary(d_g_force, m_ngrid[0], m_ngrid[1], m_ngrid[2])
                     , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
                         m_ngrid[2], d_p_x, d_p_grid_idx)
                     , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
@@ -513,6 +539,29 @@ namespace GraMPM {
                 void find_neighbour_nodes() {
                     Kokkos::parallel_for("find neighbour nodes", m_p_size, f_find_neighbour_nodes);
                 }
+
+                void g_apply_momentum_boundary_conditions(const int itimestep, const F dt) {
+                    f_momentum_boundary.itimestep = itimestep;
+                    f_momentum_boundary.dt = dt;
+                    Kokkos::MDRangePolicy<Kokkos::Rank<3>> exec_policy({0, 0, 0}, {m_ngrid[0], m_ngrid[1], m_ngrid[2]});
+                    Kokkos::parallel_for<Kokkos::MDRangePolicy<Kokkos::Rank<3>>>(
+                        "apply grid momentum boundary conditions", 
+                        exec_policy,
+                        f_momentum_boundary
+                    );
+                }
+
+                void g_apply_force_boundary_conditions(const int itimestep, const F dt) {
+                    f_force_boundary.itimestep = itimestep;
+                    f_force_boundary.dt = dt;
+                    Kokkos::MDRangePolicy<Kokkos::Rank<3>> exec_policy({0, 0, 0}, {m_ngrid[0], m_ngrid[1], m_ngrid[2]});
+                    Kokkos::parallel_for<Kokkos::MDRangePolicy<Kokkos::Rank<3>>>(
+                        "apply grid force boundary conditions", 
+                        exec_policy,
+                        f_force_boundary
+                    );
+                }
+
         };
     }
 }
