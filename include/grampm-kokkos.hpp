@@ -96,6 +96,7 @@ namespace GraMPM {
             public:
                 const functors::map_gidx<F> f_map_gidx;
                 const functors::find_neighbour_nodes<F, kernel> f_find_neighbour_nodes;
+                const functors::map_p2g_mass<F> f_map_p2g_mass;
                 
                 // vector of particles
                 MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
@@ -149,6 +150,7 @@ namespace GraMPM {
                         m_ngrid[2], d_p_x, d_p_grid_idx)
                     , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
                         m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
+                    , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
                     {
                         for (int i = 0; i < m_p_size; ++i) {
                             for (int d = 0; d < dims; ++d) {
@@ -220,6 +222,7 @@ namespace GraMPM {
                         m_ngrid[2], d_p_x, d_p_grid_idx)
                     , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
                         m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
+                    , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
                     {
                     }
 
@@ -274,6 +277,7 @@ namespace GraMPM {
                         m_ngrid[2], d_p_x, d_p_grid_idx)
                     , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
                         m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
+                    , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
                 {
                     std::ifstream file(fname);
                     std::string line, header;
@@ -538,6 +542,10 @@ namespace GraMPM {
 
                 void find_neighbour_nodes() {
                     Kokkos::parallel_for("find neighbour nodes", m_p_size, f_find_neighbour_nodes);
+                }
+
+                void map_p2g_mass() {
+                    Kokkos::parallel_for("map particle mass to grid", m_p_size, f_map_p2g_mass);
                 }
 
                 void g_apply_momentum_boundary_conditions(const int itimestep, const F dt) {

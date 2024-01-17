@@ -87,6 +87,33 @@ namespace GraMPM {
                     }
                 }
             };
+
+            template<typename F>
+            struct map_p2g_mass {
+                int npp;
+                const Kokkos::View<F*> p_mass;
+                const Kokkos::View<F*, Kokkos::MemoryTraits<Kokkos::Atomic>> g_mass;
+                const Kokkos::View<int*> pg;
+                const Kokkos::View<F*> w;
+                map_p2g_mass(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*> g_mass_, Kokkos::View<int*> pg_, 
+                    Kokkos::View<F*> w_)
+                    : npp {npp_}
+                    , p_mass {p_mass_}
+                    , g_mass {g_mass_}
+                    , pg {pg_}
+                    , w {w_}
+                {
+                }
+                KOKKOS_INLINE_FUNCTION
+                void operator()(const int i) const {
+                    const int jstart = i*npp;
+                    for (int j = jstart; j < jstart + npp; ++j) {
+                        const int idx = pg(j);
+                        // Kokkos::atomic_add(&g_mass(idx), p_mass(i)*w(j));
+                        g_mass(idx) += p_mass(i)*w(j);
+                    }
+                }
+            };
         }
     }
 }
