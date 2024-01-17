@@ -8,6 +8,18 @@
 namespace GraMPM {
     namespace accelerated {
         namespace functors {
+
+            template<typename F>
+            struct zero_3d_view {
+                const Kokkos::View<F*[3]> data;
+                zero_3d_view(Kokkos::View<F*[3]> data_) : data {data_} {}
+                KOKKOS_INLINE_FUNCTION
+                void operator()(const int i) const {
+                    data(i, 0) = 0.;
+                    data(i, 1) = 0.;
+                    data(i, 2) = 0.;
+                }
+            };
             
             template<typename F>
             struct map_gidx {
@@ -111,6 +123,37 @@ namespace GraMPM {
                         const int idx = pg(j);
                         // Kokkos::atomic_add(&g_mass(idx), p_mass(i)*w(j));
                         g_mass(idx) += p_mass(i)*w(j);
+                    }
+                }
+            };
+
+            template<typename F>
+            struct map_p2g_momentum {
+                int npp;
+                const Kokkos::View<F*> p_mass;
+                const Kokkos::View<F*[3]> p_v;
+                const Kokkos::View<F*[3], Kokkos::MemoryTraits<Kokkos::Atomic>> g_momentum;
+                const Kokkos::View<int*> pg;
+                const Kokkos::View<F*> w;
+                map_p2g_momentum(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*[3]> p_v_, Kokkos::View<F*[3]> g_momentum_, Kokkos::View<int*> pg_, 
+                    Kokkos::View<F*> w_)
+                    : npp {npp_}
+                    , p_mass {p_mass_}
+                    , p_v {p_v_}
+                    , g_momentum {g_momentum_}
+                    , pg {pg_}
+                    , w {w_}
+                {
+                }
+                KOKKOS_INLINE_FUNCTION
+                void operator()(const int i) const {
+                    const int jstart = i*npp;
+                    for (int j = jstart; j < jstart + npp; ++j) {
+                        const int idx = pg(j);
+                        // Kokkos::atomic_add(&g_mass(idx), p_mass(i)*w(j));
+                        g_momentum(idx, 0) += p_mass(i)*p_v(i, 0)*w(j);
+                        g_momentum(idx, 1) += p_mass(i)*p_v(i, 1)*w(j);
+                        g_momentum(idx, 2) += p_mass(i)*p_v(i, 2)*w(j);
                     }
                 }
             };
