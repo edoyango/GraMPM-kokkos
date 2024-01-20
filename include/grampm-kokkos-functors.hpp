@@ -102,7 +102,7 @@ namespace GraMPM {
 
             template<typename F>
             struct map_p2g_mass {
-                int npp;
+                const int npp;
                 const Kokkos::View<F*> p_mass;
                 const Kokkos::View<F*, Kokkos::MemoryTraits<Kokkos::Atomic>> g_mass;
                 const Kokkos::View<int*> pg;
@@ -129,7 +129,7 @@ namespace GraMPM {
 
             template<typename F>
             struct map_p2g_momentum {
-                int npp;
+                const int npp;
                 const Kokkos::View<F*> p_mass;
                 const Kokkos::View<F*[3]> p_v;
                 const Kokkos::View<F*[3], Kokkos::MemoryTraits<Kokkos::Atomic>> g_momentum;
@@ -160,7 +160,7 @@ namespace GraMPM {
 
             template<typename F>
             struct map_p2g_force {
-                int npp;
+                const int npp;
                 F bfx, bfy, bfz;
                 const Kokkos::View<F*> p_mass, p_rho;
                 const Kokkos::View<F*[6]> p_sigma;
@@ -210,7 +210,7 @@ namespace GraMPM {
 
             template<typename F>
             struct map_g2p_acceleration {
-                int npp;
+                const int npp;
                 const Kokkos::View<F*[3]> p_a, g_force, p_dxdt, g_momentum;
                 const Kokkos::View<F*> g_mass, w;
                 const Kokkos::View<int*> pg;
@@ -244,6 +244,59 @@ namespace GraMPM {
                         p_dxdt(i, 0) += g_momentum(idx, 0)/g_mass(idx)*w(j);
                         p_dxdt(i, 1) += g_momentum(idx, 1)/g_mass(idx)*w(j);
                         p_dxdt(i, 2) += g_momentum(idx, 2)/g_mass(idx)*w(j);
+                    }
+                }
+            };
+
+            template<typename F>
+            struct map_g2p_strainrate {
+                const int npp;
+                const Kokkos::View<F*[6]> p_strainrate;
+                const Kokkos::View<F*[3]> p_spinrate, g_momentum, dwdx;
+                const Kokkos::View<F*> g_mass;
+                const Kokkos::View<int*> pg;
+
+                map_g2p_strainrate(int npp_, Kokkos::View<F*[6]> p_strainrate_, 
+                    Kokkos::View<F*[3]> p_spinrate_, Kokkos::View<F*[3]> g_momentum_,
+                    Kokkos::View<F*[3]> dwdx_, Kokkos::View<F*> g_mass_, Kokkos::View<int*> pg_)
+                    : npp {npp_}
+                    , p_strainrate {p_strainrate_}
+                    , p_spinrate {p_spinrate_}
+                    , g_momentum {g_momentum_}
+                    , dwdx {dwdx_}
+                    , g_mass {g_mass_}
+                    , pg {pg_}
+                {}
+
+                KOKKOS_INLINE_FUNCTION
+                void operator()(const int i) const {
+                    p_strainrate(i, 0) = 0.;
+                    p_strainrate(i, 1) = 0.;
+                    p_strainrate(i, 2) = 0.;
+                    p_strainrate(i, 3) = 0.;
+                    p_strainrate(i, 4) = 0.;
+                    p_strainrate(i, 5) = 0.;
+                    p_spinrate(i, 0) = 0.;
+                    p_spinrate(i, 1) = 0.;
+                    p_spinrate(i, 2) = 0.;
+                    const int jstart = i*npp;
+                    for (int j = jstart; j < jstart + npp; ++j) {
+                        const int idx = pg(j);
+                        p_strainrate(i, 0) += g_momentum(idx, 0)/g_mass(idx)*dwdx(j, 0);
+                        p_strainrate(i, 1) += g_momentum(idx, 1)/g_mass(idx)*dwdx(j, 1);
+                        p_strainrate(i, 2) += g_momentum(idx, 2)/g_mass(idx)*dwdx(j, 2);
+                        p_strainrate(i, 3) += 0.5*(g_momentum(idx, 1)/g_mass(idx)*dwdx(j, 0) +
+                            g_momentum(idx, 0)/g_mass(idx)*dwdx(j, 1));
+                        p_strainrate(i, 4) += 0.5*(g_momentum(idx, 2)/g_mass(idx)*dwdx(j, 0) +
+                            g_momentum(idx, 0)/g_mass(idx)*dwdx(j, 2));
+                        p_strainrate(i, 5) += 0.5*(g_momentum(idx, 2)/g_mass(idx)*dwdx(j, 1) +
+                            g_momentum(idx, 1)/g_mass(idx)*dwdx(j, 2));
+                        p_spinrate(i, 0) += 0.5*(dwdx(j, 1)*g_momentum(idx, 0)/g_mass(idx) -
+                            dwdx(j, 0)*g_momentum(idx, 1)/g_mass(idx));
+                        p_spinrate(i, 1) += 0.5*(dwdx(j, 2)*g_momentum(idx, 0)/g_mass(idx) - 
+                            dwdx(j, 0)*g_momentum(idx, 2)/g_mass(idx));
+                        p_spinrate(i, 2) += 0.5*(dwdx(j, 2)*g_momentum(idx, 1)/g_mass(idx) - 
+                            dwdx(j, 1)*g_momentum(idx, 2)/g_mass(idx));
                     }
                 }
             };

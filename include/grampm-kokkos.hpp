@@ -102,6 +102,7 @@ namespace GraMPM {
                 const functors::map_p2g_momentum<F> f_map_p2g_momentum;
                 functors::map_p2g_force<F> f_map_p2g_force;
                 const functors::map_g2p_acceleration<F> f_map_g2p_acceleration;
+                const functors::map_g2p_strainrate<F> f_map_g2p_strainrate;
                 
                 // vector of particles
                 MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
@@ -160,6 +161,8 @@ namespace GraMPM {
                     , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
                         m_body_force[0], m_body_force[1], m_body_force[2])
                     , f_map_g2p_acceleration(pg_npp, d_p_a, d_g_force, d_p_dxdt, d_g_momentum, d_g_mass, d_pg_w, 
+                        d_pg_nn)
+                    , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                         d_pg_nn)
                     {
                         for (int i = 0; i < m_p_size; ++i) {
@@ -238,6 +241,8 @@ namespace GraMPM {
                         m_body_force[0], m_body_force[1], m_body_force[2])
                     , f_map_g2p_acceleration(pg_npp, d_p_a, d_g_force, d_p_dxdt, d_g_momentum, d_g_mass, d_pg_w, 
                         d_pg_nn)
+                    , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
+                        d_pg_nn)
                     {
                     }
 
@@ -297,6 +302,8 @@ namespace GraMPM {
                     , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
                         m_body_force[0], m_body_force[1], m_body_force[2])
                     , f_map_g2p_acceleration(pg_npp, d_p_a, d_g_force, d_p_dxdt, d_g_momentum, d_g_mass, d_pg_w, 
+                        d_pg_nn)
+                    , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                         d_pg_nn)
                 {
                     std::ifstream file(fname);
@@ -591,6 +598,11 @@ namespace GraMPM {
 
                 void map_g2p_acceleration() {
                     Kokkos::parallel_for("map grid force/momentum to particles", m_p_size, f_map_g2p_acceleration);
+                }
+
+                void map_g2p_strainrate() {
+                    Kokkos::parallel_for("map grid force/momentum to particles' strainrate", m_p_size, 
+                        f_map_g2p_strainrate);
                 }
 
                 void g_apply_momentum_boundary_conditions(const int itimestep, const F dt) {
