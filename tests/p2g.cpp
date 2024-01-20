@@ -30,7 +30,7 @@ std::vector<GraMPM::particle<double>> generate_particles() {
 
 TEST(p2g_mass, linear_bspline) {
     const double dcell = 0.2;
-    std::array<double, 3> bf, mingrid {0., 0., 0.}, maxgrid {0.99, 1.99, 2.99};
+    std::array<double, 3> mingrid {0., 0., 0.}, maxgrid {0.99, 1.99, 2.99};
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
@@ -66,7 +66,7 @@ TEST(p2g_mass, linear_bspline) {
 
 TEST(p2g_mass, cubic_bspline) {
     const double dcell = 0.2;
-    std::array<double, 3> bf, mingrid {-dcell, -dcell, -dcell}, maxgrid {0.99+dcell, 1.99+dcell, 2.99+dcell};
+    std::array<double, 3> mingrid {-dcell, -dcell, -dcell}, maxgrid {0.99+dcell, 1.99+dcell, 2.99+dcell};
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
@@ -102,7 +102,7 @@ TEST(p2g_mass, cubic_bspline) {
 
 TEST(p2g_momentum, linear_bspline) {
     const double dcell = 0.2;
-    std::array<double, 3> bf, mingrid {0., 0., 0.}, maxgrid {0.99, 1.99, 2.99};
+    std::array<double, 3> mingrid {0., 0., 0.}, maxgrid {0.99, 1.99, 2.99};
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
@@ -153,7 +153,7 @@ TEST(p2g_momentum, linear_bspline) {
 
 TEST(p2g_momentum, cubic_bspline) {
     const double dcell = 0.2;
-    std::array<double, 3> bf, mingrid {-dcell, -dcell, -dcell}, maxgrid {0.99+dcell, 1.99+dcell, 2.99+dcell};
+    std::array<double, 3> mingrid {-dcell, -dcell, -dcell}, maxgrid {0.99+dcell, 1.99+dcell, 2.99+dcell};
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
@@ -202,76 +202,83 @@ TEST(p2g_momentum, cubic_bspline) {
     EXPECT_FLOAT_EQ(myMPM.g_momentumz(6, 11, 16), -15872.995334); // correct to 11 sigfigs
 }
 
-// TEST_CASE("Calculate force on grid (linear bspline)") {
-//     const double dcell = 0.2;
-//     std::array<double, 3> bf {1., 2., 3.}, mingrid {0., 0., 0.}, maxgrid {0.99, 1.99, 2.99};
+TEST(p2g_force, linear_bspline) {
+    const double dcell = 0.2;
+    std::array<double, 3> bf {1., 2., 3.}, mingrid {0., 0., 0.}, maxgrid {0.99, 1.99, 2.99};
 
-//     GraMPM::kernel_linear_bspline<double> knl(dcell);
+    std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-//     GraMPM::MPM_system<double> p(bf, knl, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::linear_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
 
-//     CHECK(p.g_ngridx()==6);
-//     CHECK(p.g_ngridy()==11);
-//     CHECK(p.g_ngridz()==16);
+    myMPM.body_force() = bf;
 
-//     generate_particles(p);
+    ASSERT_EQ(myMPM.g_ngridx(), 6);
+    ASSERT_EQ(myMPM.g_ngridy(), 11);
+    ASSERT_EQ(myMPM.g_ngridz(), 16);
+    ASSERT_DOUBLE_EQ(myMPM.body_forcex(), 1.);
+    ASSERT_DOUBLE_EQ(myMPM.body_forcey(), 2.);
+    ASSERT_DOUBLE_EQ(myMPM.body_forcez(), 3.);    
 
-//     p.map_particles_to_grid();
+    myMPM.h2d();
+    myMPM.update_particle_to_cell_map();
+    myMPM.find_neighbour_nodes();
+    myMPM.map_p2g_force();
+    myMPM.d2h();
 
-//     p.map_p2g_force();
+    // check conservation
+    double psum[3] {0., 0., 0.}, gsum[3] {0., 0., 0.};
+    for (size_t i = 0; i < myMPM.p_size(); ++i) {
+        psum[0] += myMPM.p_mass(i)*myMPM.body_forcex();
+        psum[1] += myMPM.p_mass(i)*myMPM.body_forcey();
+        psum[2] += myMPM.p_mass(i)*myMPM.body_forcez();
+    }
+    for (size_t i = 0; i < myMPM.g_size(); ++i) {
+        gsum[0] += myMPM.g_forcex(i);
+        gsum[1] += myMPM.g_forcey(i);
+        gsum[2] += myMPM.g_forcez(i);
+    }
 
-//     // check conservation
-//     double psum[3] {0., 0., 0.}, gsum[3] {0., 0., 0.};
-//     for (size_t i = 0; i < p.p_size(); ++i) {
-//         psum[0] += p.p_mass(i)*p.body_force(0);
-//         psum[1] += p.p_mass(i)*p.body_force(1);
-//         psum[2] += p.p_mass(i)*p.body_force(2);
-//     }
-//     for (size_t i = 0; i < p.g_size(); ++i) {
-//         gsum[0] += p.g_forcex(i);
-//         gsum[1] += p.g_forcey(i);
-//         gsum[2] += p.g_forcez(i);
-//     }
+    EXPECT_DOUBLE_EQ(psum[0], gsum[0]) << "sum of particles' force x not equal to sum of grid force x";
+    EXPECT_DOUBLE_EQ(psum[1], gsum[1]) << "sum of particles' force y not equal to sum of grid force y";
+    EXPECT_DOUBLE_EQ(psum[2], gsum[2]) << "sum of particles' force z not equal to sum of grid force z";
 
-//     REQUIRE(psum[0]==gsum[0]);
-//     REQUIRE(psum[1]==gsum[1]);
-//     REQUIRE(psum[2]==gsum[2]);
+    // check a few nodal values
+    EXPECT_DOUBLE_EQ(myMPM.g_forcex(1, 1, 1), 360.);
+    EXPECT_DOUBLE_EQ(myMPM.g_forcex(3, 4, 5), 1800.);
+    EXPECT_FLOAT_EQ(myMPM.g_forcex(5, 10, 15), 562.5); // correct to 13 sigfigs
+    EXPECT_DOUBLE_EQ(myMPM.g_forcey(1, 1, 1), 720.);
+    EXPECT_DOUBLE_EQ(myMPM.g_forcey(3, 4, 5), 3600.);
+    EXPECT_FLOAT_EQ(myMPM.g_forcey(5, 10, 15), 1125.); // correct to 14 sigfigs
+    EXPECT_DOUBLE_EQ(myMPM.g_forcez(1, 1, 1), 1080.);
+    EXPECT_DOUBLE_EQ(myMPM.g_forcez(3, 4, 5), 5400.);
+    EXPECT_FLOAT_EQ(myMPM.g_forcez(5, 10, 15), 1687.5); // correct to 14 sigfigs
 
-//     // check a few nodal values
-//     REQUIRE(std::round(p.g_forcex(1, 1, 1))==360.);
-//     REQUIRE(std::round(p.g_forcex(3, 4, 5))==1800.);
-//     REQUIRE(std::round(p.g_forcex(5, 10, 15)*10.)==5625.);
-//     REQUIRE(std::round(p.g_forcey(1, 1, 1))==720.);
-//     REQUIRE(std::round(p.g_forcey(3, 4, 5))==3600.);
-//     REQUIRE(std::round(p.g_forcey(5, 10, 15)*10.)==11250.);
-//     REQUIRE(std::round(p.g_forcez(1, 1, 1))==1080.);
-//     REQUIRE(std::round(p.g_forcez(3, 4, 5))==5400.);
-//     REQUIRE(std::round(p.g_forcez(5, 10, 15)*10.)==16875.);
+    // try with non-zero stresses
+    for (size_t i = 0; i < myMPM.p_size(); ++i) {
+        myMPM.p_sigmaxx(i) = myMPM.p_x(i);
+        myMPM.p_sigmayy(i) = myMPM.p_y(i);
+        myMPM.p_sigmazz(i) = myMPM.p_z(i);
+        myMPM.p_sigmaxy(i) = myMPM.p_x(i)-myMPM.p_y(i);
+        myMPM.p_sigmaxz(i) = myMPM.p_x(i)-myMPM.p_z(i);
+        myMPM.p_sigmayz(i) = myMPM.p_y(i)-myMPM.p_z(i);
+    }
 
-//     // try with non-zero stresses
-//     for (size_t i = 0; i < p.p_size(); ++i) {
-//         p.p_sigmaxx(i) = p.p_x(i);
-//         p.p_sigmayy(i) = p.p_y(i);
-//         p.p_sigmazz(i) = p.p_z(i);
-//         p.p_sigmaxy(i) = p.p_x(i)-p.p_y(i);
-//         p.p_sigmaxz(i) = p.p_x(i)-p.p_z(i);
-//         p.p_sigmayz(i) = p.p_y(i)-p.p_z(i);
-//     }
+    myMPM.h2d();
+    myMPM.map_p2g_force();
+    myMPM.d2h();
 
-//     p.map_p2g_force();
+    // check a few nodal values
+    EXPECT_FLOAT_EQ(myMPM.g_forcex(1, 1, 1), 359.6170004735); // correct to 11 sigfigs
+    EXPECT_FLOAT_EQ(myMPM.g_forcex(3, 4, 5), 1799.2941517835); // correct to 13 sigfigs
+    EXPECT_FLOAT_EQ(myMPM.g_forcex(5, 10, 15), 564.4457328379); // correct to 13 sigfigs
+    EXPECT_FLOAT_EQ(myMPM.g_forcey(1, 1, 1), 720.5551538826); // correct to 13 sigfigs
+    EXPECT_FLOAT_EQ(myMPM.g_forcey(3, 4, 5), 3600.7203137483); // correct to 14 sigfigs
+    EXPECT_FLOAT_EQ(myMPM.g_forcey(5, 10, 15), 1125.0948927821); // correct to 14 sigfigs
+    EXPECT_FLOAT_EQ(myMPM.g_forcez(1, 1, 1), 1081.4933072917); // correct to 14 sigfigs
+    EXPECT_FLOAT_EQ(myMPM.g_forcez(3, 4, 5), 5402.1315681200); // correct to 14 sigfigs
+    EXPECT_FLOAT_EQ(myMPM.g_forcez(5, 10, 15), 1687.6423394507); // correct to 14 sigfigs
 
-//     // check a few nodal values
-//     REQUIRE(std::round(p.g_forcex(1, 1, 1)*1e10)==3596170004735.);
-//     REQUIRE(std::round(p.g_forcex(3, 4, 5)*1e10)==17992941517835.);
-//     REQUIRE(std::round(p.g_forcex(5, 10, 15)*1e10)==5644457328379.);
-//     REQUIRE(std::round(p.g_forcey(1, 1, 1)*1e10)==7205551538826.);
-//     REQUIRE(std::round(p.g_forcey(3, 4, 5)*1e10)==36007203137483.);
-//     REQUIRE(std::round(p.g_forcey(5, 10, 15)*1e10)==11250948927821.);
-//     REQUIRE(std::round(p.g_forcez(1, 1, 1)*1e10)==10814933072917.);
-//     REQUIRE(std::round(p.g_forcez(3, 4, 5)*1e10)==54021315681200.);
-//     REQUIRE(std::round(p.g_forcez(5, 10, 15)*1e10)==16876423394507.);
-
-// }
+}
 
 // TEST_CASE("Calculate force on grid (cubic bspline)") {
 //     const double dcell = 0.2;

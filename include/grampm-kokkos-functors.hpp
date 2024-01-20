@@ -157,6 +157,56 @@ namespace GraMPM {
                     }
                 }
             };
+
+            template<typename F>
+            struct map_p2g_force {
+                int npp;
+                F bfx, bfy, bfz;
+                const Kokkos::View<F*> p_mass, p_rho;
+                const Kokkos::View<F*[6]> p_sigma;
+                const Kokkos::View<F*[3], Kokkos::MemoryTraits<Kokkos::Atomic>> g_force;
+                const Kokkos::View<int*> pg;
+                const Kokkos::View<F*> w;
+                const Kokkos::View<F*[3]> dwdx;
+                map_p2g_force(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*> p_rho_, 
+                    Kokkos::View<F*[6]> p_sigma_, Kokkos::View<F*[3]> g_force_, Kokkos::View<int*> pg_, 
+                    Kokkos::View<F*> w_, Kokkos::View<F*[3]> dwdx_, F bfx_, F bfy_, F bfz_)
+                    : npp {npp_}
+                    , bfx {bfx_}
+                    , bfy {bfy_}
+                    , bfz {bfz_}
+                    , p_mass {p_mass_}
+                    , p_rho {p_rho_}
+                    , p_sigma {p_sigma_}
+                    , g_force {g_force_}
+                    , pg {pg_}
+                    , w {w_}
+                    , dwdx {dwdx_}
+                {
+                }
+                KOKKOS_INLINE_FUNCTION
+                void operator()(const int i) const {
+                    const int jstart = i*npp;
+                    for (int j = jstart; j < jstart + npp; ++j) {
+                        const int idx = pg(j);
+                        g_force(idx, 0) += -p_mass(i)/p_rho(i)*(
+                            p_sigma(i, 0)*dwdx(j, 0) +
+                            p_sigma(i, 3)*dwdx(j, 1) +
+                            p_sigma(i, 4)*dwdx(j, 2)
+                        ) + bfx*p_mass(i)*w(j);
+                        g_force(idx, 1) += -p_mass(i)/p_rho(i)*(
+                            p_sigma(i, 3)*dwdx(j, 0) +
+                            p_sigma(i, 1)*dwdx(j, 1) +
+                            p_sigma(i, 5)*dwdx(j, 2)
+                        ) + bfy*p_mass(i)*w(j);
+                        g_force(idx, 2) += -p_mass(i)/p_rho(i)*(
+                            p_sigma(i, 4)*dwdx(j, 0) +
+                            p_sigma(i, 5)*dwdx(j, 1) +
+                            p_sigma(i, 2)*dwdx(j, 2)
+                        ) + bfz*p_mass(i)*w(j);
+                    }
+                }
+            };
         }
     }
 }

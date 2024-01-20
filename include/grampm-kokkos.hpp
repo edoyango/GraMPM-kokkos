@@ -93,11 +93,14 @@ namespace GraMPM {
                 momentum_boundary f_momentum_boundary;
                 force_boundary f_force_boundary;
 
+                std::array<F, dims> m_body_force;
+
             public:
                 const functors::map_gidx<F> f_map_gidx;
                 const functors::find_neighbour_nodes<F, kernel> f_find_neighbour_nodes;
                 const functors::map_p2g_mass<F> f_map_p2g_mass;
                 const functors::map_p2g_momentum<F> f_map_p2g_momentum;
+                functors::map_p2g_force<F> f_map_p2g_force;
                 
                 // vector of particles
                 MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
@@ -153,6 +156,8 @@ namespace GraMPM {
                         m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
                     , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
                     , f_map_p2g_momentum(pg_npp, d_p_mass, d_p_v, d_g_momentum, d_pg_nn, d_pg_w)
+                    , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
+                        m_body_force[0], m_body_force[1], m_body_force[2])
                     {
                         for (int i = 0; i < m_p_size; ++i) {
                             for (int d = 0; d < dims; ++d) {
@@ -226,6 +231,8 @@ namespace GraMPM {
                         m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
                     , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
                     , f_map_p2g_momentum(pg_npp, d_p_mass, d_p_v, d_g_momentum, d_pg_nn, d_pg_w)
+                    , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
+                        m_body_force[0], m_body_force[1], m_body_force[2])
                     {
                     }
 
@@ -282,6 +289,8 @@ namespace GraMPM {
                         m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
                     , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
                     , f_map_p2g_momentum(pg_npp, d_p_mass, d_p_v, d_g_momentum, d_pg_nn, d_pg_w)
+                    , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
+                        m_body_force[0], m_body_force[1], m_body_force[2])
                 {
                     std::ifstream file(fname);
                     std::string line, header;
@@ -440,6 +449,11 @@ namespace GraMPM {
                 F pg_dwdz(const size_t i) {return h_pg_dwdx(i, 2);}
                 F pg_dwdz(const size_t i, const size_t j) {return h_pg_dwdx(i*pg_npp+j, 2);}
 
+                std::array<F, dims>& body_force() {return m_body_force;}
+                F& body_forcex() {return m_body_force[0];}
+                F& body_forcey() {return m_body_force[1];}
+                F& body_forcez() {return m_body_force[2];}
+
                 void d_zero_grid() {
                     Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_momentum, 0.);
                     Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_force, 0.);
@@ -554,8 +568,18 @@ namespace GraMPM {
                 }
 
                 void map_p2g_momentum() {
-                    Kokkos::parallel_for("map particle mass to grid", m_g_size, functors::zero_3d_view<F>(d_g_momentum));
-                    Kokkos::parallel_for("map particle mass to grid", m_p_size, f_map_p2g_momentum);
+                    Kokkos::parallel_for("zero grid momentum", m_g_size, functors::zero_3d_view<F>(d_g_momentum));
+                    Kokkos::parallel_for("map particle momentum to grid", m_p_size, f_map_p2g_momentum);
+                }
+
+                void map_p2g_force() {
+                    // update body force
+                    f_map_p2g_force.bfx = m_body_force[0];
+                    f_map_p2g_force.bfy = m_body_force[1];
+                    f_map_p2g_force.bfz = m_body_force[2];
+
+                    Kokkos::parallel_for("zero grid force", m_g_size, functors::zero_3d_view<F>(d_g_force));
+                    Kokkos::parallel_for("map particle force to grid", m_p_size, f_map_p2g_force);
                 }
 
                 void g_apply_momentum_boundary_conditions(const int itimestep, const F dt) {
