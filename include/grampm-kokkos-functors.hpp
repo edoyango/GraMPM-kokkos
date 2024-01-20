@@ -207,6 +207,46 @@ namespace GraMPM {
                     }
                 }
             };
+
+            template<typename F>
+            struct map_g2p_acceleration {
+                int npp;
+                const Kokkos::View<F*[3]> p_a, g_force, p_dxdt, g_momentum;
+                const Kokkos::View<F*> g_mass, w;
+                const Kokkos::View<int*> pg;
+                map_g2p_acceleration(int npp_, Kokkos::View<F*[3]> p_a_, Kokkos::View<F*[3]> g_force_, 
+                    Kokkos::View<F*[3]> p_dxdt_, Kokkos::View<F*[3]> g_momentum_, Kokkos::View<F*> g_mass_, 
+                    Kokkos::View<F*> w_, Kokkos::View<int*> pg_)
+                    : npp {npp_}
+                    , p_a {p_a_}
+                    , g_force {g_force_}
+                    , p_dxdt {p_dxdt_}
+                    , g_momentum {g_momentum_}
+                    , g_mass {g_mass_}
+                    , w {w_}
+                    , pg {pg_}
+                {}
+
+                KOKKOS_INLINE_FUNCTION
+                void operator()(const int i) const {
+                    p_a(i, 0) = 0.;
+                    p_a(i, 1) = 0.;
+                    p_a(i, 2) = 0.;
+                    p_dxdt(i, 0) = 0.;
+                    p_dxdt(i, 1) = 0.;
+                    p_dxdt(i, 2) = 0.;
+                    const int jstart = i*npp;
+                    for (int j = jstart; j < jstart + npp; ++j) {
+                        const int idx = pg(j);
+                        p_a(i, 0) += g_force(idx, 0)/g_mass(idx)*w(j);
+                        p_a(i, 1) += g_force(idx, 1)/g_mass(idx)*w(j);
+                        p_a(i, 2) += g_force(idx, 2)/g_mass(idx)*w(j);
+                        p_dxdt(i, 0) += g_momentum(idx, 0)/g_mass(idx)*w(j);
+                        p_dxdt(i, 1) += g_momentum(idx, 1)/g_mass(idx)*w(j);
+                        p_dxdt(i, 2) += g_momentum(idx, 2)/g_mass(idx)*w(j);
+                    }
+                }
+            };
         }
     }
 }
