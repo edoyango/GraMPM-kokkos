@@ -192,57 +192,57 @@ TEST(g2p_strainspinrates, linear_bspline) {
     EXPECT_NEAR(myMPM.p_spinrateyz(myMPM.p_size()-1), 0.05, 1.e-15);
 }
 
-// TEST_CASE("Calculate particles' strain/spin rates (cubic bspline)") {
+TEST(g2p_strainspinrates, cubic_bspline) {
+    const double dcell = 0.2;
+    std::array<double, 3> mingrid {-dcell, -dcell, -dcell}, maxgrid {0.99+dcell, 1.99+dcell, 2.99+dcell};
+
+    std::vector<GraMPM::particle<double>> vp = generate_particles();
+
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
+
+    ASSERT_EQ(myMPM.g_ngridx(), 8)  << "ngridx not calculated correctly";
+    ASSERT_EQ(myMPM.g_ngridy(), 13) << "ngridy not calculated correctly";
+    ASSERT_EQ(myMPM.g_ngridz(), 18) << "ngridz not calculated correctly";
+
+    // setup grid
+    for (size_t i = 0; i < myMPM.g_ngridx(); ++i)
+        for (size_t j = 0; j < myMPM.g_ngridy(); ++j) 
+            for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
+                const double x = i*0.2 + myMPM.g_mingridx();
+                const double y = j*0.2 + myMPM.g_mingridy();
+                const double z = k*0.2 + myMPM.g_mingridz();
+                myMPM.g_momentumx(i, j, k) = 0.1*(x-y-z);
+                myMPM.g_momentumy(i, j, k) = 0.2*(y-x-z);
+                myMPM.g_momentumz(i, j, k) = 0.3*(z-x-y);
+                myMPM.g_mass(i, j, k) = 1.;
+            }
     
-//     const double dcell = 0.2;
-//     std::array<double, 3> bf {0.}, mingrid {-0.2, -0.2, -0.2}, maxgrid {1.19, 2.19, 3.19};
+    myMPM.h2d();
+    myMPM.update_particle_to_cell_map();
+    myMPM.find_neighbour_nodes();
+    myMPM.map_g2p_strainrate();
+    myMPM.d2h();
 
-//     GraMPM::kernel_cubic_bspline<double> knl(dcell);
+    EXPECT_DOUBLE_EQ(myMPM.p_strainratexx(0), 0.1);
+    EXPECT_DOUBLE_EQ(myMPM.p_strainrateyy(0), 0.2);
+    EXPECT_DOUBLE_EQ(myMPM.p_strainratezz(0), 0.3);
+    EXPECT_DOUBLE_EQ(myMPM.p_strainratexy(0), -0.15);
+    EXPECT_DOUBLE_EQ(myMPM.p_strainratexz(0), -0.2);
+    EXPECT_DOUBLE_EQ(myMPM.p_strainrateyz(0), -0.25);
+    EXPECT_DOUBLE_EQ(myMPM.p_spinratexy(0), 0.05);
+    EXPECT_DOUBLE_EQ(myMPM.p_spinratexz(0), 0.1);
+    EXPECT_NEAR(myMPM.p_spinrateyz(0), 0.05, 5.e-17);
 
-//     GraMPM::MPM_system<double> p(bf, knl, mingrid, maxgrid, dcell);
-
-//     CHECK(p.g_ngridx()==8);
-//     CHECK(p.g_ngridy()==13);
-//     CHECK(p.g_ngridz()==18);
-
-//     generate_particles(p);
-
-//     // setup grid
-//     for (size_t i = 0; i < p.g_ngridx(); ++i)
-//         for (size_t j = 0; j < p.g_ngridy(); ++j) 
-//             for (size_t k = 0; k < p.g_ngridz(); ++k) {
-//                 const double x = i*0.2 + p.g_mingridx();
-//                 const double y = j*0.2 + p.g_mingridy();
-//                 const double z = k*0.2 + p.g_mingridz();
-//                 p.g_momentumx(i, j, k) = 0.1*(x-y-z);
-//                 p.g_momentumy(i, j, k) = 0.2*(y-x-z);
-//                 p.g_momentumz(i, j, k) = 0.3*(z-x-y);
-//                 p.g_mass(i, j, k) = 1.;
-//             }
-    
-//     p.map_particles_to_grid();
-//     p.map_g2p_strainrate();
-
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainratexx(0), 10.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainrateyy(0), 20.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainratezz(0), 30.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainratexy(0), -15.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainratexz(0), -20.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainrateyz(0), -25.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_spinratexy(0), 5.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_spinratexz(0), 10.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_spinrateyz(0), 5.);
-
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainratexx(p.p_size()-1), 10.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainrateyy(p.p_size()-1), 20.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainratezz(p.p_size()-1), 30.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainratexy(p.p_size()-1), -15.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainratexz(p.p_size()-1), -20.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_strainrateyz(p.p_size()-1), -25.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_spinratexy(p.p_size()-1), 5.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_spinratexz(p.p_size()-1), 10.);
-//     EXPECT_DOUBLE_EQ(myMPM.p_spinrateyz(p.p_size()-1), 5.);
-// }
+    EXPECT_NEAR(myMPM.p_strainratexx(myMPM.p_size()-1), 0.1, 2.e-15);
+    EXPECT_NEAR(myMPM.p_strainrateyy(myMPM.p_size()-1), 0.2, 2.e-15);
+    EXPECT_DOUBLE_EQ(myMPM.p_strainratezz(myMPM.p_size()-1), 0.3);
+    EXPECT_NEAR(myMPM.p_strainratexy(myMPM.p_size()-1), -0.15, 2.e-15);
+    EXPECT_NEAR(myMPM.p_strainratexz(myMPM.p_size()-1), -0.2, 2.e-15);
+    EXPECT_NEAR(myMPM.p_strainrateyz(myMPM.p_size()-1), -0.25, 2.e-15);
+    EXPECT_NEAR(myMPM.p_spinratexy(myMPM.p_size()-1), 0.05, 2.e-15);
+    EXPECT_NEAR(myMPM.p_spinratexz(myMPM.p_size()-1), 0.1, 2.e-15);
+    EXPECT_NEAR(myMPM.p_spinrateyz(myMPM.p_size()-1), 0.05, 2.e-15);
+}
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
