@@ -14,8 +14,8 @@ TEST(kernels, linear) {
     MPM_system<double, kernels::linear_bspline<double>> myMPM(0, mingrid, maxgrid, cell_size);
 
     // check attributes are set correctly
-    ASSERT_EQ(myMPM.knl.radius, 1.) << "kernel radius not set correctly";
-    ASSERT_EQ(myMPM.knl.dcell, 0.1) << "kernel cell size not set correctly";
+    ASSERT_DOUBLE_EQ(myMPM.knl.radius, 1.) << "kernel radius not set correctly";
+    ASSERT_DOUBLE_EQ(myMPM.knl.dcell, 0.1) << "kernel cell size not set correctly";
 
     // check kernel function returns correct values
     // below round thing is because C++ is stupid
@@ -67,8 +67,8 @@ TEST(kernels, cubic) {
     MPM_system<double, kernels::cubic_bspline<double>> myMPM(0, mingrid, maxgrid, cell_size);
 
     // check attributes are set correctly
-    ASSERT_EQ(myMPM.knl.radius, 2.) << "kernel radius not set correctly";
-    ASSERT_EQ(myMPM.knl.dcell, 0.1) << "kernel cell size not set correctly";
+    ASSERT_DOUBLE_EQ(myMPM.knl.radius, 2.) << "kernel radius not set correctly";
+    ASSERT_DOUBLE_EQ(myMPM.knl.dcell, 0.1) << "kernel cell size not set correctly";
 
 
     // check kernel function returns correct values

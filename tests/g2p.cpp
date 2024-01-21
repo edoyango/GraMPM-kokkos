@@ -81,7 +81,7 @@ TEST(g2p_a, linear_bspline) {
 
     // test conservation
     for (int i = 0; i < 6; ++i)
-        EXPECT_FLOAT_EQ(psum[i], gsum[i]); // correct to 14 sigfigs
+        EXPECT_NEAR(psum[i], gsum[i], 3.e-11);
 }
 
 TEST(g2p_a, cubic_bspline) {

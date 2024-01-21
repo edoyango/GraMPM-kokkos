@@ -77,19 +77,19 @@ TEST(check_boundary, all) {
         for (size_t j = 0; j < myMPM.g_ngridy(); ++j)
             for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
                 if (k == 0) {
-                    EXPECT_EQ(myMPM.g_momentumx(i, j, k), -1.) << "grid momentum x at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_momentumy(i, j, k), -1.) << "grid momentum y at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_momentumz(i, j, k), -1.) << "grid momentum z at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_forcex(i, j, k), -2.) << "grid force x at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_forcey(i, j, k), -2.) << "grid force y at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_forcez(i, j, k), -2.) << "grid force z at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_momentumx(i, j, k), -1.) << "grid momentum x at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_momentumy(i, j, k), -1.) << "grid momentum y at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_momentumz(i, j, k), -1.) << "grid momentum z at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_forcex(i, j, k), -2.) << "grid force x at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_forcey(i, j, k), -2.) << "grid force y at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_forcez(i, j, k), -2.) << "grid force z at " << i << " " << j << " " << k << " set incorrectly";
                 } else {
-                    EXPECT_EQ(myMPM.g_momentumx(i, j, k), 1.) << "grid momentum x at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_momentumy(i, j, k), 1.) << "grid momentum y at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_momentumz(i, j, k), 1.) << "grid momentum z at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_forcex(i, j, k), 2.) << "grid force x at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_forcey(i, j, k), 2.) << "grid force y at " << i << " " << j << " " << k << " set incorrectly";
-                    EXPECT_EQ(myMPM.g_forcez(i, j, k), 2.) << "grid force z at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_momentumx(i, j, k), 1.) << "grid momentum x at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_momentumy(i, j, k), 1.) << "grid momentum y at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_momentumz(i, j, k), 1.) << "grid momentum z at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_forcex(i, j, k), 2.) << "grid force x at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_forcey(i, j, k), 2.) << "grid force y at " << i << " " << j << " " << k << " set incorrectly";
+                    EXPECT_DOUBLE_EQ(myMPM.g_forcez(i, j, k), 2.) << "grid force z at " << i << " " << j << " " << k << " set incorrectly";
                 }
             }
 

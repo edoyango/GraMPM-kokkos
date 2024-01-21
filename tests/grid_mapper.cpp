@@ -86,10 +86,10 @@ TEST(map_particles_to_grid, neighbours_radius1) {
                         w,
                         dwdx, dwdy, dwdz);
                     // for some reason the values are different to double precision
-                    EXPECT_FLOAT_EQ(myMPM.pg_w(i, n), w) << "incorrect neighbour node w value at " << i << " " << di << " " << dj  << " " << dk;
-                    EXPECT_FLOAT_EQ(myMPM.pg_dwdx(i, n), dwdx) << "incorrect neighbour node dwdx value at " << i << " " << di << " " << dj  << " " << dk;
-                    EXPECT_FLOAT_EQ(myMPM.pg_dwdy(i, n), dwdy) << "incorrect neighbour node dwdy value at " << i << " " << di << " " << dj  << " " << dk;
-                    EXPECT_FLOAT_EQ(myMPM.pg_dwdz(i, n), dwdz) << "incorrect neighbour node dwdz value at " << i << " " << di << " " << dj  << " " << dk;
+                    EXPECT_NEAR(myMPM.pg_w(i, n), w, 1.e-14) << "incorrect neighbour node w value at " << i << " " << di << " " << dj  << " " << dk;
+                    EXPECT_NEAR(myMPM.pg_dwdx(i, n), dwdx, 1.e-14) << "incorrect neighbour node dwdx value at " << i << " " << di << " " << dj  << " " << dk;
+                    EXPECT_NEAR(myMPM.pg_dwdy(i, n), dwdy, 1.e-14) << "incorrect neighbour node dwdy value at " << i << " " << di << " " << dj  << " " << dk;
+                    EXPECT_NEAR(myMPM.pg_dwdz(i, n), dwdz, 1.e-14) << "incorrect neighbour node dwdz value at " << i << " " << di << " " << dj  << " " << dk;
                     n++;
                 }
             }
@@ -149,10 +149,10 @@ TEST(map_particles_to_grid, neighbours_radius2) {
                         w,
                         dwdx, dwdy, dwdz);
                     // for some reason the values are different to double precision
-                    EXPECT_FLOAT_EQ(myMPM.pg_w(i, n), w) << "incorrect neighbour node w value at " << i << " " << di << " " << dj  << " " << dk;
-                    EXPECT_FLOAT_EQ(myMPM.pg_dwdx(i, n), dwdx) << "incorrect neighbour node dwdx value at " << i << " " << di << " " << dj  << " " << dk;
-                    EXPECT_FLOAT_EQ(myMPM.pg_dwdy(i, n), dwdy) << "incorrect neighbour node dwdy value at " << i << " " << di << " " << dj  << " " << dk;
-                    EXPECT_FLOAT_EQ(myMPM.pg_dwdz(i, n), dwdz) << "incorrect neighbour node dwdz value at " << i << " " << di << " " << dj  << " " << dk;
+                    EXPECT_NEAR(myMPM.pg_w(i, n), w, 1.e-14) << "incorrect neighbour node w value at " << i << " " << di << " " << dj  << " " << dk;
+                    EXPECT_NEAR(myMPM.pg_dwdx(i, n), dwdx, 1.e-14) << "incorrect neighbour node dwdx value at " << i << " " << di << " " << dj  << " " << dk;
+                    EXPECT_NEAR(myMPM.pg_dwdy(i, n), dwdy, 1.e-14) << "incorrect neighbour node dwdy value at " << i << " " << di << " " << dj  << " " << dk;
+                    EXPECT_NEAR(myMPM.pg_dwdz(i, n), dwdz, 1.e-14) << "incorrect neighbour node dwdz value at " << i << " " << di << " " << dj  << " " << dk;
                     n++;
                 }
             }
