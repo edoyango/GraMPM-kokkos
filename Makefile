@@ -1,4 +1,4 @@
-SRCDIR = src
+SRCDIR = .
 INCLUDEDIR = include
 
 SRCFILENAMES = main.cpp

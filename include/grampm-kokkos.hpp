@@ -586,6 +586,52 @@ namespace GraMPM {
                     }
                 }
 
+                void g_save_to_file(const std::string &prefix, const int &timestep) const {
+
+                    // convert timestep number to string (width of 7 chars, for up to 9,999,999,999 timesteps)
+                    std::string str_timestep = std::to_string(timestep);
+                    str_timestep = std::string(7-str_timestep.length(), '0') + str_timestep;
+
+                    std::string fname {prefix + str_timestep};
+
+                    std::ofstream outfile(fname);
+
+                    const int i_width = 7, f_width = 12, f_precision=10;
+
+                    outfile << std::setw(i_width) << "id "
+                            << std::setw(f_width) << "x "
+                            << std::setw(f_width) << "y "
+                            << std::setw(f_width) << "z "
+                            << std::setw(f_width) << "px "
+                            << std::setw(f_width) << "py "
+                            << std::setw(f_width) << "pz "
+                            << std::setw(f_width) << "mass "
+                            << std::setw(f_width) << "fx "
+                            << std::setw(f_width) << "fy "
+                            << std::setw(f_width) << "fz "
+                            << '\n';
+
+                    for (size_t i = 0; i < m_ngrid[0]; ++i) {
+                        for (size_t j = 0; j < m_ngrid[1]; ++j) {
+                            for (size_t k = 0; k < m_ngrid[2]; ++k) {
+                                const size_t idx = i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[2] + k;
+                                outfile << std::setw(i_width) << idx << ' ' << std::setprecision(f_precision)
+                                        << std::setw(f_width) << std::fixed << m_mingrid[0]+i*m_g_cell_size << ' '
+                                        << std::setw(f_width) << std::fixed << m_mingrid[1]+j*m_g_cell_size << ' '
+                                        << std::setw(f_width) << std::fixed << m_mingrid[2]+k*m_g_cell_size << ' '
+                                        << std::setw(f_width) << std::fixed << h_g_momentum(idx, 0) << ' '
+                                        << std::setw(f_width) << std::fixed << h_g_momentum(idx, 1) << ' '
+                                        << std::setw(f_width) << std::fixed << h_g_momentum(idx, 2) << ' '
+                                        << std::setw(f_width) << std::fixed << h_g_mass(idx) << ' '
+                                        << std::setw(f_width) << std::fixed << h_g_force(idx, 0) << ' '
+                                        << std::setw(f_width) << std::fixed << h_g_force(idx, 1) << ' '
+                                        << std::setw(f_width) << std::fixed << h_g_force(idx, 2) << ' '
+                                        << '\n';
+                            }
+                        }
+                    }
+                }
+
                 void update_particle_to_cell_map() {
                     Kokkos::parallel_for("map particles to grid", m_p_size, f_map_gidx);
                 }
