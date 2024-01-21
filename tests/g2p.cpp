@@ -92,7 +92,7 @@ TEST(g2p_a, cubic_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::linear_bspline<double>, functors::stress_update::hookes_law<double>> 
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
         myMPM(vp, mingrid, maxgrid, dcell);
 
     ASSERT_EQ(myMPM.g_ngridx(), 8)  << "ngridx not calculated correctly";
