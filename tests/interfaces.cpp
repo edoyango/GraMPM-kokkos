@@ -5,6 +5,8 @@
 #include <grampm_kernels.hpp>
 #include <array>
 #include <grampm-kokkos.hpp>
+#include <grampm-kokkos-functors-stressupdate.hpp>
+#include <grampm-kokkos-kernels.hpp>
 #include <gtest/gtest.h>
 #include <Kokkos_Core.hpp>
 
@@ -20,7 +22,8 @@ const double dcell_in = 0.1;
 
 TEST(initialization_getters_setters, grid_init) {
 
-    MPM_system<double, kernels::cubic_bspline<double>> myMPM(0, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(0, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.g_cell_size(), dcell_in);
 
@@ -124,7 +127,8 @@ TEST(initialization_getters_setters, particles_aggregate_init) {
         );
     }
 
-    MPM_system<double, kernels::cubic_bspline<double>> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.p_size(), 5) << "Particle number not assigned expected value";
 
@@ -164,7 +168,8 @@ TEST(initialization_getters_setters, particles_aggregate_init) {
 
 TEST(initialization_getters_setters, particles_post_init) {
 
-    MPM_system<double, kernels::cubic_bspline<double>> myMPM(5, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(5, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.p_size(), 5) << "Particle number not assigned expected value";
 
@@ -249,7 +254,8 @@ TEST(initialization_getters_setters, particles_transfer) {
         );
     }
 
-    MPM_system<double, kernels::cubic_bspline<double>> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     // send data to device
     myMPM.h2d();
@@ -364,11 +370,13 @@ TEST(initialization_getters_setters, IO) {
         pv.push_back(p);
     }
 
-    MPM_system<double, kernels::cubic_bspline<double>> myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
     myMPM.p_save_to_file("testfile", 1);
 
-    MPM_system<double, kernels::cubic_bspline<double>> myMPM2("testfile0000001", mingridx_in, maxgridx_in, dcell_in);
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM2("testfile0000001", mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM2.p_size(), 5);
 

@@ -1,6 +1,7 @@
 #include <grampm.hpp>
 #include <grampm-kokkos.hpp>
 #include <grampm-kokkos-kernels.hpp>
+#include <grampm-kokkos-functors-stressupdate.hpp>
 #include <algorithm>
 #include <grampm_kernels.hpp>
 #include <array>
@@ -34,7 +35,8 @@ TEST(g2p_a, linear_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::linear_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::linear_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(vp, mingrid, maxgrid, dcell);
 
     ASSERT_EQ(myMPM.g_ngridx(), 6)  << "ngridx not calculated correctly";
     ASSERT_EQ(myMPM.g_ngridy(), 11) << "ngridy not calculated correctly";
@@ -90,7 +92,8 @@ TEST(g2p_a, cubic_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::cubic_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::linear_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(vp, mingrid, maxgrid, dcell);
 
     ASSERT_EQ(myMPM.g_ngridx(), 8)  << "ngridx not calculated correctly";
     ASSERT_EQ(myMPM.g_ngridy(), 13) << "ngridy not calculated correctly";
@@ -146,7 +149,8 @@ TEST(g2p_strainspinrates, linear_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::linear_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::linear_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(vp, mingrid, maxgrid, dcell);
 
     ASSERT_EQ(myMPM.g_ngridx(), 6)  << "ngridx not calculated correctly";
     ASSERT_EQ(myMPM.g_ngridy(), 11) << "ngridy not calculated correctly";
@@ -198,7 +202,8 @@ TEST(g2p_strainspinrates, cubic_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::cubic_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(vp, mingrid, maxgrid, dcell);
 
     ASSERT_EQ(myMPM.g_ngridx(), 8)  << "ngridx not calculated correctly";
     ASSERT_EQ(myMPM.g_ngridy(), 13) << "ngridy not calculated correctly";

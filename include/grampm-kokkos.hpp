@@ -53,7 +53,7 @@ namespace GraMPM {
             }
         };
 
-        template<typename F, typename kernel, typename momentum_boundary = empty_boundary_func<F>, typename force_boundary = empty_boundary_func<F>>
+        template<typename F, typename kernel, typename stress_update, typename momentum_boundary = empty_boundary_func<F>, typename force_boundary = empty_boundary_func<F>>
         class MPM_system {
 
             public:
@@ -103,6 +103,7 @@ namespace GraMPM {
                 functors::map_p2g_force<F> f_map_p2g_force;
                 const functors::map_g2p_acceleration<F> f_map_g2p_acceleration;
                 const functors::map_g2p_strainrate<F> f_map_g2p_strainrate;
+                stress_update f_stress_update;
                 
                 // vector of particles
                 MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
@@ -164,6 +165,7 @@ namespace GraMPM {
                         d_pg_nn)
                     , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                         d_pg_nn)
+                    , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
                     {
                         for (int i = 0; i < m_p_size; ++i) {
                             for (int d = 0; d < dims; ++d) {
@@ -243,6 +245,7 @@ namespace GraMPM {
                         d_pg_nn)
                     , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                         d_pg_nn)
+                    , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
                     {
                     }
 
@@ -305,6 +308,7 @@ namespace GraMPM {
                         d_pg_nn)
                     , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                         d_pg_nn)
+                    , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
                 {
                     std::ifstream file(fname);
                     std::string line, header;
@@ -625,6 +629,11 @@ namespace GraMPM {
                         exec_policy,
                         f_force_boundary
                     );
+                }
+
+                void p_update_stress(const F &dt) {
+                    f_stress_update.dt = dt;
+                    Kokkos::parallel_for("update particles' stress", m_p_size, f_stress_update);
                 }
 
         };

@@ -1,5 +1,6 @@
 #include <grampm-kokkos.hpp>
 #include <grampm-kokkos-kernels.hpp>
+#include <grampm-kokkos-functors-stressupdate.hpp>
 #include <gtest/gtest.h>
 
 using namespace GraMPM::accelerated;
@@ -54,7 +55,7 @@ TEST(check_boundary, all) {
     const double dcell = 0.2;
     // GraMPM::grid<double> g(0., 0., 0., 0.99, 1.99, 2.99, dcell, apply_lower_momentum, apply_lower_force);
     std::array<double, 3> bf, mingrid {0., 0., 0.}, maxgrid {0.99, 1.99, 2.99};
-    MPM_system<double, kernels::cubic_bspline<double>, apply_lower_momentum, apply_lower_force>
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>, apply_lower_momentum, apply_lower_force>
         myMPM(0, mingrid, maxgrid, dcell);
 
     for (size_t i = 0; i < myMPM.g_size(); ++i) {
