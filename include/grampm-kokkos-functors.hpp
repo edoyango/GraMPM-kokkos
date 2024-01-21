@@ -300,6 +300,41 @@ namespace GraMPM {
                     }
                 }
             };
+
+            template<typename F>
+            struct update_data {
+                double dt;
+                const Kokkos::View<F*[3]> data, update;
+
+                update_data(Kokkos::View<F*[3]> data_, Kokkos::View<F*[3]> update_)
+                    : data {data_}
+                    , update {update_}
+                {}
+
+                KOKKOS_INLINE_FUNCTION
+                void operator()(const int i) const {
+                    data(i, 0) += dt*update(i, 0);
+                    data(i, 1) += dt*update(i, 1);
+                    data(i, 2) += dt*update(i, 2);
+                }
+            };
+
+            template<typename F>
+            struct update_density {
+                double dt;
+                const Kokkos::View<F*> p_density;
+                const Kokkos::View<F*[6]> p_strainrate;
+
+                update_density(Kokkos::View<F*> p_density_, Kokkos::View<F*[6]> p_strainrate_)
+                    : p_density {p_density_}
+                    , p_strainrate {p_strainrate_}
+                {}
+
+                KOKKOS_INLINE_FUNCTION
+                void operator()(const int i) const {
+                    p_density(i) /= 1. + dt*(p_strainrate(i, 0)+p_strainrate(i, 1)+p_strainrate(i, 2));
+                }
+            };
         }
     }
 }

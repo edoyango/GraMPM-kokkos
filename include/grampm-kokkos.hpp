@@ -104,6 +104,8 @@ namespace GraMPM {
                 const functors::map_g2p_acceleration<F> f_map_g2p_acceleration;
                 const functors::map_g2p_strainrate<F> f_map_g2p_strainrate;
                 stress_update f_stress_update;
+                functors::update_data<F> f_g_update_momentum, f_p_update_velocity, f_p_update_position;
+                functors::update_density<F> f_p_update_density;
                 
                 // vector of particles
                 MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
@@ -166,6 +168,10 @@ namespace GraMPM {
                     , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                         d_pg_nn)
                     , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
+                    , f_g_update_momentum(d_g_momentum, d_g_force)
+                    , f_p_update_velocity(d_p_v, d_p_a)
+                    , f_p_update_position(d_p_x, d_p_dxdt)
+                    , f_p_update_density(d_p_rho, d_p_strainrate)
                     {
                         for (int i = 0; i < m_p_size; ++i) {
                             for (int d = 0; d < dims; ++d) {
@@ -246,6 +252,10 @@ namespace GraMPM {
                     , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                         d_pg_nn)
                     , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
+                    , f_g_update_momentum(d_g_momentum, d_g_force)
+                    , f_p_update_velocity(d_p_v, d_p_a)
+                    , f_p_update_position(d_p_x, d_p_dxdt)
+                    , f_p_update_density(d_p_rho, d_p_strainrate)
                     {
                     }
 
@@ -309,6 +319,10 @@ namespace GraMPM {
                     , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                         d_pg_nn)
                     , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
+                    , f_g_update_momentum(d_g_momentum, d_g_force)
+                    , f_p_update_velocity(d_p_v, d_p_a)
+                    , f_p_update_position(d_p_x, d_p_dxdt)
+                    , f_p_update_density(d_p_rho, d_p_strainrate)
                 {
                     std::ifstream file(fname);
                     std::string line, header;
@@ -634,6 +648,26 @@ namespace GraMPM {
                 void p_update_stress(const F &dt) {
                     f_stress_update.dt = dt;
                     Kokkos::parallel_for("update particles' stress", m_p_size, f_stress_update);
+                }
+
+                void g_update_momentum(const F &dt) {
+                    f_g_update_momentum.dt = dt;
+                    Kokkos::parallel_for("update grid momentum", m_g_size, f_g_update_momentum);
+                }
+
+                void p_update_velocity(const F &dt) {
+                    f_p_update_velocity.dt = dt;
+                    Kokkos::parallel_for("update particles' velocity", m_p_size, f_p_update_velocity);
+                }
+
+                void p_update_position(const F &dt) {
+                    f_p_update_position.dt = dt;
+                    Kokkos::parallel_for("update particles' position", m_p_size, f_p_update_position);
+                }
+
+                void p_update_density(const F &dt) {
+                    f_p_update_density.dt = dt;
+                    Kokkos::parallel_for("update particles' density", m_p_size, f_p_update_density);
                 }
 
         };
