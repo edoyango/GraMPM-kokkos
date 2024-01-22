@@ -25,7 +25,7 @@ namespace GraMPM {
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        size_t MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::calc_idx(const size_t i, const size_t j, const size_t k) const {
+        int MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::calc_idx(const int i, const int j, const int k) const {
             return i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[2] + k;
         }
 
@@ -78,7 +78,7 @@ namespace GraMPM {
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::h_zero_grid() {
-            for (size_t i = 0; i < m_g_size; ++i) {
+            for (int i = 0; i < m_g_size; ++i) {
                 h_g_momentum(i, 0) = 0.;
                 h_g_momentum(i, 1) = 0.;
                 h_g_momentum(i, 2) = 0.;
@@ -134,7 +134,7 @@ namespace GraMPM {
                     << std::setw(f_width) << "spinrateyz" << ' '
                     << '\n';
 
-            for (size_t i = 0; i < m_p_size; ++i) {
+            for (int i = 0; i < m_p_size; ++i) {
                 outfile << std::setw(i_width) << i << ' ' << std::setprecision(f_precision)
                         << std::setw(f_width) << std::fixed << h_p_x(i, 0) << ' '
                         << std::setw(f_width) << std::fixed << h_p_x(i, 1) << ' '
@@ -195,10 +195,10 @@ namespace GraMPM {
                     << std::setw(f_width) << "fz "
                     << '\n';
 
-            for (size_t i = 0; i < m_ngrid[0]; ++i) {
-                for (size_t j = 0; j < m_ngrid[1]; ++j) {
-                    for (size_t k = 0; k < m_ngrid[2]; ++k) {
-                        const size_t idx = i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[2] + k;
+            for (int i = 0; i < m_ngrid[0]; ++i) {
+                for (int j = 0; j < m_ngrid[1]; ++j) {
+                    for (int k = 0; k < m_ngrid[2]; ++k) {
+                        const int idx = i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[2] + k;
                         outfile << std::setw(i_width) << idx << ' ' << std::setprecision(f_precision)
                                 << std::setw(f_width) << std::fixed << m_mingrid[0]+i*m_g_cell_size << ' '
                                 << std::setw(f_width) << std::fixed << m_mingrid[1]+j*m_g_cell_size << ' '

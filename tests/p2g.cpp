@@ -51,10 +51,10 @@ TEST(p2g_mass, linear_bspline) {
     // check total mass conservation
     // sum particles' mass
     double psum = 0., gsum = 0.;
-    for (size_t i = 0; i < myMPM.p_size(); ++i)
+    for (int i = 0; i < myMPM.p_size(); ++i)
         psum += myMPM.p_mass(i);
     // sum grid's mass
-    for (size_t i = 0; i < myMPM.g_size(); ++i)
+    for (int i = 0; i < myMPM.g_size(); ++i)
         gsum += myMPM.g_mass(i);
 
     ASSERT_DOUBLE_EQ(psum, gsum) << "sum of particles' mass not equal to sum of grid mass";
@@ -88,10 +88,10 @@ TEST(p2g_mass, cubic_bspline) {
     // check total mass conservation
     // sum particles' mass
     double psum {0.}, gsum {0.};
-    for (size_t i = 0; i < myMPM.p_size(); ++i)
+    for (int i = 0; i < myMPM.p_size(); ++i)
         psum += myMPM.p_mass(i);
     // sum grid's mass
-    for (size_t i = 0; i < myMPM.g_size(); ++i)
+    for (int i = 0; i < myMPM.g_size(); ++i)
         gsum += myMPM.g_mass(i);
 
     // should be correct to 14 sigfigs
@@ -125,14 +125,14 @@ TEST(p2g_momentum, linear_bspline) {
     // check momentum conservation
     // sum particles' momentum
     double psum[3] {0., 0., 0.}, gsum[3] {0., 0., 0.};
-    for (size_t i = 0; i < myMPM.p_size(); ++i) {
+    for (int i = 0; i < myMPM.p_size(); ++i) {
         psum[0] += myMPM.p_mass(i)*myMPM.p_vx(i);
         psum[1] += myMPM.p_mass(i)*myMPM.p_vy(i);
         psum[2] += myMPM.p_mass(i)*myMPM.p_vz(i);
     }
 
     // sum grid's momentum
-    for (size_t i = 0; i < myMPM.g_size(); ++i) {
+    for (int i = 0; i < myMPM.g_size(); ++i) {
         gsum[0] += myMPM.g_momentumx(i);
         gsum[1] += myMPM.g_momentumy(i);
         gsum[2] += myMPM.g_momentumz(i);
@@ -177,14 +177,14 @@ TEST(p2g_momentum, cubic_bspline) {
     // check momentum conservation
     // sum particles' momentum
     double psum[3] {0., 0., 0.}, gsum[3] {0., 0., 0.};
-    for (size_t i = 0; i < myMPM.p_size(); ++i) {
+    for (int i = 0; i < myMPM.p_size(); ++i) {
         psum[0] += myMPM.p_mass(i)*myMPM.p_vx(i);
         psum[1] += myMPM.p_mass(i)*myMPM.p_vy(i);
         psum[2] += myMPM.p_mass(i)*myMPM.p_vz(i);
     }
 
     // sum grid's momentum
-    for (size_t i = 0; i < myMPM.g_size(); ++i) {
+    for (int i = 0; i < myMPM.g_size(); ++i) {
         gsum[0] += myMPM.g_momentumx(i);
         gsum[1] += myMPM.g_momentumy(i);
         gsum[2] += myMPM.g_momentumz(i);
@@ -233,12 +233,12 @@ TEST(p2g_force, linear_bspline) {
 
     // check conservation
     double psum[3] {0., 0., 0.}, gsum[3] {0., 0., 0.};
-    for (size_t i = 0; i < myMPM.p_size(); ++i) {
+    for (int i = 0; i < myMPM.p_size(); ++i) {
         psum[0] += myMPM.p_mass(i)*myMPM.body_forcex();
         psum[1] += myMPM.p_mass(i)*myMPM.body_forcey();
         psum[2] += myMPM.p_mass(i)*myMPM.body_forcez();
     }
-    for (size_t i = 0; i < myMPM.g_size(); ++i) {
+    for (int i = 0; i < myMPM.g_size(); ++i) {
         gsum[0] += myMPM.g_forcex(i);
         gsum[1] += myMPM.g_forcey(i);
         gsum[2] += myMPM.g_forcez(i);
@@ -260,7 +260,7 @@ TEST(p2g_force, linear_bspline) {
     EXPECT_NEAR(myMPM.g_forcez(5, 10, 15), 1687.5, 1.e-11); // correct to 14 sigfigs
 
     // try with non-zero stresses
-    for (size_t i = 0; i < myMPM.p_size(); ++i) {
+    for (int i = 0; i < myMPM.p_size(); ++i) {
         myMPM.p_sigmaxx(i) = myMPM.p_x(i);
         myMPM.p_sigmayy(i) = myMPM.p_y(i);
         myMPM.p_sigmazz(i) = myMPM.p_z(i);
@@ -312,12 +312,12 @@ TEST(p2g_force, cubic_bspline) {
 
     // check conservation
     double psum[3] {0., 0., 0.}, gsum[3] {0., 0., 0.};
-    for (size_t i = 0; i < myMPM.p_size(); ++i) {
+    for (int i = 0; i < myMPM.p_size(); ++i) {
         psum[0] += myMPM.p_mass(i)*myMPM.body_forcex();
         psum[1] += myMPM.p_mass(i)*myMPM.body_forcey();
         psum[2] += myMPM.p_mass(i)*myMPM.body_forcez();
     }
-    for (size_t i = 0; i < myMPM.g_size(); ++i) {
+    for (int i = 0; i < myMPM.g_size(); ++i) {
         gsum[0] += myMPM.g_forcex(i);
         gsum[1] += myMPM.g_forcey(i);
         gsum[2] += myMPM.g_forcez(i);
@@ -339,7 +339,7 @@ TEST(p2g_force, cubic_bspline) {
     EXPECT_NEAR(myMPM.g_forcez(6, 11, 16), 1668.281250, 1.e-9); // correct to 10 sigfigs
 
     // try with non-zero stresses
-    for (size_t i = 0; i < myMPM.p_size(); ++i) {
+    for (int i = 0; i < myMPM.p_size(); ++i) {
         myMPM.p_sigmaxx(i) = myMPM.p_x(i);
         myMPM.p_sigmayy(i) = myMPM.p_y(i);
         myMPM.p_sigmazz(i) = myMPM.p_z(i);

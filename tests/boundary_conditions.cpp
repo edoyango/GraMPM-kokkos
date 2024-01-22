@@ -58,7 +58,7 @@ TEST(check_boundary, all) {
     MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>, apply_lower_momentum, apply_lower_force>
         myMPM(0, mingrid, maxgrid, dcell);
 
-    for (size_t i = 0; i < myMPM.g_size(); ++i) {
+    for (int i = 0; i < myMPM.g_size(); ++i) {
         myMPM.g_momentumx(i) = 1.;
         myMPM.g_momentumy(i) = 1.;
         myMPM.g_momentumz(i) = 1.;
@@ -74,9 +74,9 @@ TEST(check_boundary, all) {
 
     myMPM.d2h();
 
-    for (size_t i = 0; i < myMPM.g_ngridx(); ++i)
-        for (size_t j = 0; j < myMPM.g_ngridy(); ++j)
-            for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
+    for (int i = 0; i < myMPM.g_ngridx(); ++i)
+        for (int j = 0; j < myMPM.g_ngridy(); ++j)
+            for (int k = 0; k < myMPM.g_ngridz(); ++k) {
                 if (k == 0) {
                     EXPECT_DOUBLE_EQ(myMPM.g_momentumx(i, j, k), -1.) << "grid momentum x at " << i << " " << j << " " << k << " set incorrectly";
                     EXPECT_DOUBLE_EQ(myMPM.g_momentumy(i, j, k), -1.) << "grid momentum y at " << i << " " << j << " " << k << " set incorrectly";
@@ -98,9 +98,9 @@ TEST(check_boundary, all) {
     // myMPM.g_set_momentum_boundary_function(apply_west_momentum);
     // myMPM.g_apply_momentum_boundary_conditions(1, 0.);
 
-    // for (size_t i = 0; i < myMPM.g_ngridx(); ++i)
-    //     for (size_t j = 0; j < myMPM.g_ngridy(); ++j)
-    //         for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
+    // for (int i = 0; i < myMPM.g_ngridx(); ++i)
+    //     for (int j = 0; j < myMPM.g_ngridy(); ++j)
+    //         for (int k = 0; k < myMPM.g_ngridz(); ++k) {
     //             if (i == 0) {
     //                 REQUIRE(myMPM.g_momentumx(i, j, k)==-3.);
     //                 REQUIRE(myMPM.g_momentumy(i, j, k)==-3.);
@@ -120,9 +120,9 @@ TEST(check_boundary, all) {
     // myMPM.g_set_force_boundary_function(apply_west_force);
     // myMPM.g_apply_force_boundary_conditions(1, 0.);
 
-    // for (size_t i = 0; i < myMPM.g_ngridx(); ++i)
-    //     for (size_t j = 0; j < myMPM.g_ngridy(); ++j)
-    //         for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
+    // for (int i = 0; i < myMPM.g_ngridx(); ++i)
+    //     for (int j = 0; j < myMPM.g_ngridy(); ++j)
+    //         for (int k = 0; k < myMPM.g_ngridz(); ++k) {
     //             if (i == 0) {
     //                 REQUIRE(myMPM.g_forcex(i, j, k)==-4.);
     //                 REQUIRE(myMPM.g_forcey(i, j, k)==-4.);

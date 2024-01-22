@@ -3,8 +3,8 @@
 
 #include <string>
 
-static size_t count_line(std::string fname) {
-    size_t n = 0;
+static int count_line(std::string fname) {
+    int n = 0;
     std::string tmp;
     std::ifstream ifs(fname);
     while (std::getline(ifs, tmp)) n++;
@@ -17,14 +17,14 @@ namespace GraMPM {
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
             : knl(dcell)
-            , m_p_size {pv.size()}
+            , m_p_size {static_cast<int>(pv.size())}
             , m_g_cell_size {dcell}
             , m_mingrid {mingrid}
             , m_maxgrid {maxgrid}
             , m_ngrid {
-                static_cast<size_t>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
-                static_cast<size_t>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
-                static_cast<size_t>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
+                static_cast<int>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
+                static_cast<int>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
+                static_cast<int>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
             }
             , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
             , d_p_x("Particles' 3D positions", m_p_size)
@@ -100,16 +100,16 @@ namespace GraMPM {
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(const size_t n, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
+        MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(const int n, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
             : knl(dcell)
             , m_p_size {n}
             , m_g_cell_size {dcell}
             , m_mingrid {mingrid}
             , m_maxgrid {maxgrid}
             , m_ngrid{
-                static_cast<size_t>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
-                static_cast<size_t>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
-                static_cast<size_t>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
+                static_cast<int>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
+                static_cast<int>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
+                static_cast<int>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
             }
             , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
             , d_p_x("Particles' 3D positions", m_p_size)
@@ -175,9 +175,9 @@ namespace GraMPM {
             , m_mingrid {mingrid}
             , m_maxgrid {maxgrid}
             , m_ngrid{
-                static_cast<size_t>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
-                static_cast<size_t>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
-                static_cast<size_t>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
+                static_cast<int>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
+                static_cast<int>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
+                static_cast<int>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
             }
             , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
             , d_p_x("Particles' 3D positions", m_p_size)
@@ -237,7 +237,7 @@ namespace GraMPM {
             std::string line, header;
             // pull out header
             std::getline(file, header);
-            size_t i = 0;
+            int i = 0;
             while (std::getline(file, line)) {
                 std::istringstream iss(line);
                 int idx;

@@ -18,10 +18,10 @@ const double dx = (maxgrid[0]-mingrid[0])/4;
 const double dy = (maxgrid[1]-mingrid[1])/4;
 const double dz = (maxgrid[2]-mingrid[2])/4;
 
-const size_t correct_idxx[5] {0, 0, 1, 1, 2};
-const size_t correct_idxy[5] {0, 0, 1, 1, 2};
-const size_t correct_idxz[5] {0, 0, 1, 2, 3};
-const size_t correct_ravelled_idx[5] {0, 0, 1*4*5+1*5+1, 1*4*5+1*5+2, 2*4*5+2*5+3};
+const int correct_idxx[5] {0, 0, 1, 1, 2};
+const int correct_idxy[5] {0, 0, 1, 1, 2};
+const int correct_idxz[5] {0, 0, 1, 2, 3};
+const int correct_ravelled_idx[5] {0, 0, 1*4*5+1*5+1, 1*4*5+1*5+2, 2*4*5+2*5+3};
 
 TEST(map_particles_to_grid, particle_to_grid_assignment) {
 
@@ -124,7 +124,7 @@ TEST(map_particles_to_grid, neighbours_radius2) {
     ASSERT_EQ(myMPM.g_ngridy(), 5);
     ASSERT_EQ(myMPM.g_ngridz(), 6);
 
-    size_t correct_ravelled_idx[2] {37, 45};
+    int correct_ravelled_idx[2] {37, 45};
 
     myMPM.h2d();
 

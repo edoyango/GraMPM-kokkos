@@ -35,7 +35,7 @@ TEST(initialization_getters_setters, grid_init) {
         EXPECT_EQ(maxgridx_out[d], maxgridx_in[d]) << "max extents of grid not saved properly in " << d << "th dim";
     }
 
-    std::array<size_t, 3> ngridx_out = myMPM.g_ngrid();
+    std::array<int, 3> ngridx_out = myMPM.g_ngrid();
     ASSERT_EQ(ngridx_out[0], 3) << "number of cells in x direction does not match expected";
     ASSERT_EQ(ngridx_out[1], 4) << "number of cells in y direction does not match expected";
     ASSERT_EQ(ngridx_out[2], 5) << "number of cells in z direction does not match expected";
@@ -56,7 +56,7 @@ TEST(initialization_getters_setters, grid_init) {
 
     myMPM.h_zero_grid();
 
-    for (size_t i = 0; i < myMPM.g_size(); ++i) {
+    for (int i = 0; i < myMPM.g_size(); ++i) {
         ASSERT_EQ(myMPM.g_mass(i), 0.) << "grid mass at index " << i << " not zeroed properly";
         ASSERT_EQ(myMPM.g_momentumx(i), 0.) << "grid x momentum at index " << i << " not zeroed properly";
         ASSERT_EQ(myMPM.g_momentumy(i), 0.) << "grid y momentum at index " << i << " not zeroed properly";
@@ -66,9 +66,9 @@ TEST(initialization_getters_setters, grid_init) {
         ASSERT_EQ(myMPM.g_forcez(i), 0.) << "grid z force at index " << i << " not zeroed properly";
     }
 
-    for (size_t i = 0; i < myMPM.g_ngridx(); ++i) 
-        for (size_t j = 0; j < myMPM.g_ngridy(); ++j)
-            for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
+    for (int i = 0; i < myMPM.g_ngridx(); ++i) 
+        for (int j = 0; j < myMPM.g_ngridy(); ++j)
+            for (int k = 0; k < myMPM.g_ngridz(); ++k) {
                 myMPM.g_mass(i, j, k) = (i+j+k)*1.;
                 ASSERT_EQ(myMPM.g_mass(i, j, k), (i+j+k)*1.) << "grid mass at index " << i << " not set properly";
                 myMPM.g_momentumx(i, j, k) = (i+j+k)*2.;
@@ -89,7 +89,7 @@ TEST(initialization_getters_setters, grid_init) {
     myMPM.h2d();
     myMPM.h_zero_grid();
 
-    for (size_t i = 0; i < myMPM.g_size(); ++i) {
+    for (int i = 0; i < myMPM.g_size(); ++i) {
         ASSERT_EQ(myMPM.g_mass(i), 0.) << "grid mass at index " << i << " not zeroed properly";
         ASSERT_EQ(myMPM.g_momentumx(i), 0.) << "grid x momentum at index " << i << " not zeroed properly";
         ASSERT_EQ(myMPM.g_momentumy(i), 0.) << "grid y momentum at index " << i << " not zeroed properly";
@@ -101,9 +101,9 @@ TEST(initialization_getters_setters, grid_init) {
 
     myMPM.d2h();
 
-    for (size_t i = 0; i < myMPM.g_ngridx(); ++i) 
-        for (size_t j = 0; j < myMPM.g_ngridy(); ++j)
-            for (size_t k = 0; k < myMPM.g_ngridz(); ++k) {
+    for (int i = 0; i < myMPM.g_ngridx(); ++i) 
+        for (int j = 0; j < myMPM.g_ngridy(); ++j)
+            for (int k = 0; k < myMPM.g_ngridz(); ++k) {
                 EXPECT_EQ(myMPM.g_mass(i, j, k), (i+j+k)*1.) << "grid mass at index " << i << " not set properly";
                 EXPECT_EQ(myMPM.g_momentumx(i, j, k), (i+j+k)*2.) << "grid x momentum at index " << i << " not set properly";
                 EXPECT_EQ(myMPM.g_momentumy(i, j, k), (i+j+k)*3.) << "grid y momentum at index " << i << " not set properly";

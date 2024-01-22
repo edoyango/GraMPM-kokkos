@@ -7,10 +7,10 @@ namespace GraMPM {
     namespace integrators {
         
         template<typename F, typename MPMtype>
-        void MUSL(MPMtype &myMPM, const F &dt, const size_t &max_timestep, 
-            const size_t &print_timestep_interval, const size_t &save_timestep_interval) {
+        void MUSL(MPMtype &myMPM, const F &dt, const int &max_timestep, 
+            const int &print_timestep_interval, const int &save_timestep_interval) {
 
-            for (size_t itimestep = 1; itimestep < max_timestep+1; ++itimestep) {
+            for (int itimestep = 1; itimestep < max_timestep+1; ++itimestep) {
 
                 // print to terminal
                 if (itimestep % print_timestep_interval == 0) {
