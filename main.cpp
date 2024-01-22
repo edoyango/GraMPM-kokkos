@@ -1,11 +1,12 @@
-#include <grampm-kokkos.hpp>
-#include <grampm-kokkos-kernels.hpp>
-#include <grampm-kokkos-functors-stressupdate.hpp>
+#include <grampm/accelerated/core.hpp>
+#include <grampm/accelerated/kernels.hpp>
+#include <grampm/accelerated/stressupdate.hpp>
 #include <Kokkos_Core.hpp>
 #include <grampm.hpp>
 #include <array>
 #include <vector>
-#include <grampm-kokkos-integrators.hpp>
+#include <grampm/accelerated/integrators.hpp>
+#include <iostream>
 
 const int nbuffer = 2;
 
@@ -77,6 +78,8 @@ int main() {
     }
 
     MPM_type myMPM(vp, mingrid, maxgrid, dcell);
+
+    std::cout << myMPM.g_size() << '\n';
     myMPM.body_force() = gf;
     myMPM.f_stress_update.set_DP_params(phi, psi, cohesion, E, v);
     

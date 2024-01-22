@@ -2,9 +2,9 @@
 
 #include <gtest/gtest.h>
 #include <grampm.hpp>
-#include <grampm-kokkos.hpp>
-#include <grampm-kokkos-kernels.hpp>
-#include <grampm-kokkos-functors-stressupdate.hpp>
+#include <grampm/accelerated/core.hpp>
+#include <grampm/accelerated/kernels.hpp>
+#include <grampm/accelerated/stressupdate.hpp>
 #include <algorithm>
 #include <array>
 

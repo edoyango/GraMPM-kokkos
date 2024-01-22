@@ -2,7 +2,7 @@
 #define GRAMPM_KOKKOS_FUNCTORS
 
 #include <Kokkos_Core.hpp>
-#include <grampm-kokkos-kernels.hpp>
+#include <grampm/accelerated/kernels.hpp>
 #include <stdio.h>
 
 namespace GraMPM {

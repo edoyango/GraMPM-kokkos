@@ -9,8 +9,8 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <grampm-kokkos-kernels.hpp>
-#include <grampm-kokkos-functors.hpp>
+#include <grampm/accelerated/kernels.hpp>
+#include <grampm/accelerated/functors.hpp>
 
 /*============================================================================================================*/
 
