@@ -74,11 +74,11 @@ namespace GraMPM {
                 d_pg_nn)
             , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                 d_pg_nn)
-            , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
             , f_g_update_momentum(d_g_momentum, d_g_force)
             , f_p_update_velocity(d_p_v, d_p_a)
             , f_p_update_position(d_p_x, d_p_dxdt)
             , f_p_update_density(d_p_rho, d_p_strainrate)
+            , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
         {
             for (int i = 0; i < m_p_size; ++i) {
                 for (int d = 0; d < dims; ++d) {
@@ -159,11 +159,11 @@ namespace GraMPM {
                 d_pg_nn)
             , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                 d_pg_nn)
-            , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
             , f_g_update_momentum(d_g_momentum, d_g_force)
             , f_p_update_velocity(d_p_v, d_p_a)
             , f_p_update_position(d_p_x, d_p_dxdt)
             , f_p_update_density(d_p_rho, d_p_strainrate)
+            , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
         {
         }
 
@@ -227,11 +227,11 @@ namespace GraMPM {
                 d_pg_nn)
             , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
                 d_pg_nn)
-            , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
             , f_g_update_momentum(d_g_momentum, d_g_force)
             , f_p_update_velocity(d_p_v, d_p_a)
             , f_p_update_position(d_p_x, d_p_dxdt)
             , f_p_update_density(d_p_rho, d_p_strainrate)
+            , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
         {
             std::ifstream file(fname);
             std::string line, header;
