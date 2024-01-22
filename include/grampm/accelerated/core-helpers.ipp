@@ -25,6 +25,11 @@ namespace GraMPM {
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
+        size_t MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::calc_idx(const size_t i, const size_t j, const size_t k) const {
+            return i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[2] + k;
+        }
+
+        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::h2d() {
             deep_copy(d_p_x, h_p_x);
             deep_copy(d_p_v, h_p_v);
