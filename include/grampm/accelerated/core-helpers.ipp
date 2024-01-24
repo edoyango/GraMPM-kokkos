@@ -71,21 +71,21 @@ namespace GraMPM {
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::d_zero_grid() {
-            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_momentum, 0.);
-            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_force, 0.);
-            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_mass, 0.);
+            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_momentum, F(0.));
+            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_force, F(0.));
+            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_mass, F(0.));
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::h_zero_grid() {
             for (size_t i = 0; i < m_g_size; ++i) {
-                h_g_momentum(i, 0) = 0.;
-                h_g_momentum(i, 1) = 0.;
-                h_g_momentum(i, 2) = 0.;
-                h_g_force(i, 0) = 0.;
-                h_g_force(i, 1) = 0.;
-                h_g_force(i, 2) = 0.;
-                h_g_mass(i) = 0.;
+                h_g_momentum(i, 0) = F(0.);
+                h_g_momentum(i, 1) = F(0.);
+                h_g_momentum(i, 2) = F(0.);
+                h_g_force(i, 0) = F(0.);
+                h_g_force(i, 1) = F(0.);
+                h_g_force(i, 2) = F(0.);
+                h_g_mass(i) = F(0.);
             }
         }
 

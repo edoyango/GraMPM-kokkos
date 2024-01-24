@@ -21,7 +21,7 @@ namespace GraMPM {
             struct linear_bspline {
 
                 // change me (radius)
-                const F radius = 1., dcell;
+                const F radius = F(1.), dcell;
 
                 linear_bspline(const F dc)
                     : dcell {dc}
@@ -43,13 +43,13 @@ namespace GraMPM {
                     // change me
                     KOKKOS_INLINE_FUNCTION
                     F w1(const F &q) const {
-                        return Kokkos::max(0., 1.-q);
+                        return Kokkos::max(F(0.), F(1.)-q);
                     }
 
                     // change me
                     KOKKOS_INLINE_FUNCTION
                     F dw1dq (const F &q) const {
-                        return -1.;
+                        return F(-1.);
                     }
                     KOKKOS_INLINE_FUNCTION
                     F dqdr(const F &dr) const {
@@ -60,7 +60,7 @@ namespace GraMPM {
             template<typename F>
             struct cubic_bspline {
 
-                const F radius = 2., dcell;
+                const F radius = F(2.), dcell;
 
                 cubic_bspline(const F dc)
                     : dcell {dc}
@@ -81,14 +81,14 @@ namespace GraMPM {
                 protected:
                     KOKKOS_INLINE_FUNCTION
                     F w1(const F &q) const {
-                        const F dim2q {Kokkos::max(0., 2.-q)}, dim1q {Kokkos::max(0., 1.-q)};
-                        return 2./3.*(0.25*dim2q*dim2q*dim2q-dim1q*dim1q*dim1q);
+                        const F dim2q {Kokkos::max(F(0.), F(2.)-q)}, dim1q {Kokkos::max(F(0.), F(1.)-q)};
+                        return F(2.)/F(3.)*(F(0.25)*dim2q*dim2q*dim2q-dim1q*dim1q*dim1q);
                     }
 
                     KOKKOS_INLINE_FUNCTION
                     F dw1dq (const F &q) const {
-                        const F dim2q {Kokkos::max(0., 2.-q)}, dim1q {Kokkos::max(0., 1.-q)};
-                        return -2.*(0.25*dim2q*dim2q-dim1q*dim1q);
+                        const F dim2q {Kokkos::max(F(0.), F(2.)-q)}, dim1q {Kokkos::max(F(0.), F(1.)-q)};
+                        return F(-2.)*(F(0.25)*dim2q*dim2q-dim1q*dim1q);
                     }
                     
                     KOKKOS_INLINE_FUNCTION
