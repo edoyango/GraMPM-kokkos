@@ -119,10 +119,11 @@ namespace GraMPM {
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
                     const int jstart = i*npp;
+                    const F massi = p_mass(i);
                     for (int j = jstart; j < jstart + npp; ++j) {
                         const int idx = pg(j);
                         // Kokkos::atomic_add(&g_mass(idx), p_mass(i)*w(j));
-                        g_mass(idx) += p_mass(i)*w(j);
+                        g_mass(idx) += massi*w(j);
                     }
                 }
             };
@@ -148,12 +149,14 @@ namespace GraMPM {
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
                     const int jstart = i*npp;
+                    const F massi = p_mass(i), vxi = p_v(i, 0), vyi = p_v(i, 1), vzi = p_v(i, 2);
                     for (int j = jstart; j < jstart + npp; ++j) {
                         const int idx = pg(j);
+                        const F massiwj = massi*w(j);
                         // Kokkos::atomic_add(&g_mass(idx), p_mass(i)*w(j));
-                        g_momentum(idx, 0) += p_mass(i)*p_v(i, 0)*w(j);
-                        g_momentum(idx, 1) += p_mass(i)*p_v(i, 1)*w(j);
-                        g_momentum(idx, 2) += p_mass(i)*p_v(i, 2)*w(j);
+                        g_momentum(idx, 0) += vxi*massiwj;
+                        g_momentum(idx, 1) += vyi*massiwj;
+                        g_momentum(idx, 2) += vzi*massiwj;
                     }
                 }
             };
@@ -187,23 +190,26 @@ namespace GraMPM {
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
                     const int jstart = i*npp;
+                    const F massi = p_mass(i), vi = massi/p_rho(i), sigixx = p_sigma(i, 0), sigiyy = p_sigma(i, 1), 
+                        sigizz = p_sigma(i, 2), sigixy = p_sigma(i, 3), sigixz = p_sigma(i, 4), sigiyz = p_sigma(i, 5);
                     for (int j = jstart; j < jstart + npp; ++j) {
                         const int idx = pg(j);
-                        g_force(idx, 0) += -p_mass(i)/p_rho(i)*(
-                            p_sigma(i, 0)*dwdx(j, 0) +
-                            p_sigma(i, 3)*dwdx(j, 1) +
-                            p_sigma(i, 4)*dwdx(j, 2)
-                        ) + bfx*p_mass(i)*w(j);
-                        g_force(idx, 1) += -p_mass(i)/p_rho(i)*(
-                            p_sigma(i, 3)*dwdx(j, 0) +
-                            p_sigma(i, 1)*dwdx(j, 1) +
-                            p_sigma(i, 5)*dwdx(j, 2)
-                        ) + bfy*p_mass(i)*w(j);
-                        g_force(idx, 2) += -p_mass(i)/p_rho(i)*(
-                            p_sigma(i, 4)*dwdx(j, 0) +
-                            p_sigma(i, 5)*dwdx(j, 1) +
-                            p_sigma(i, 2)*dwdx(j, 2)
-                        ) + bfz*p_mass(i)*w(j);
+                        const F massiwj = p_mass(i)*w(j), dwdxj = dwdx(j, 0), dwdyj = dwdx(j, 1), dwdzj = dwdx(j, 2);
+                        g_force(idx, 0) += -vi*(
+                            sigixx*dwdxj +
+                            sigixy*dwdyj +
+                            sigixz*dwdzj
+                        ) + bfx*massiwj;
+                        g_force(idx, 1) += -vi*(
+                            sigixy*dwdxj +
+                            sigiyy*dwdyj +
+                            sigiyz*dwdzj
+                        ) + bfy*massiwj;
+                        g_force(idx, 2) += -vi*(
+                            sigixz*dwdxj +
+                            sigiyz*dwdyj +
+                            sigizz*dwdzj
+                        ) + bfz*massiwj;
                     }
                 }
             };
@@ -229,22 +235,29 @@ namespace GraMPM {
 
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
-                    p_a(i, 0) = 0.;
-                    p_a(i, 1) = 0.;
-                    p_a(i, 2) = 0.;
-                    p_dxdt(i, 0) = 0.;
-                    p_dxdt(i, 1) = 0.;
-                    p_dxdt(i, 2) = 0.;
+                    F axi = F(0.);
+                    F ayi = F(0.);
+                    F azi = F(0.);
+                    F dxdti = F(0.);
+                    F dydti = F(0.);
+                    F dzdti = F(0.);
                     const int jstart = i*npp;
                     for (int j = jstart; j < jstart + npp; ++j) {
                         const int idx = pg(j);
-                        p_a(i, 0) += g_force(idx, 0)/g_mass(idx)*w(j);
-                        p_a(i, 1) += g_force(idx, 1)/g_mass(idx)*w(j);
-                        p_a(i, 2) += g_force(idx, 2)/g_mass(idx)*w(j);
-                        p_dxdt(i, 0) += g_momentum(idx, 0)/g_mass(idx)*w(j);
-                        p_dxdt(i, 1) += g_momentum(idx, 1)/g_mass(idx)*w(j);
-                        p_dxdt(i, 2) += g_momentum(idx, 2)/g_mass(idx)*w(j);
+                        const F wjmassj = w(j)/g_mass(idx);
+                        axi += g_force(idx, 0)*wjmassj;
+                        ayi += g_force(idx, 1)*wjmassj;
+                        azi += g_force(idx, 2)*wjmassj;
+                        dxdti += g_momentum(idx, 0)*wjmassj;
+                        dydti += g_momentum(idx, 1)*wjmassj;
+                        dzdti += g_momentum(idx, 2)*wjmassj;
                     }
+                    p_a(i, 0) = axi;
+                    p_a(i, 1) = ayi;
+                    p_a(i, 2) = azi;
+                    p_dxdt(i, 0) = dxdti;
+                    p_dxdt(i, 1) = dydti;
+                    p_dxdt(i, 2) = dzdti;
                 }
             };
 
@@ -270,34 +283,40 @@ namespace GraMPM {
 
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
-                    p_strainrate(i, 0) = 0.;
-                    p_strainrate(i, 1) = 0.;
-                    p_strainrate(i, 2) = 0.;
-                    p_strainrate(i, 3) = 0.;
-                    p_strainrate(i, 4) = 0.;
-                    p_strainrate(i, 5) = 0.;
-                    p_spinrate(i, 0) = 0.;
-                    p_spinrate(i, 1) = 0.;
-                    p_spinrate(i, 2) = 0.;
+                    F strainratexxi = 0.;
+                    F strainrateyyi = 0.;
+                    F strainratezzi = 0.;
+                    F strainratexyi = 0.;
+                    F strainratexzi = 0.;
+                    F strainrateyzi = 0.;
+                    F spinratexyi = 0.;
+                    F spinratexzi = 0.;
+                    F spinrateyzi = 0.;
                     const int jstart = i*npp;
                     for (int j = jstart; j < jstart + npp; ++j) {
                         const int idx = pg(j);
-                        p_strainrate(i, 0) += g_momentum(idx, 0)/g_mass(idx)*dwdx(j, 0);
-                        p_strainrate(i, 1) += g_momentum(idx, 1)/g_mass(idx)*dwdx(j, 1);
-                        p_strainrate(i, 2) += g_momentum(idx, 2)/g_mass(idx)*dwdx(j, 2);
-                        p_strainrate(i, 3) += 0.5*(g_momentum(idx, 1)/g_mass(idx)*dwdx(j, 0) +
-                            g_momentum(idx, 0)/g_mass(idx)*dwdx(j, 1));
-                        p_strainrate(i, 4) += 0.5*(g_momentum(idx, 2)/g_mass(idx)*dwdx(j, 0) +
-                            g_momentum(idx, 0)/g_mass(idx)*dwdx(j, 2));
-                        p_strainrate(i, 5) += 0.5*(g_momentum(idx, 2)/g_mass(idx)*dwdx(j, 1) +
-                            g_momentum(idx, 1)/g_mass(idx)*dwdx(j, 2));
-                        p_spinrate(i, 0) += 0.5*(dwdx(j, 1)*g_momentum(idx, 0)/g_mass(idx) -
-                            dwdx(j, 0)*g_momentum(idx, 1)/g_mass(idx));
-                        p_spinrate(i, 1) += 0.5*(dwdx(j, 2)*g_momentum(idx, 0)/g_mass(idx) - 
-                            dwdx(j, 0)*g_momentum(idx, 2)/g_mass(idx));
-                        p_spinrate(i, 2) += 0.5*(dwdx(j, 2)*g_momentum(idx, 1)/g_mass(idx) - 
-                            dwdx(j, 1)*g_momentum(idx, 2)/g_mass(idx));
+                        const F massj = g_mass(idx), dwdxjmassj = dwdx(j, 0)/massj, dwdyjmassj = dwdx(j, 1)/massj, 
+                            dwdzjmassj = dwdx(j, 2)/massj, momentumxj = g_momentum(idx, 0), 
+                            momentumyj = g_momentum(idx, 1), momentumzj = g_momentum(idx, 2);
+                        strainratexxi += momentumxj*dwdxjmassj;
+                        strainrateyyi += momentumyj*dwdyjmassj;
+                        strainratezzi += momentumzj*dwdzjmassj;
+                        strainratexyi += F(0.5)*(momentumyj*dwdxjmassj + momentumxj*dwdyjmassj);
+                        strainratexzi += F(0.5)*(momentumzj*dwdxjmassj + momentumxj*dwdzjmassj);
+                        strainrateyzi += F(0.5)*(momentumzj*dwdyjmassj + momentumyj*dwdzjmassj);
+                        spinratexyi += F(0.5)*(momentumxj*dwdyjmassj - momentumyj*dwdxjmassj);
+                        spinratexzi += F(0.5)*(momentumxj*dwdzjmassj - momentumzj*dwdxjmassj);
+                        spinrateyzi += F(0.5)*(momentumyj*dwdzjmassj - momentumzj*dwdyjmassj);
                     }
+                    p_strainrate(i, 0) = strainratexxi;
+                    p_strainrate(i, 1) = strainrateyyi;
+                    p_strainrate(i, 2) = strainratezzi;
+                    p_strainrate(i, 3) = strainratexyi;
+                    p_strainrate(i, 4) = strainratexzi;
+                    p_strainrate(i, 5) = strainrateyzi;
+                    p_spinrate(i, 0) = spinratexyi;
+                    p_spinrate(i, 1) = spinratexzi;
+                    p_spinrate(i, 2) = spinrateyzi;
                 }
             };
 
@@ -332,7 +351,7 @@ namespace GraMPM {
 
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
-                    p_density(i) /= 1. + dt*(p_strainrate(i, 0)+p_strainrate(i, 1)+p_strainrate(i, 2));
+                    p_density(i) /= F(1.) + dt*(p_strainrate(i, 0)+p_strainrate(i, 1)+p_strainrate(i, 2));
                 }
             };
         }
