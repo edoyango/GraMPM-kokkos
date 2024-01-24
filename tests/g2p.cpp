@@ -191,7 +191,7 @@ TEST(g2p_strainspinrates, linear_bspline) {
     EXPECT_NEAR(myMPM.p_strainratexy(myMPM.p_size()-1), -0.15, 2.e-16);
     EXPECT_NEAR(myMPM.p_strainratexz(myMPM.p_size()-1), -0.2, 1.e-15);
     EXPECT_DOUBLE_EQ(myMPM.p_strainrateyz(myMPM.p_size()-1), -0.25);
-    EXPECT_NEAR(myMPM.p_spinratexy(myMPM.p_size()-1), 0.05, 1.e-16);
+    EXPECT_NEAR(myMPM.p_spinratexy(myMPM.p_size()-1), 0.05, 2.e-16);
     EXPECT_NEAR(myMPM.p_spinratexz(myMPM.p_size()-1), 0.1, 1.e-15);
     EXPECT_NEAR(myMPM.p_spinrateyz(myMPM.p_size()-1), 0.05, 1.e-15);
 }

@@ -10,13 +10,16 @@
 
 const int nbuffer = 2;
 
+using ftype = double;
+
+template<typename F>
 struct apply_boundary {
     int itimestep;
-    double dt;
-    const double ngridx, ngridy, ngridz;
-    const Kokkos::View<double*[3]> data;
+    F dt;
+    const int ngridx, ngridy, ngridz;
+    const Kokkos::View<F*[3]> data;
 
-    apply_boundary(Kokkos::View<double*[3]> data_, double ngridx_, double ngridy_, double ngridz_)
+    apply_boundary(Kokkos::View<F*[3]> data_, int ngridx_, int ngridy_, int ngridz_)
         : data {data_} 
         , ngridx {ngridx_}
         , ngridy {ngridy_}
@@ -28,50 +31,50 @@ struct apply_boundary {
         const int idx = i*ngridy*ngridz + j*ngridz + k;
         // fully-fixed
         if (k < nbuffer || i < nbuffer || i >= ngridx-nbuffer) {
-            data(idx, 0) = 0.;
-            data(idx, 1) = 0.;
-            data(idx, 2) = 0.;
+            data(idx, 0) = F(0.);
+            data(idx, 1) = F(0.);
+            data(idx, 2) = F(0.);
         
         // free-slip on north-south walls
         } else if (j < nbuffer || j >= ngridy-nbuffer) {
-            data(idx, 1) = 0.;
+            data(idx, 1) = F(0.);
         }
     }
 };
 
 using namespace GraMPM::accelerated;
 
-typedef MPM_system<double, 
-                   kernels::cubic_bspline<double>, 
-                   functors::stress_update::drucker_prager_elastoplastic<double>, 
-                   apply_boundary,
-                   apply_boundary> MPM_type;
+typedef MPM_system<ftype, 
+                   kernels::cubic_bspline<ftype>, 
+                   functors::stress_update::drucker_prager_elastoplastic<ftype>, 
+                   apply_boundary<ftype>,
+                   apply_boundary<ftype>> MPM_type;
 
 int main() {
 
     Kokkos::initialize();
     {
     // geometric properties
-    const double dcell = 0.002;
+    const ftype dcell = ftype(0.002);
     const int xp = 100, yp = 12, zp = 50;
-    const std::array<double, 3> mingrid {-dcell, -dcell, -dcell}, maxgrid {0.299+dcell, 0.011+dcell, 0.049+dcell}, 
-        gf {0., 0., -9.81};
+    const std::array<ftype, 3> mingrid {-dcell, -dcell, -dcell}, maxgrid {ftype(0.299)+dcell, ftype(0.011)+dcell, ftype(0.049)+dcell}, 
+        gf {ftype(0.), ftype(0.), ftype(-9.81)};
 
     // material properties
-    const double pi = std::acos(-1.);
-    const double rho_ini = 1650., E = 0.86e6, v = 0.3, phi = pi/9., psi = 0., cohesion = 0.;
+    const ftype pi = std::acos(-1.);
+    const ftype rho_ini = ftype(1650.), E = ftype(0.86e6), v = ftype(0.3), phi = ftype(pi/9.), psi = ftype(0.), cohesion = ftype(0.);
 
-    std::vector<GraMPM::particle<double>> vp;
+    std::vector<GraMPM::particle<ftype>> vp;
 
     for (int i = 0; i < xp; ++i) {
         for (int j = 0; j < yp; ++j) {
             for (int k = 0; k < zp; ++k) {
-                GraMPM::particle<double> p;
-                p.x[0] = (i+0.5)*dcell/2.;
-                p.x[1] = (j+0.5)*dcell/2.;
-                p.x[2] = (k+0.5)*dcell/2.;
+                GraMPM::particle<ftype> p;
+                p.x[0] = (i+ftype(0.5))*dcell/ftype(2.);
+                p.x[1] = (j+ftype(0.5))*dcell/ftype(2.);
+                p.x[2] = (k+ftype(0.5))*dcell/ftype(2.);
                 p.rho = rho_ini;
-                p.mass = rho_ini*dcell*dcell*dcell/8.;
+                p.mass = rho_ini*dcell*dcell*dcell/ftype(8.);
                 vp.push_back(p);
             }
         }
@@ -79,17 +82,16 @@ int main() {
 
     MPM_type myMPM(vp, mingrid, maxgrid, dcell);
 
-    std::cout << myMPM.g_size() << '\n';
     myMPM.body_force() = gf;
     myMPM.f_stress_update.set_DP_params(phi, psi, cohesion, E, v);
     
-    const double K = E/(3.*(1.-2.*v)), G = E/(2.*(1.+v));
-    const double c = std::sqrt((K+4./3.*G)/rho_ini);
-    const double dt = dcell/c;
+    const ftype K = E/(ftype(3.)*(ftype(1.)-ftype(2.)*v)), G = E/(ftype(2.)*(ftype(1.)+v));
+    const ftype c = std::sqrt((K+ftype(4.)/ftype(3.)*G)/rho_ini);
+    const ftype dt = dcell/c;
 
     myMPM.h2d();
 
-    GraMPM::integrators::MUSL<double, MPM_type>(myMPM, dt, 500, 500, 500);
+    GraMPM::integrators::MUSL<ftype, MPM_type>(myMPM, dt, 500, 500, 501);
     }
     Kokkos::finalize();
 }
