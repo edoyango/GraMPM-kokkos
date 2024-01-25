@@ -3,6 +3,7 @@
 
 #include <array>
 #include <string>
+#include <hdf5.h>
 
 namespace GraMPM {
     namespace accelerated {
@@ -89,8 +90,41 @@ namespace GraMPM {
             }
         }
 
+        static herr_t write2h5(const int r, hsize_t* dims, const double* data, const hid_t gid, const char* dset_name) {
+            herr_t status;
+            // hsize_t dims[2] {v.extent(0), v.extent(1)};
+            hid_t dspace_id = H5Screate_simple(r, dims, NULL);
+            hid_t dset_id = H5Dcreate(gid, dset_name, H5T_NATIVE_DOUBLE, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            status = H5Dwrite(dset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+            status = H5Dclose(dset_id);
+            status = H5Sclose(dspace_id);
+            return status;
+        }
+
+        static herr_t write2h5(const int r, hsize_t* dims, const float* data, const hid_t gid, const char* dset_name) {
+            herr_t status;
+            // hsize_t dims[2] {v.extent(0), v.extent(1)};
+            hid_t dspace_id = H5Screate_simple(r, dims, NULL);
+            hid_t dset_id = H5Dcreate(gid, dset_name, H5T_NATIVE_FLOAT, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            status = H5Dwrite(dset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+            status = H5Dclose(dset_id);
+            status = H5Sclose(dspace_id);
+            return status;
+        }
+
+        static herr_t write2h5(const int r, hsize_t* dims, const int* data, const hid_t gid, const char* dset_name) {
+            herr_t status;
+            // hsize_t dims[2] {v.extent(0), v.extent(1)};
+            hid_t dspace_id = H5Screate_simple(r, dims, NULL);
+            hid_t dset_id = H5Dcreate(gid, dset_name, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            status = H5Dwrite(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+            status = H5Dclose(dset_id);
+            status = H5Sclose(dspace_id);
+            return status;
+        }
+
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::p_save_to_file(const std::string &prefix, const int &timestep) const {
+        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::save_to_h5(const std::string &prefix, const int &timestep) const {
 
             // convert timestep number to string (width of 7 chars, for up to 9,999,999,999 timesteps)
             std::string str_timestep = std::to_string(timestep);
@@ -98,124 +132,35 @@ namespace GraMPM {
 
             std::string fname {prefix + str_timestep};
 
-            std::ofstream outfile(fname);
+            herr_t status;
 
-            const int i_width = 7, f_width = 12, f_precision=10;
+            hsize_t dims_vec[2] {h_p_x.extent(1), h_p_x.extent(0)},
+                dims_tens[2] {h_p_sigma.extent(1), h_p_sigma.extent(0)},
+                dims_scalar[1] {h_p_rho.extent(0)},
+                dims_spintens[2] {h_p_spinrate.extent(1), h_p_spinrate.extent(0)};
+            
+            hid_t file_id = H5Fcreate(fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+            hid_t group_id = H5Gcreate(file_id, "/particles", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            status = write2h5(2, dims_vec, h_p_x.data(), group_id, "x");
+            status = write2h5(2, dims_vec, h_p_v.data(), group_id, "v");
+            status = write2h5(2, dims_vec, h_p_a.data(), group_id, "a");
+            status = write2h5(2, dims_vec, h_p_dxdt.data(), group_id, "dxdt");
+            status = write2h5(2, dims_tens, h_p_sigma.data(), group_id, "sigma");
+            status = write2h5(2, dims_tens, h_p_strainrate.data(), group_id, "strainrate");
+            status = write2h5(2, dims_spintens, h_p_spinrate.data(), group_id, "spinrate");
+            status = write2h5(1, dims_scalar, h_p_mass.data(), group_id, "mass");
+            status = write2h5(1, dims_scalar, h_p_rho.data(), group_id, "rho");
+            status = H5Gclose(group_id);
 
-            outfile << std::setw(i_width) << "id" << ' '
-                    << std::setw(f_width) << "x" << ' '
-                    << std::setw(f_width) << "y" << ' '
-                    << std::setw(f_width) << "z" << ' '
-                    << std::setw(f_width) << "vx" << ' '
-                    << std::setw(f_width) << "vy" << ' '
-                    << std::setw(f_width) << "vz" << ' '
-                    << std::setw(f_width) << "mass" << ' '
-                    << std::setw(f_width) << "rho" << ' '
-                    << std::setw(f_width) << "sigmaxx" << ' '
-                    << std::setw(f_width) << "sigmayy" << ' '
-                    << std::setw(f_width) << "sigmazz" << ' '
-                    << std::setw(f_width) << "sigmaxy" << ' '
-                    << std::setw(f_width) << "sigmaxz" << ' '
-                    << std::setw(f_width) << "sigmayz" << ' '
-                    << std::setw(f_width) << "ax" << ' '
-                    << std::setw(f_width) << "ay" << ' '
-                    << std::setw(f_width) << "az" << ' '
-                    << std::setw(f_width) << "dxdt" << ' '
-                    << std::setw(f_width) << "dydt" << ' '
-                    << std::setw(f_width) << "dzdt" << ' '
-                    << std::setw(f_width) << "strainratexx" << ' '
-                    << std::setw(f_width) << "strainrateyy" << ' '
-                    << std::setw(f_width) << "strainratezz" << ' '
-                    << std::setw(f_width) << "strainratexy" << ' '
-                    << std::setw(f_width) << "strainratexz" << ' '
-                    << std::setw(f_width) << "strainrateyz" << ' '
-                    << std::setw(f_width) << "spinratexy" << ' '
-                    << std::setw(f_width) << "spinratexz" << ' '
-                    << std::setw(f_width) << "spinrateyz" << ' '
-                    << '\n';
-
-            for (int i = 0; i < m_p_size; ++i) {
-                outfile << std::setw(i_width) << i << ' ' << std::setprecision(f_precision)
-                        << std::setw(f_width) << std::fixed << h_p_x(i, 0) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_x(i, 1) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_x(i, 2) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_v(i, 0) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_v(i, 1) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_v(i, 2) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_mass(i) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_rho(i) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_sigma(i, 0) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_sigma(i, 1) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_sigma(i, 2) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_sigma(i, 3) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_sigma(i, 4) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_sigma(i, 5) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_a(i, 0) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_a(i, 1) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_a(i, 2) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_dxdt(i, 0) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_dxdt(i, 1) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_dxdt(i, 2) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_strainrate(i, 0) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_strainrate(i, 1) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_strainrate(i, 2) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_strainrate(i, 3) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_strainrate(i, 4) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_strainrate(i, 5) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_spinrate(i, 0) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_spinrate(i, 1) << ' '
-                        << std::setw(f_width) << std::fixed << h_p_spinrate(i, 2) << ' '
-                        << '\n';
-            }
+            hsize_t dims_grid_vec[4] {3, m_ngrid[2], m_ngrid[1], m_ngrid[0]},
+                dims_grid_scalar[3] {m_ngrid[2], m_ngrid[1], m_ngrid[0]};
+            group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            status = write2h5(4, dims_grid_vec, h_g_momentum.data(), group_id, "momentum");
+            status = write2h5(4, dims_grid_vec, h_g_force.data(), group_id, "force");
+            status = write2h5(3, dims_grid_scalar, h_g_mass.data(), group_id, "mass");
+            status = H5Gclose(group_id);
+            status = H5Fclose(file_id);
         }
-
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::g_save_to_file(const std::string &prefix, const int &timestep) const {
-
-            // convert timestep number to string (width of 7 chars, for up to 9,999,999,999 timesteps)
-            std::string str_timestep = std::to_string(timestep);
-            str_timestep = std::string(7-str_timestep.length(), '0') + str_timestep;
-
-            std::string fname {prefix + str_timestep};
-
-            std::ofstream outfile(fname);
-
-            const int i_width = 7, f_width = 12, f_precision=10;
-
-            outfile << std::setw(i_width) << "id "
-                    << std::setw(f_width) << "x "
-                    << std::setw(f_width) << "y "
-                    << std::setw(f_width) << "z "
-                    << std::setw(f_width) << "px "
-                    << std::setw(f_width) << "py "
-                    << std::setw(f_width) << "pz "
-                    << std::setw(f_width) << "mass "
-                    << std::setw(f_width) << "fx "
-                    << std::setw(f_width) << "fy "
-                    << std::setw(f_width) << "fz "
-                    << '\n';
-
-            for (int i = 0; i < m_ngrid[0]; ++i) {
-                for (int j = 0; j < m_ngrid[1]; ++j) {
-                    for (int k = 0; k < m_ngrid[2]; ++k) {
-                        const int idx = i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[2] + k;
-                        outfile << std::setw(i_width) << idx << ' ' << std::setprecision(f_precision)
-                                << std::setw(f_width) << std::fixed << m_mingrid[0]+i*m_g_cell_size << ' '
-                                << std::setw(f_width) << std::fixed << m_mingrid[1]+j*m_g_cell_size << ' '
-                                << std::setw(f_width) << std::fixed << m_mingrid[2]+k*m_g_cell_size << ' '
-                                << std::setw(f_width) << std::fixed << h_g_momentum(idx, 0) << ' '
-                                << std::setw(f_width) << std::fixed << h_g_momentum(idx, 1) << ' '
-                                << std::setw(f_width) << std::fixed << h_g_momentum(idx, 2) << ' '
-                                << std::setw(f_width) << std::fixed << h_g_mass(idx) << ' '
-                                << std::setw(f_width) << std::fixed << h_g_force(idx, 0) << ' '
-                                << std::setw(f_width) << std::fixed << h_g_force(idx, 1) << ' '
-                                << std::setw(f_width) << std::fixed << h_g_force(idx, 2) << ' '
-                                << '\n';
-                    }
-                }
-            }
-        }
-        
 
     }
 }

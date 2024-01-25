@@ -68,8 +68,7 @@ namespace GraMPM {
 
                 if (itimestep % save_timestep_interval == 0) {
                     myMPM.d2h();
-                    myMPM.p_save_to_file("p_", itimestep);
-                    myMPM.g_save_to_file("g_", itimestep);
+                    myMPM.save_to_h5("grampm_out_", itimestep);
                 }
 
             }

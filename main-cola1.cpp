@@ -90,10 +90,9 @@ int main() {
 
     myMPM.h2d();
 
-    myMPM.p_save_to_file("p_", 0);
-    myMPM.g_save_to_file("g_", 0);
+    myMPM.save_to_h5("grampm_out_", 0);
 
-    GraMPM::integrators::MUSL<ftype, MPM_type>(myMPM, dt, 1, 1, 1);
+    GraMPM::integrators::MUSL<ftype, MPM_type>(myMPM, dt, 500, 500, 500);
     }
     Kokkos::finalize();
 }
