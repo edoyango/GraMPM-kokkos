@@ -373,10 +373,10 @@ TEST(initialization_getters_setters, IO) {
     MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
         myMPM(pv, mingridx_in, maxgridx_in, dcell_in);
 
-    myMPM.p_save_to_file("testfile", 1);
+    myMPM.save_to_h5("testfile", 1);
 
     MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM2("testfile0000001", mingridx_in, maxgridx_in, dcell_in);
+        myMPM2("testfile0000001");
 
     ASSERT_EQ(myMPM2.p_size(), 5);
 

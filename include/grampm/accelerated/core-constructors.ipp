@@ -53,6 +53,14 @@ static std::array<double, 3> h5_get_maxgrid(std::string fname) {
     return maxgrid;
 }
 
+static herr_t read_h5(const int r, hsize_t* dims, double* data, const hid_t gid, const char* dset_name) {
+    herr_t status;
+    hid_t dset_id = H5Dopen(gid, dset_name, H5P_DEFAULT);
+    status = H5Dread(dset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+    status = H5Dclose(dset_id);
+    return status;
+}
+
 namespace GraMPM {
     namespace accelerated {
 
@@ -275,26 +283,24 @@ namespace GraMPM {
             , f_p_update_density(d_p_rho, d_p_strainrate)
             , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
         {
-            std::ifstream file(fname);
-            std::string line, header;
-            // pull out header
-            std::getline(file, header);
-            int i = 0;
-            while (std::getline(file, line)) {
-                std::istringstream iss(line);
-                int idx;
-                iss >> idx 
-                    >> h_p_x(i, 0) >> h_p_x(i, 1) >> h_p_x(i, 2) 
-                    >> h_p_v(i, 0) >> h_p_v(i, 1) >> h_p_v(i, 2) 
-                    >> h_p_mass(i) 
-                    >> h_p_rho(i) 
-                    >> h_p_sigma(i, 0) >> h_p_sigma(i, 1) >> h_p_sigma(i, 2)>> h_p_sigma(i, 3)>> h_p_sigma(i, 4)>> h_p_sigma(i, 5)
-                    >> h_p_a(i, 0) >> h_p_a(i, 1) >> h_p_a(i, 2)
-                    >> h_p_dxdt(i, 0) >> h_p_dxdt(i, 1) >> h_p_dxdt(i, 2)
-                    >> h_p_strainrate(i, 0) >> h_p_strainrate(i, 1) >> h_p_strainrate(i, 2) >> h_p_strainrate(i, 3) >> h_p_strainrate(i, 4) >> h_p_strainrate(i, 5)
-                    >> h_p_spinrate(i, 0) >> h_p_spinrate(i, 1) >> h_p_spinrate(i, 2);
-                i++;
-            }
+            herr_t status;
+            hid_t f_id = H5Fopen(fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+            hid_t g_id = H5Gopen(f_id, "/particles", H5P_DEFAULT);
+            hsize_t dims_vec[2] {h_p_x.extent(1), h_p_x.extent(0)}, 
+                dims_tens[2] {h_p_sigma.extent(1), h_p_sigma.extent(0)},
+                dims_spinrate_tens[2] {h_p_spinrate.extent(1), h_p_spinrate.extent(0)},
+                dims_scalar[1] {h_p_mass.extent(0)};
+            status = read_h5(2, dims_vec, h_p_x.data(), g_id, "x");
+            status = read_h5(2, dims_vec, h_p_v.data(), g_id, "v");
+            status = read_h5(2, dims_vec, h_p_a.data(), g_id, "a");
+            status = read_h5(2, dims_vec, h_p_dxdt.data(), g_id, "dxdt");
+            status = read_h5(2, dims_tens, h_p_sigma.data(), g_id, "sigma");
+            status = read_h5(2, dims_tens, h_p_strainrate.data(), g_id, "strainrate");
+            status = read_h5(2, dims_spinrate_tens, h_p_spinrate.data(), g_id, "spinrate");
+            status = read_h5(2, dims_scalar, h_p_mass.data(), g_id, "mass");
+            status = read_h5(2, dims_scalar, h_p_rho.data(), g_id, "rho");
+            status = H5Gclose(g_id);
+            status = H5Fclose(f_id);
         }
     }
 }

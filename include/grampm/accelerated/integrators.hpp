@@ -8,9 +8,9 @@ namespace GraMPM {
         
         template<typename F, typename MPMtype>
         void MUSL(MPMtype &myMPM, const F &dt, const int &max_timestep, 
-            const int &print_timestep_interval, const int &save_timestep_interval) {
+            const int &print_timestep_interval, const int &save_timestep_interval, const int start_timestep = 1) {
 
-            for (int itimestep = 1; itimestep < max_timestep+1; ++itimestep) {
+            for (int itimestep = start_timestep; itimestep < max_timestep+1; ++itimestep) {
 
                 // print to terminal
                 if (itimestep % print_timestep_interval == 0) {
