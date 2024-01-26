@@ -123,6 +123,36 @@ namespace GraMPM {
             return status;
         }
 
+        static herr_t write_grid_extents(const hid_t gid, const std::array<double, 3> mins, 
+            const std::array<double, 3> maxs) {
+            herr_t status;
+            hsize_t dims[1] {3};
+            hid_t dspace_id = H5Screate_simple(1, dims, NULL);
+            hid_t attr_id = H5Acreate2(gid, "mingrid", H5T_NATIVE_DOUBLE, dspace_id, H5P_DEFAULT, H5P_DEFAULT);
+            status = H5Awrite(attr_id, H5T_NATIVE_DOUBLE, mins.data());
+            status = H5Aclose(attr_id);
+            attr_id = H5Acreate2(gid, "maxgrid", H5T_NATIVE_DOUBLE, dspace_id, H5P_DEFAULT, H5P_DEFAULT);
+            status = H5Awrite(attr_id, H5T_NATIVE_DOUBLE, maxs.data());
+            status = H5Aclose(attr_id);
+            status = H5Sclose(dspace_id);
+            return status;
+        }
+
+        static herr_t write_grid_extents(const hid_t gid, const std::array<float, 3> mins, 
+            const std::array<float, 3> maxs) {
+            herr_t status;
+            hsize_t dims[1] {3};
+            hid_t dspace_id = H5Screate_simple(1, dims, NULL);
+            hid_t attr_id = H5Acreate2(gid, "mingrid", H5T_NATIVE_FLOAT, dspace_id, H5P_DEFAULT, H5P_DEFAULT);
+            status = H5Awrite(attr_id, H5T_NATIVE_FLOAT, mins.data());
+            status = H5Aclose(attr_id);
+            attr_id = H5Acreate2(gid, "maxgrid", H5T_NATIVE_FLOAT, dspace_id, H5P_DEFAULT, H5P_DEFAULT);
+            status = H5Awrite(attr_id, H5T_NATIVE_FLOAT, maxs.data());
+            status = H5Aclose(attr_id);
+            status = H5Sclose(dspace_id);
+            return status;
+        }
+
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::save_to_h5(const std::string &prefix, const int &timestep) const {
 
@@ -155,6 +185,7 @@ namespace GraMPM {
             hsize_t dims_grid_vec[4] {3, m_ngrid[2], m_ngrid[1], m_ngrid[0]},
                 dims_grid_scalar[3] {m_ngrid[2], m_ngrid[1], m_ngrid[0]};
             group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            status = write_grid_extents(group_id, m_mingrid, m_maxgrid);
             status = write2h5(4, dims_grid_vec, h_g_momentum.data(), group_id, "momentum");
             status = write2h5(4, dims_grid_vec, h_g_force.data(), group_id, "force");
             status = write2h5(3, dims_grid_scalar, h_g_mass.data(), group_id, "mass");
