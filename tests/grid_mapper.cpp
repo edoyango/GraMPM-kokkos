@@ -1,12 +1,12 @@
 // Ensuring that functions to determine grid neighbours do their job
 
 #include <gtest/gtest.h>
-#include <grampm.hpp>
 #include <grampm/accelerated/core.hpp>
 #include <grampm/accelerated/kernels.hpp>
 #include <grampm/accelerated/stressupdate.hpp>
 #include <algorithm>
 #include <array>
+#include <grampm_kernels.hpp>
 
 using namespace GraMPM::accelerated;
 

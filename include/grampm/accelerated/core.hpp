@@ -2,7 +2,6 @@
 #define GRAMPM_KOKKOS
 
 #include <Kokkos_Core.hpp>
-#include <grampm.hpp>
 #include <array>
 #include <Kokkos_StdAlgorithms.hpp>
 #include <string>
@@ -25,6 +24,27 @@ using intscalar_view_type = Kokkos::View<int*>;
 /*============================================================================================================*/
 
 namespace GraMPM {
+
+    template<typename F>
+    struct particle {
+        std::array<F, 3> x, v, a, dxdt;
+        std::array<F, 6> sigma, strainrate;
+        std::array<F, 3> spinrate;
+        F mass, rho;
+        particle(const F inx, const F iny, const F inz, const F invx, const F invy, const F invz, 
+            const F inmass, const F inrho, const F insigmaxx, const F insigmayy, const F insigmazz, 
+            const F insigmaxy, const F insigmaxz, const F insigmayz);
+        particle(const F inx, const F iny, const F inz, const F invx, const F invy, const F invz, const F inmass,
+            const F inrho, const F insigmaxx, const F insigmayy, const F insigmazz, const F insigmaxy, 
+            const F insigmaxz, const F insigmayz, const F inax, const F inay, const F inaz, const F indxdt, 
+            const F indydt, const F indzdt, const F instrainratexx, const F instrainrateyy, const F instrainratezz, 
+            const F instrainratexy, const F instrainratexz, const F instrainrateyz, const F inspinratexy,
+            const F inspinratexz, const F inspinrateyz);
+        particle(const std::array<F, 3> inx, const std::array<F, 3> inv, const F inmass, const F inrho, 
+            const std::array<F, 6> insigma, const std::array<F, 3> ina, const std::array<F, 3> indxdt, 
+            const std::array<F, 6> instrainrate, const std::array<F, 3> inspinrate);
+        particle();
+    };
 
     namespace accelerated {
 

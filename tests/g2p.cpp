@@ -1,4 +1,3 @@
-#include <grampm.hpp>
 #include <grampm/accelerated/core.hpp>
 #include <grampm/accelerated/kernels.hpp>
 #include <grampm/accelerated/stressupdate.hpp>

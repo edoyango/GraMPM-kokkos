@@ -2,7 +2,6 @@
 #include <grampm/accelerated/kernels.hpp>
 #include <grampm/accelerated/stressupdate.hpp>
 #include <Kokkos_Core.hpp>
-#include <grampm.hpp>
 #include <array>
 #include <vector>
 #include <grampm/accelerated/integrators.hpp>

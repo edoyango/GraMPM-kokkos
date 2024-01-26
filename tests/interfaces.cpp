@@ -1,6 +1,5 @@
 // tests to check that GraMPM and members have been initialized correctly
 
-#include <grampm.hpp>
 #include <algorithm>
 #include <grampm_kernels.hpp>
 #include <array>
