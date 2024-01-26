@@ -192,8 +192,8 @@ namespace GraMPM {
             status = write2h5(1, dims_scalar, h_p_rho.data(), group_id, "rho");
             status = H5Gclose(group_id);
 
-            hsize_t dims_grid_vec[4] {3, m_ngrid[2], m_ngrid[1], m_ngrid[0]},
-                dims_grid_scalar[3] {m_ngrid[2], m_ngrid[1], m_ngrid[0]};
+            hsize_t dims_grid_vec[4] {3, static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])},
+                dims_grid_scalar[3] {static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])};
             group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
             status = write_grid_extents(group_id, m_mingrid, m_maxgrid, m_g_cell_size);
             status = write2h5(4, dims_grid_vec, h_g_momentum.data(), group_id, "momentum");
@@ -257,8 +257,8 @@ namespace GraMPM {
             status = write2h5(1, dims_scalar, h_p_rho.data(), group_id, "rho");
             status = H5Gclose(group_id);
 
-            hsize_t dims_grid_vec[4] {3, m_ngrid[2], m_ngrid[1], m_ngrid[0]},
-                dims_grid_scalar[3] {m_ngrid[2], m_ngrid[1], m_ngrid[0]};
+            hsize_t dims_grid_vec[4] {3, static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])},
+                dims_grid_scalar[3] {static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])};
             group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
             status = write_grid_extents(group_id, m_mingrid, m_maxgrid, m_g_cell_size);
             Kokkos::fence();
