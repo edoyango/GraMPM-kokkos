@@ -416,7 +416,7 @@ TEST(initialization_getters_setters, IO) {
     }
 
     MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM3("testfile0000001");
+        myMPM3("testfile_async0000001");
 
     ASSERT_EQ(myMPM3.p_size(), 5);
 
