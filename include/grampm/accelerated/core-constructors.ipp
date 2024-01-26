@@ -2,13 +2,55 @@
 #define GRAMPM_ACCELERATED_CORE_CONSTRUCTORS
 
 #include <string>
+#include <hdf5.h>
 
-static int count_line(std::string fname) {
-    int n = 0;
-    std::string tmp;
-    std::ifstream ifs(fname);
-    while (std::getline(ifs, tmp)) n++;
-    return n;
+static int h5_get_nparticles(std::string fname) {
+    hid_t f_id = H5Fopen(fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    hid_t dset_id = H5Dopen(f_id, "/particles/x", H5P_DEFAULT);
+    hid_t dspace_id = H5Dget_space(dset_id);
+    int ndims = H5Sget_simple_extent_ndims(dspace_id);
+    hsize_t dims[ndims];
+    H5Sget_simple_extent_dims(dspace_id, dims, NULL);
+    H5Sclose(dspace_id);
+    H5Dclose(dset_id);
+    H5Fclose(f_id);
+    return dims[1];
+}
+
+static double h5_get_cellsize(std::string fname) {
+    hid_t f_id = H5Fopen(fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    hid_t g_id = H5Gopen(f_id, "/grid", H5P_DEFAULT);
+    hid_t attr_id = H5Aopen(g_id, "cell_size", H5P_DEFAULT);
+    double cell_size;
+    H5Aread(attr_id, H5T_NATIVE_DOUBLE, &cell_size);
+    H5Aclose(attr_id);
+    H5Gclose(g_id);
+    H5Fclose(f_id);
+    return cell_size;
+}
+
+static std::array<double, 3> h5_get_mingrid(std::string fname) {
+    hid_t f_id = H5Fopen(fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    hid_t g_id = H5Gopen(f_id, "/grid", H5P_DEFAULT);
+    hid_t attr_id = H5Aopen(g_id, "mingrid", H5P_DEFAULT);
+    std::array<double, 3> mingrid;
+    H5Aread(attr_id, H5T_NATIVE_DOUBLE, mingrid.data());
+    H5Aclose(attr_id);
+    H5Gclose(g_id);
+    H5Fclose(f_id);
+    return mingrid;
+}
+
+static std::array<double, 3> h5_get_maxgrid(std::string fname) {
+    hid_t f_id = H5Fopen(fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    hid_t g_id = H5Gopen(f_id, "/grid", H5P_DEFAULT);
+    hid_t attr_id = H5Aopen(g_id, "maxgrid", H5P_DEFAULT);
+    std::array<double, 3> maxgrid;
+    H5Aread(attr_id, H5T_NATIVE_DOUBLE, maxgrid.data());
+    H5Aclose(attr_id);
+    H5Gclose(g_id);
+    H5Fclose(f_id);
+    return maxgrid;
 }
 
 namespace GraMPM {
@@ -168,16 +210,16 @@ namespace GraMPM {
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(std::string fname, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
-            : knl(dcell)
-            , m_p_size {count_line(fname)-1}
-            , m_g_cell_size {dcell}
-            , m_mingrid {mingrid}
-            , m_maxgrid {maxgrid}
+        MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(std::string fname)
+            : knl(h5_get_cellsize(fname))
+            , m_p_size {h5_get_nparticles(fname)}
+            , m_g_cell_size {h5_get_cellsize(fname)}
+            , m_mingrid {h5_get_mingrid(fname)}
+            , m_maxgrid {h5_get_maxgrid(fname)}
             , m_ngrid{
-                static_cast<int>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
-                static_cast<int>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
-                static_cast<int>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
+                static_cast<int>(std::ceil((m_maxgrid[0]-m_mingrid[0])/m_g_cell_size))+1,
+                static_cast<int>(std::ceil((m_maxgrid[1]-m_mingrid[1])/m_g_cell_size))+1,
+                static_cast<int>(std::ceil((m_maxgrid[2]-m_mingrid[2])/m_g_cell_size))+1
             }
             , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
             , d_p_x("Particles' 3D positions", m_p_size)
@@ -215,9 +257,9 @@ namespace GraMPM {
             , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
             , f_momentum_boundary(d_g_momentum, m_ngrid[0], m_ngrid[1], m_ngrid[2])
             , f_force_boundary(d_g_force, m_ngrid[0], m_ngrid[1], m_ngrid[2])
-            , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
+            , f_map_gidx(m_g_cell_size, m_mingrid[0], m_mingrid[1], m_mingrid[2], m_ngrid[0], m_ngrid[1], 
                 m_ngrid[2], d_p_x, d_p_grid_idx)
-            , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
+            , f_find_neighbour_nodes(m_g_cell_size, m_mingrid[0], m_mingrid[1], m_mingrid[2], m_ngrid[0], m_ngrid[1],
                 m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
             , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
             , f_map_p2g_momentum(pg_npp, d_p_mass, d_p_v, d_g_momentum, d_pg_nn, d_pg_w)

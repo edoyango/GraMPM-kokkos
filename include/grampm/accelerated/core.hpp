@@ -106,7 +106,7 @@ namespace GraMPM {
                 // initialize size - fill data later
                 MPM_system(const int n, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell);
                 // from file
-                MPM_system(std::string fname, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell);
+                MPM_system(std::string fname);
                 // transfer data to device
                 void h2d();
                 // transfer data to host

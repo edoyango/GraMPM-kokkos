@@ -144,7 +144,7 @@ namespace GraMPM {
         }
 
         static herr_t write_grid_extents(const hid_t gid, const std::array<float, 3> mins, 
-            const std::array<float, 3> maxs) {
+            const std::array<float, 3> maxs, const float dcell) {
             herr_t status;
             hsize_t dims[1] {3};
             hid_t dspace_id = H5Screate_simple(1, dims, NULL);
