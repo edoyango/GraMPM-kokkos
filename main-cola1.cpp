@@ -90,9 +90,6 @@ int main() {
     myMPM.h2d();
 
     myMPM.save_to_h5("grampm_out_", 0);
-    std::array<ftype, 3> tmp_mingrid {h5_get_mingrid("grampm_out_0000000")};
-    std::cout << h5_get_nparticles("grampm_out_0000000") << ' ' << h5_get_cellsize("grampm_out_0000000") << 
-        ' ' << tmp_mingrid[0] << ' ' << tmp_mingrid[1] << ' ' << tmp_mingrid[2] << '\n';
     GraMPM::integrators::MUSL<ftype, MPM_type>(myMPM, dt, 1, 1, 1);
     }
     Kokkos::finalize();
