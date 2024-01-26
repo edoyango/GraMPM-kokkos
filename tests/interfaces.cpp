@@ -374,6 +374,9 @@ TEST(initialization_getters_setters, IO) {
 
     myMPM.save_to_h5("testfile", 1);
 
+    myMPM.h2d();
+    myMPM.save_to_h5_async("testfile_async", 1);
+
     MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
         myMPM2("testfile0000001");
 
@@ -410,6 +413,44 @@ TEST(initialization_getters_setters, IO) {
         EXPECT_DOUBLE_EQ(myMPM2.p_spinratexy(i), -1.3*i) << "read/write of spinratexy at " << i << "incorrect";
         EXPECT_DOUBLE_EQ(myMPM2.p_spinratexz(i), -1.4*i) << "read/write of spinratexz at " << i << "incorrect";
         EXPECT_DOUBLE_EQ(myMPM2.p_spinrateyz(i), -1.5*i) << "read/write of spinrateyz at " << i << "incorrect";
+    }
+
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM3("testfile0000001");
+
+    ASSERT_EQ(myMPM3.p_size(), 5);
+
+    // check that manual setter functions work
+    for (int i = 0; i < myMPM3.p_size(); ++i) {
+        EXPECT_DOUBLE_EQ(myMPM3.p_x(i), 1.*i) << "read/write of x at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_y(i), 2.*i) << "read/write of y at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_z(i), 3.*i) << "read/write of z at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_vx(i), 4.*i) << "read/write of vx at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_vy(i), 5.*i) << "read/write of vy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_vz(i), 6.*i) << "read/write of vz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_ax(i), 7.*i) << "read/write of ax at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_ay(i), 8.*i) << "read/write of ay at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_az(i), 9.*i) << "read/write of az at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_dxdt(i), 10.*i) << "read/write of dxdt at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_dydt(i), 11.*i) << "read/write of dydt at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_dzdt(i), 12.*i) << "read/write of dzdt at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_mass(i), 30.*i) << "read/write of mass at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_rho(i), 40.*i) << "read/write of rho at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_sigmaxx(i), -0.1*i) << "read/write of sigmaxx at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_sigmayy(i), -0.2*i) << "read/write of sigmayy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_sigmazz(i), -0.3*i) << "read/write of sigmazz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_sigmaxy(i), -0.4*i) << "read/write of sigmaxy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_sigmaxz(i), -0.5*i) << "read/write of sigmaxz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_sigmayz(i), -0.6*i) << "read/write of sigmayz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_strainratexx(i), -0.7*i) << "read/write of strainratexx at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_strainrateyy(i), -0.8*i) << "read/write of strainrateyy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_strainratezz(i), -0.9*i) << "read/write of strainratezz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_strainratexy(i), -1.0*i) << "read/write of strainratexy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_strainratexz(i), -1.1*i) << "read/write of strainratexz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_strainrateyz(i), -1.2*i) << "read/write of strainrateyz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_spinratexy(i), -1.3*i) << "read/write of spinratexy at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_spinratexz(i), -1.4*i) << "read/write of spinratexz at " << i << "incorrect";
+        EXPECT_DOUBLE_EQ(myMPM3.p_spinrateyz(i), -1.5*i) << "read/write of spinrateyz at " << i << "incorrect";
     }
 }
 
