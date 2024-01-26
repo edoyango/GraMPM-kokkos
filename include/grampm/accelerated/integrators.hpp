@@ -67,8 +67,8 @@ namespace GraMPM {
                 myMPM.p_update_stress(dt);
 
                 if (itimestep % save_timestep_interval == 0) {
-                    myMPM.d2h();
-                    myMPM.save_to_h5("grampm_out_", itimestep);
+                    // myMPM.d2h();
+                    myMPM.save_to_h5_async("grampm_out_", itimestep);
                 }
 
             }

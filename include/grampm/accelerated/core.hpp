@@ -228,7 +228,7 @@ namespace GraMPM {
                 int calc_idx(const int i, const int j, const int k) const;
 
                 void save_to_h5(const std::string &prefix, const int &timestep) const;
-                void g_save_to_file(const std::string &prefix, const int &timestep) const;
+                void save_to_h5_async(const std::string &prefix, const int &timestep) const;
                 
                 // operations
                 void update_particle_to_cell_map();

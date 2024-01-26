@@ -203,6 +203,76 @@ namespace GraMPM {
             status = H5Fclose(file_id);
         }
 
+        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
+        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::save_to_h5_async(const std::string &prefix, const int &timestep) const {
+
+            // initiate transfer of first batch of data
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_x, d_p_x);
+
+            // do stuff
+            // convert timestep number to string (width of 7 chars, for up to 9,999,999,999 timesteps)
+            std::string str_timestep = std::to_string(timestep);
+            str_timestep = std::string(7-str_timestep.length(), '0') + str_timestep;
+
+            std::string fname {prefix + str_timestep};
+
+            herr_t status;
+
+            hsize_t dims_vec[2] {h_p_x.extent(1), h_p_x.extent(0)},
+                dims_tens[2] {h_p_sigma.extent(1), h_p_sigma.extent(0)},
+                dims_scalar[1] {h_p_rho.extent(0)},
+                dims_spintens[2] {h_p_spinrate.extent(1), h_p_spinrate.extent(0)};
+            
+            hid_t file_id = H5Fcreate(fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+            hid_t group_id = H5Gcreate(file_id, "/particles", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            
+            // wait for first batch of data
+            Kokkos::fence();
+            // initiate next batch
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_v, d_p_v);
+            status = write2h5(2, dims_vec, h_p_x.data(), group_id, "x");
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_a, d_p_a);
+            status = write2h5(2, dims_vec, h_p_v.data(), group_id, "v");
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_dxdt, d_p_dxdt);
+            status = write2h5(2, dims_vec, h_p_a.data(), group_id, "a");
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_sigma, d_p_sigma);
+            status = write2h5(2, dims_vec, h_p_dxdt.data(), group_id, "dxdt");
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_strainrate, d_p_strainrate);
+            status = write2h5(2, dims_tens, h_p_sigma.data(), group_id, "sigma");
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_spinrate, d_p_spinrate);
+            status = write2h5(2, dims_tens, h_p_strainrate.data(), group_id, "strainrate");
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_mass, d_p_mass);
+            status = write2h5(2, dims_spintens, h_p_spinrate.data(), group_id, "spinrate");
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_rho, d_p_rho);
+            status = write2h5(1, dims_scalar, h_p_mass.data(), group_id, "mass");
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_g_momentum, d_g_momentum);
+            status = write2h5(1, dims_scalar, h_p_rho.data(), group_id, "rho");
+            status = H5Gclose(group_id);
+
+            hsize_t dims_grid_vec[4] {3, m_ngrid[2], m_ngrid[1], m_ngrid[0]},
+                dims_grid_scalar[3] {m_ngrid[2], m_ngrid[1], m_ngrid[0]};
+            group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            status = write_grid_extents(group_id, m_mingrid, m_maxgrid, m_g_cell_size);
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_g_force, d_g_force);
+            status = write2h5(4, dims_grid_vec, h_g_momentum.data(), group_id, "momentum");
+            Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_g_mass, d_g_mass);
+            status = write2h5(4, dims_grid_vec, h_g_force.data(), group_id, "force");
+            Kokkos::fence();
+            status = write2h5(3, dims_grid_scalar, h_g_mass.data(), group_id, "mass");
+            status = H5Gclose(group_id);
+            status = H5Fclose(file_id);
+        }
+
     }
 }
 #endif
