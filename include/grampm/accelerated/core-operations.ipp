@@ -40,6 +40,12 @@ namespace GraMPM {
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
+        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::map_p2g_sigma() {
+            Kokkos::deep_copy(d_g_sigma, F(0.));
+            Kokkos::parallel_for("map particle sigma to grid", m_p_size, f_map_p2g_sigma);
+        }
+
+        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::map_g2p_acceleration() {
             Kokkos::parallel_for("map grid force/momentum to particles", m_p_size, f_map_g2p_acceleration);
         }

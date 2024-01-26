@@ -215,6 +215,40 @@ namespace GraMPM {
             };
 
             template<typename F>
+            struct map_p2g_sigma {
+                const int npp;
+                const Kokkos::View<F*[6]> p_sigma;
+                const Kokkos::View<F*[6], Kokkos::MemoryTraits<Kokkos::Atomic>> g_sigma;
+                const Kokkos::View<int*> pg;
+                const Kokkos::View<F*> w;
+                map_p2g_sigma(int npp_, Kokkos::View<F*[6]> p_sigma_, Kokkos::View<F*[6]> g_sigma_, Kokkos::View<int*> pg_, 
+                    Kokkos::View<F*> w_)
+                    : npp {npp_}
+                    , p_sigma {p_sigma_}
+                    , g_sigma {g_sigma_}
+                    , pg {pg_}
+                    , w {w_}
+                {
+                }
+                KOKKOS_INLINE_FUNCTION
+                void operator()(const int i) const {
+                    const int jstart = i*npp;
+                    const F sigixx = p_sigma(i, 0), sigiyy = p_sigma(i, 1), sigizz = p_sigma(i, 2), 
+                        sigixy = p_sigma(i, 3), sigixz = p_sigma(i, 4), sigiyz = p_sigma(i, 5);
+                    for (int j = jstart; j < jstart + npp; ++j) {
+                        const int idx = pg(j);
+                        const F wj = w(j);
+                        g_sigma(idx, 0) += sigixx*wj;
+                        g_sigma(idx, 1) += sigiyy*wj;
+                        g_sigma(idx, 2) += sigizz*wj;
+                        g_sigma(idx, 3) += sigixy*wj;
+                        g_sigma(idx, 4) += sigixz*wj;
+                        g_sigma(idx, 5) += sigiyz*wj;
+                    }
+                }
+            };
+
+            template<typename F>
             struct map_g2p_acceleration {
                 const int npp;
                 const Kokkos::View<F*[3]> p_a, g_force, p_dxdt, g_momentum;

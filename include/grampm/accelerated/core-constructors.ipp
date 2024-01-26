@@ -126,7 +126,7 @@ namespace GraMPM {
         , rho {0.}
     {
     }
-    
+
     namespace accelerated {
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
@@ -150,6 +150,7 @@ namespace GraMPM {
             , d_g_force("Grid cells' 3D force", m_g_size)
             , d_p_sigma("Particles' 3D cauchy stress tensor", m_p_size)
             , d_p_strainrate("Particles' 3D cauchy strain rate tensor", m_p_size)
+            , d_g_sigma("Grid 3D cauchy stress tensor", m_g_size)
             , d_p_spinrate("Particles' 3D cauchy spin rate tensor (off-axis elements only)", m_p_size)
             , d_p_mass("Particles' mass", m_p_size)
             , d_p_rho("Particles' mass", m_p_size)
@@ -167,6 +168,7 @@ namespace GraMPM {
             , h_g_force{create_mirror_view(d_g_force)}
             , h_p_sigma{create_mirror_view(d_p_sigma)}
             , h_p_strainrate{create_mirror_view(d_p_strainrate)}
+            , h_g_sigma{create_mirror_view(d_g_sigma)}
             , h_p_spinrate{create_mirror_view(d_p_spinrate)}
             , h_p_mass{create_mirror_view(d_p_mass)}
             , h_p_rho{create_mirror_view(d_p_rho)}
@@ -185,6 +187,7 @@ namespace GraMPM {
             , f_map_p2g_momentum(pg_npp, d_p_mass, d_p_v, d_g_momentum, d_pg_nn, d_pg_w)
             , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
                 m_body_force[0], m_body_force[1], m_body_force[2])
+            , f_map_p2g_sigma(pg_npp, d_p_sigma, d_g_sigma, d_pg_nn, d_pg_w)
             , f_map_g2p_acceleration(pg_npp, d_p_a, d_g_force, d_p_dxdt, d_g_momentum, d_g_mass, d_pg_w, 
                 d_pg_nn)
             , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
@@ -235,6 +238,7 @@ namespace GraMPM {
             , d_g_force("Grid cells' 3D force", m_g_size)
             , d_p_sigma("Particles' 3D cauchy stress tensor", m_p_size)
             , d_p_strainrate("Particles' 3D cauchy strain rate tensor", m_p_size)
+            , d_g_sigma("Grid 3D cauchy stress tensor", m_g_size)
             , d_p_spinrate("Particles' 3D cauchy spin rate tensor (off-axis elements only)", m_p_size)
             , d_p_mass("Particles' mass", m_p_size)
             , d_p_rho("Particles' mass", m_p_size)
@@ -252,6 +256,7 @@ namespace GraMPM {
             , h_g_force{create_mirror_view(d_g_force)}
             , h_p_sigma{create_mirror_view(d_p_sigma)}
             , h_p_strainrate{create_mirror_view(d_p_strainrate)}
+            , h_g_sigma{create_mirror_view(d_g_sigma)}
             , h_p_spinrate{create_mirror_view(d_p_spinrate)}
             , h_p_mass{create_mirror_view(d_p_mass)}
             , h_p_rho{create_mirror_view(d_p_rho)}
@@ -270,6 +275,7 @@ namespace GraMPM {
             , f_map_p2g_momentum(pg_npp, d_p_mass, d_p_v, d_g_momentum, d_pg_nn, d_pg_w)
             , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
                 m_body_force[0], m_body_force[1], m_body_force[2])
+            , f_map_p2g_sigma(pg_npp, d_p_sigma, d_g_sigma, d_pg_nn, d_pg_w)
             , f_map_g2p_acceleration(pg_npp, d_p_a, d_g_force, d_p_dxdt, d_g_momentum, d_g_mass, d_pg_w, 
                 d_pg_nn)
             , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
@@ -303,6 +309,7 @@ namespace GraMPM {
             , d_g_force("Grid cells' 3D force", m_g_size)
             , d_p_sigma("Particles' 3D cauchy stress tensor", m_p_size)
             , d_p_strainrate("Particles' 3D cauchy strain rate tensor", m_p_size)
+            , d_g_sigma("Grid 3D cauchy stress tensor", m_g_size)
             , d_p_spinrate("Particles' 3D cauchy spin rate tensor (off-axis elements only)", m_p_size)
             , d_p_mass("Particles' mass", m_p_size)
             , d_p_rho("Particles' mass", m_p_size)
@@ -320,6 +327,7 @@ namespace GraMPM {
             , h_g_force{create_mirror_view(d_g_force)}
             , h_p_sigma{create_mirror_view(d_p_sigma)}
             , h_p_strainrate{create_mirror_view(d_p_strainrate)}
+            , h_g_sigma{create_mirror_view(d_g_sigma)}
             , h_p_spinrate{create_mirror_view(d_p_spinrate)}
             , h_p_mass{create_mirror_view(d_p_mass)}
             , h_p_rho{create_mirror_view(d_p_rho)}
@@ -338,6 +346,7 @@ namespace GraMPM {
             , f_map_p2g_momentum(pg_npp, d_p_mass, d_p_v, d_g_momentum, d_pg_nn, d_pg_w)
             , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
                 m_body_force[0], m_body_force[1], m_body_force[2])
+            , f_map_p2g_sigma(pg_npp, d_p_sigma, d_g_sigma, d_pg_nn, d_pg_w)
             , f_map_g2p_acceleration(pg_npp, d_p_a, d_g_force, d_p_dxdt, d_g_momentum, d_g_mass, d_pg_w, 
                 d_pg_nn)
             , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 
