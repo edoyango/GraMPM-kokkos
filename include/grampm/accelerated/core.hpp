@@ -118,6 +118,10 @@ namespace GraMPM {
                 functors::update_data<F> f_g_update_momentum, f_p_update_velocity, f_p_update_position;
                 functors::update_density<F> f_p_update_density;
 
+#ifdef GRAMPM_MPI
+                std::array<F, 3> m_ORB_mingrid, m_ORB_maxgrid;
+#endif
+
             public:
                 stress_update f_stress_update;
                 
@@ -248,6 +252,16 @@ namespace GraMPM {
                 void p_update_position(const F &dt);
                 void p_update_density(const F &dt);
 
+#ifdef GRAMPM_MPI
+                void ORB_determine_boundaries();
+                F ORB_mingridx() const {return m_ORB_mingrid[0];}
+                F ORB_mingridy() const {return m_ORB_mingrid[1];}
+                F ORB_mingridz() const {return m_ORB_mingrid[2];}
+                F ORB_maxgridx() const {return m_ORB_maxgrid[0];}
+                F ORB_maxgridy() const {return m_ORB_maxgrid[1];}
+                F ORB_maxgridz() const {return m_ORB_maxgrid[2];}
+#endif
+
         };
     }
 }
@@ -255,4 +269,7 @@ namespace GraMPM {
 #include <grampm/accelerated/core-constructors.ipp>
 #include <grampm/accelerated/core-helpers.ipp>
 #include <grampm/accelerated/core-operations.ipp>
+#ifdef GRAMPM_MPI
+#include <grampm/accelerated/mpi.ipp>
+#endif
 #endif

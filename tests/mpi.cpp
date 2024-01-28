@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include <Kokkos_Core.hpp>
 #include <mpi.h>
+#include <algorithm>
 
 using namespace GraMPM::accelerated;
 
@@ -45,9 +46,9 @@ TEST(ORB, uniform_square) {
             for (int k = 0; k < zp; ++k) {
                 if (n >= nstart && n < nend) {
                     GraMPM::particle<double> p;
-                    p.x[0] = mingridx_in[0] + (i+0.5)*dcell_in/2.;
-                    p.x[1] = mingridx_in[1] + (j+0.5)*dcell_in/2.;
-                    p.x[2] = mingridx_in[2] + (k+0.5)*dcell_in/2.;
+                    p.x[0] = (i+0.5)*dcell_in/2.;
+                    p.x[1] = (j+0.5)*dcell_in/2.;
+                    p.x[2] = (k+0.5)*dcell_in/2.;
                     vp.push_back(p);
                 }
                 n++;
@@ -59,6 +60,19 @@ TEST(ORB, uniform_square) {
         myMPM(vp, mingridx_in, maxgridx_in, dcell_in);
 
     ASSERT_EQ(myMPM.p_size(), 2000);
+
+    myMPM.update_particle_to_cell_map();
+
+    myMPM.ORB_determine_boundaries();
+
+    if (procid == 0) {
+        EXPECT_EQ(myMPM.ORB_mingridx(), -0.1);
+        EXPECT_EQ(myMPM.ORB_mingridy(), -0.1);
+        EXPECT_EQ(myMPM.ORB_mingridz(), -0.1);
+        EXPECT_EQ(myMPM.ORB_maxgridx(), 0.5);
+        EXPECT_EQ(myMPM.ORB_maxgridy(), 0.5);
+        EXPECT_EQ(myMPM.ORB_maxgridz(), 1.1);
+    }
 }
 
 int main(int argc, char *argv[]) {
