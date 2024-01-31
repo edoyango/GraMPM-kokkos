@@ -268,6 +268,8 @@ struct ORB_sum_layers_by_z {
     }
 };
 
+typedef Kokkos::MinLoc<int, int>::value_type minloc_type;
+
 template<typename F>
 static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx[3], const int maxidx[3], 
     F ORB_mingrid[3], F ORB_maxgrid[3], const F mingrid_global[3], const F cell_size, const Kokkos::View<const int***> &pincell_in) {
@@ -326,12 +328,15 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx
     const F target_ratio = std::ceil(F(numprocs_in)*0.5)/F(numprocs_in);
     const int target_np_lower = target_ratio*node_in.n;
 
-    int loc;
-    Kokkos::parallel_reduce("find threshold", gridsums.size(), KOKKOS_LAMBDA(const int i, int &loc) {
-        loc = (loc < gridsums.size()) ? loc : gridsums.size()-1;
-        if (Kokkos::abs(gridsums(i)-target_np_lower) < Kokkos::abs(gridsums(loc)-target_np_lower)) loc = i;
-    }, Kokkos::Min<int>(loc));
-    int np_lower = h_gridsums(loc);
+    minloc_type minloc;
+    Kokkos::parallel_reduce("find cut location", gridsums.size(), KOKKOS_LAMBDA (const int &i, minloc_type &lminloc) {
+        const int diffi = Kokkos::abs(gridsums(i)-target_np_lower);
+        if (diffi < lminloc.val) {
+            lminloc.val = diffi;
+            lminloc.loc = i;
+        }
+    }, Kokkos::MinLoc<int, int>(minloc));
+    const int loc = minloc.loc, np_lower = h_gridsums(minloc.loc);
 
     // determine next step in the tree
     ORB_tree_node node_lo, node_hi;
