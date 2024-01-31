@@ -77,6 +77,7 @@ namespace GraMPM {
                 const std::array<F, dims> m_mingrid, m_maxgrid;
                 const std::array<int, dims> m_ngrid;
                 const int m_g_size;
+                int procid, numprocs, m_p_size_global;
 
                 // device views
                 spatial_view_type<F> d_p_x, d_p_v, d_p_a, d_p_dxdt, d_g_momentum, d_g_force;

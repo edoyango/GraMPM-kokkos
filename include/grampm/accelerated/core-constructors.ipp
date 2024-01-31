@@ -3,6 +3,7 @@
 
 #include <string>
 #include <hdf5.h>
+#include <mpi.h>
 
 static int h5_get_nparticles(std::string fname) {
     hid_t f_id = H5Fopen(fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
@@ -77,6 +78,7 @@ namespace GraMPM {
         , mass {inmass}
         , rho {inrho}
     {
+
     }
 
     template<typename F>
@@ -215,6 +217,8 @@ namespace GraMPM {
                 h_p_mass(i) = pv[i].mass;
                 h_p_rho(i) = pv[i].rho;
             }
+            MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+            MPI_Comm_rank(MPI_COMM_WORLD, &procid);
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
@@ -286,6 +290,8 @@ namespace GraMPM {
             , f_p_update_density(d_p_rho, d_p_strainrate)
             , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
         {
+            MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+            MPI_Comm_rank(MPI_COMM_WORLD, &procid);
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
@@ -357,6 +363,8 @@ namespace GraMPM {
             , f_p_update_density(d_p_rho, d_p_strainrate)
             , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
         {
+            MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+            MPI_Comm_rank(MPI_COMM_WORLD, &procid);
             herr_t status;
             hid_t f_id = H5Fopen(fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
             hid_t g_id = H5Gopen(f_id, "/particles", H5P_DEFAULT);
