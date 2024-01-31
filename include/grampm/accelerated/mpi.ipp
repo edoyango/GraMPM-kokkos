@@ -136,6 +136,48 @@ struct ORB_tree_node {
     int node_id, proc_range[2], n, idx_start[3], idx_end[3];
 };
 
+struct ORB_find_local_coverage_func {
+    const Kokkos::View<const int*> grid_idx;
+    const int global_ngrid[3];
+    ORB_find_local_coverage_func(const Kokkos::View<int*> grid_idx_, const int global_ngrid_[3])
+        : grid_idx {grid_idx_}
+        , global_ngrid {global_ngrid_[0], global_ngrid_[1], global_ngrid_[2]}
+    {}
+    KOKKOS_INLINE_FUNCTION
+    void operator()(const int i, int& lminx, int& lminy, int& lminz, int& lmaxx, int& lmaxy, int& lmaxz) const {
+        const int idx = grid_idx(i), 
+            idxx = idx/(global_ngrid[1]*global_ngrid[2]), 
+            idxy = (idx % (global_ngrid[1]*global_ngrid[2]))/global_ngrid[2], 
+            idxz = idx-idxx*global_ngrid[1]*global_ngrid[2]-idxy*global_ngrid[2];
+        if (idxx < lminx) lminx = idxx;
+        if (idxy < lminy) lminy = idxy;
+        if (idxz < lminz) lminz = idxz;
+        if (idxx > lmaxx) lmaxx = idxx;
+        if (idxy > lmaxy) lmaxy = idxy;
+        if (idxz > lmaxz) lmaxz = idxz;
+    }
+};
+
+struct ORB_populate_pincell_func {
+    const Kokkos::View<const int*> grid_idx;
+    const Kokkos::View<int***> p;
+    const int global_ngrid[3], minidx[3];
+    ORB_populate_pincell_func(const Kokkos::View<int*> grid_idx_, const Kokkos::View<int***> p_, const int global_ngrid_[3], const int minidx_[3])
+        : grid_idx {grid_idx_}
+        , p {p_}
+        , global_ngrid {global_ngrid_[0], global_ngrid_[1], global_ngrid_[2]}
+        , minidx {minidx_[0], minidx_[1], minidx_[2]}
+    {}
+    KOKKOS_INLINE_FUNCTION
+    void operator()(const int i) const {
+        const int idx = grid_idx(i), 
+            idxx = idx/(global_ngrid[1]*global_ngrid[2]), 
+            idxy = (idx % (global_ngrid[1]*global_ngrid[2]))/global_ngrid[2], 
+            idxz = idx-idxx*global_ngrid[1]*global_ngrid[2]-idxy*global_ngrid[2];
+        Kokkos::atomic_increment(&p(idxx-minidx[0], idxy-minidx[1], idxz-minidx[2]));
+    }
+};
+
 template<typename F>
 static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx[3], const int maxidx[3], 
     F ORB_mingrid[3], F ORB_maxgrid[3], const F mingrid_global[3], const F cell_size, const Kokkos::View<const int***> &pincell_in) {
@@ -301,18 +343,7 @@ namespace GraMPM {
             Kokkos::parallel_reduce(
                 "reduce",
                 m_p_size,
-                KOKKOS_LAMBDA (const int i, int& lminx, int& lminy, int& lminz, int& lmaxx, int& lmaxy, int& lmaxz) {
-                    const int idx = d_p_grid_idx(i), 
-                        idxx = idx/(m_ngrid[1]*m_ngrid[2]), 
-                        idxy = (idx % (m_ngrid[1]*m_ngrid[2]))/m_ngrid[2], 
-                        idxz = idx-idxx*m_ngrid[1]*m_ngrid[2]-idxy*m_ngrid[2];
-                    if (idxx < lminx) lminx = idxx;
-                    if (idxy < lminy) lminy = idxy;
-                    if (idxz < lminz) lminz = idxz;
-                    if (idxx > lmaxx) lmaxx = idxx;
-                    if (idxy > lmaxy) lmaxy = idxy;
-                    if (idxz > lmaxz) lmaxz = idxz;
-                },
+                ORB_find_local_coverage_func(d_p_grid_idx, m_ngrid.data()),
                 Kokkos::Min<int>(minidx[0]),
                 Kokkos::Min<int>(minidx[1]),
                 Kokkos::Min<int>(minidx[2]),
@@ -345,13 +376,7 @@ namespace GraMPM {
 
             Kokkos::parallel_for("populate pincell", 
                 m_p_size, 
-                KOKKOS_LAMBDA (const int i) {
-                    const int idx = d_p_grid_idx(i), 
-                        idxx = idx/(m_ngrid[1]*m_ngrid[2]), 
-                        idxy = (idx % (m_ngrid[1]*m_ngrid[2]))/m_ngrid[2], 
-                        idxz = idx-idxx*m_ngrid[1]*m_ngrid[2]-idxy*m_ngrid[2];
-                    Kokkos::atomic_increment(&pincell(idxx-minidx[0], idxy-minidx[1], idxz-minidx[2]));
-                }
+                ORB_populate_pincell_func(d_p_grid_idx, pincell, m_ngrid.data(), minidx)
             );
 
             MPI_Status stat;
