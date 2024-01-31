@@ -31,7 +31,7 @@ TEST(ORB, test_cax) {
 
     // 4 procs stitched together creates 
     Kokkos::View<int***> p("number of particles in cells, local", 10, 5, 5);
-    typename Kokkos::View<int***>::HostMirror h_p(p);
+    typename Kokkos::View<int***>::HostMirror h_p(create_mirror_view(p));
     Kokkos::deep_copy(h_p, 0);
     int minidx[3], maxidx[3];
     if (procid==0) {
