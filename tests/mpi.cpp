@@ -141,6 +141,8 @@ TEST(ORB, boundaries) {
 
     EXPECT_EQ(myMPM.p_size(), 2000);
 
+    myMPM.h2d();
+
     myMPM.update_particle_to_cell_map();
 
     myMPM.ORB_determine_boundaries();
