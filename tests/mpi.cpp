@@ -115,7 +115,7 @@ TEST(ORB, boundaries) {
 
     const int nperproc = std::ceil(static_cast<double>(ntotal)/numprocs);
 
-    ASSERT_EQ(nperproc, 2000);
+    EXPECT_EQ(nperproc, 2000);
     const int nstart = procid*nperproc;
     const int nend = std::min(ntotal, (procid+1)*nperproc);
     
@@ -139,7 +139,7 @@ TEST(ORB, boundaries) {
     MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
         myMPM(vp, mingridx_in, maxgridx_in, dcell_in);
 
-    ASSERT_EQ(myMPM.p_size(), 2000);
+    EXPECT_EQ(myMPM.p_size(), 2000);
 
     myMPM.update_particle_to_cell_map();
 

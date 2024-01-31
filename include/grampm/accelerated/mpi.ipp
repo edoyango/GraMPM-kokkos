@@ -178,6 +178,96 @@ struct ORB_populate_pincell_func {
     }
 };
 
+struct ORB_sum_layers_by_x {
+    const Kokkos::View<const int***> p;
+    const Kokkos::View<int*> gridsums;
+    const int minidx[3], idx_start[3], idx_end[3];
+    ORB_sum_layers_by_x(Kokkos::View<const int***> p_, Kokkos::View<int*> gridsums_, const int minidx_[3], const int idx_start_[3], 
+        const int idx_end_[3])
+        : p {p_}
+        , gridsums {gridsums_}
+        , minidx {minidx_[0], minidx_[1], minidx_[2]}
+        , idx_start {idx_start_[0], idx_start_[1], idx_start_[2]}
+        , idx_end {idx_end_[0], idx_end_[1], idx_end_[2]}
+    {}
+    KOKKOS_INLINE_FUNCTION
+    void operator()(const int i) const {
+        const int globali = minidx[0] + i;
+        for (int j = 0; j < p.extent(1); ++j) {
+            for (int k = 0; k < p.extent(2); ++k) {
+                int globalj = minidx[1] + j;
+                int globalk = minidx[2] + k;
+                if (globali >= idx_start[0] && globali < idx_end[0] && 
+                    globalj >= idx_start[1] && globalj < idx_end[1] &&
+                    globalk >= idx_start[2] && globalk < idx_end[2]) {
+                    const int nodei = globali - idx_start[0];
+                    gridsums(nodei) += p(i, j, k);
+                }
+            }
+        }
+    }
+};
+
+struct ORB_sum_layers_by_y {
+    const Kokkos::View<const int***> p;
+    const Kokkos::View<int*> gridsums;
+    const int minidx[3], idx_start[3], idx_end[3];
+    ORB_sum_layers_by_y(Kokkos::View<const int***> p_, Kokkos::View<int*> gridsums_, const int minidx_[3], const int idx_start_[3], 
+        const int idx_end_[3])
+        : p {p_}
+        , gridsums {gridsums_}
+        , minidx {minidx_[0], minidx_[1], minidx_[2]}
+        , idx_start {idx_start_[0], idx_start_[1], idx_start_[2]}
+        , idx_end {idx_end_[0], idx_end_[1], idx_end_[2]}
+    {}
+    KOKKOS_INLINE_FUNCTION
+    void operator()(const int j) const {
+        const int globalj = minidx[1] + j;
+        for (int i = 0; i < p.extent(0); ++i) {
+            for (int k = 0; k < p.extent(2); ++k) {
+                int globali = minidx[0] + i;
+                int globalk = minidx[2] + k;
+                if (globali >= idx_start[0] && globali < idx_end[0] && 
+                    globalj >= idx_start[1] && globalj < idx_end[1] &&
+                    globalk >= idx_start[2] && globalk < idx_end[2]) {
+                    const int nodej = globalj - idx_start[1];
+                    gridsums(nodej) += p(i, j, k);
+                }
+            }
+        }
+    }
+};
+
+struct ORB_sum_layers_by_z {
+    const Kokkos::View<const int***> p;
+    const Kokkos::View<int*> gridsums;
+    const int minidx[3], idx_start[3], idx_end[3];
+    ORB_sum_layers_by_z(Kokkos::View<const int***> p_, Kokkos::View<int*> gridsums_, const int minidx_[3], const int idx_start_[3], 
+        const int idx_end_[3])
+        : p {p_}
+        , gridsums {gridsums_}
+        , minidx {minidx_[0], minidx_[1], minidx_[2]}
+        , idx_start {idx_start_[0], idx_start_[1], idx_start_[2]}
+        , idx_end {idx_end_[0], idx_end_[1], idx_end_[2]}
+    {}
+    KOKKOS_INLINE_FUNCTION
+    void operator()(const int k) const {
+        const int globalk = minidx[2] + k;
+        for (int i = 0; i < p.extent(0); ++i) {
+            for (int j = 0; j < p.extent(1); ++j) {
+                int globali = minidx[0] + i;
+                int globalj = minidx[1] + j;
+                if (globali >= idx_start[0] && globali < idx_end[0] && 
+                    globalj >= idx_start[1] && globalj < idx_end[1] &&
+                    globalk >= idx_start[2] && globalk < idx_end[2]) {
+                    const int nodek = globalk - idx_start[2];
+                    gridsums(nodek) += p(i, j, k);
+                }
+            }
+        }
+    }
+};
+
 template<typename F>
 static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx[3], const int maxidx[3], 
     F ORB_mingrid[3], F ORB_maxgrid[3], const F mingrid_global[3], const F cell_size, const Kokkos::View<const int***> &pincell_in) {
@@ -192,6 +282,7 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx
     const int cax = choose_cut_axis(pincell_in, minidx, maxidx, node_in.idx_start, node_in.idx_end);
 
     Kokkos::View<int*> gridsums("Grid sums by layer", node_in.idx_end[cax]-node_in.idx_start[cax]);
+    typename Kokkos::View<int*>::HostMirror h_gridsums(create_mirror_view(gridsums));
 
     Kokkos::deep_copy(gridsums, 0);
 
@@ -202,56 +293,20 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx
     };
 
     if (cax == 0) {
-        Kokkos::parallel_for("sum layers by x", pincell_in.extent(0), KOKKOS_LAMBDA (const int i) {
-                const int globali = minidx[0] + i;
-                for (int j = 0; j < pincell_in.extent(1); ++j) {
-                    for (int k = 0; k < pincell_in.extent(2); ++k) {
-                        int globalj = minidx[1] + j;
-                        int globalk = minidx[2] + k;
-                        if (globali >= node_in.idx_start[0] && globali < node_in.idx_end[0] && 
-                            globalj >= node_in.idx_start[1] && globalj < node_in.idx_end[1] &&
-                            globalk >= node_in.idx_start[2] && globalk < node_in.idx_end[2]) {
-                            const int nodei = globali - node_in.idx_start[0];
-                            gridsums(nodei) += pincell_in(i, j, k);
-                        }
-                    }
-                }
-            }
+        Kokkos::parallel_for("sum layers by x", 
+            pincell_in.extent(0), 
+            ORB_sum_layers_by_x(pincell_in, gridsums, minidx, node_in.idx_start, node_in.idx_end)
         ); 
     } else if (cax == 1) {
-        Kokkos::parallel_for("sum layers by y", pincell_in.extent(1), KOKKOS_LAMBDA (const int j) {
-                const int globalj = minidx[1] + j;
-                for (int i = 0; i < pincell_in.extent(0); ++i) {
-                    for (int k = 0; k < pincell_in.extent(2); ++k) {
-                        int globali = minidx[0] + i;
-                        int globalk = minidx[2] + k;
-                        if (globali >= node_in.idx_start[0] && globali < node_in.idx_end[0] && 
-                            globalj >= node_in.idx_start[1] && globalj < node_in.idx_end[1] &&
-                            globalk >= node_in.idx_start[2] && globalk < node_in.idx_end[2]) {
-                            const int nodej = globalj - node_in.idx_start[1];
-                            gridsums(nodej) += pincell_in(i, j, k);
-                        }
-                    }
-                }
-            }
+        Kokkos::parallel_for("sum layers by y", 
+            pincell_in.extent(1), 
+            ORB_sum_layers_by_y(pincell_in, gridsums, minidx, node_in.idx_start, node_in.idx_end)
         ); 
 
     } else if (cax == 2) {
-        Kokkos::parallel_for("sum layers by z", pincell_in.extent(2), KOKKOS_LAMBDA (const int k) {
-                const int globalk = minidx[2] + k;
-                for (int i = 0; i < pincell_in.extent(0); ++i) {
-                    for (int j = 0; j < pincell_in.extent(1); ++j) {
-                        int globali = minidx[0] + i;
-                        int globalj = minidx[1] + j;
-                        if (globali >= node_in.idx_start[0] && globali < node_in.idx_end[0] && 
-                            globalj >= node_in.idx_start[1] && globalj < node_in.idx_end[1] &&
-                            globalk >= node_in.idx_start[2] && globalk < node_in.idx_end[2]) {
-                            const int nodek = globalk - node_in.idx_start[2];
-                            gridsums(nodek) += pincell_in(i, j, k);
-                        }
-                    }
-                }
-            }
+        Kokkos::parallel_for("sum layers by z", 
+            pincell_in.extent(2), 
+            ORB_sum_layers_by_y(pincell_in, gridsums, minidx, node_in.idx_start, node_in.idx_end)
         );
     }
 
@@ -265,21 +320,18 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx
         partial_sum += val_i;
     });
 
+    Kokkos::deep_copy(h_gridsums, gridsums);
+
     const int numprocs_in = node_in.proc_range[1]-node_in.proc_range[0];
     const F target_ratio = std::ceil(F(numprocs_in)*0.5)/F(numprocs_in);
     const int target_np_lower = target_ratio*node_in.n;
 
     int loc;
     Kokkos::parallel_reduce("find threshold", gridsums.size(), KOKKOS_LAMBDA(const int i, int &loc) {
-        if (gridsums(i) >= target_np_lower && i < loc) loc = i;
+        loc = (loc < gridsums.size()) ? loc : gridsums.size()-1;
+        if (Kokkos::abs(gridsums(i)-target_np_lower) < Kokkos::abs(gridsums(loc)-target_np_lower)) loc = i;
     }, Kokkos::Min<int>(loc));
-
-    // adjust
-    int np_lower = gridsums(loc);
-    if (std::abs(target_np_lower-gridsums(loc-1)) < std::abs(target_np_lower-np_lower)) {
-        loc--;
-        np_lower = gridsums(loc);
-    }
+    int np_lower = h_gridsums(loc);
 
     // determine next step in the tree
     ORB_tree_node node_lo, node_hi;
