@@ -182,8 +182,7 @@ namespace GraMPM {
             , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
             , f_momentum_boundary(d_g_momentum, m_ngrid[0], m_ngrid[1], m_ngrid[2])
             , f_force_boundary(d_g_force, m_ngrid[0], m_ngrid[1], m_ngrid[2])
-            , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
-                m_ngrid[2], d_p_x, d_p_grid_idx)
+            , f_map_gidx(dcell, mingrid.data(), m_ngrid.data(), d_p_x, d_p_grid_idx)
             , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
                 m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
             , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
@@ -276,8 +275,7 @@ namespace GraMPM {
             , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
             , f_momentum_boundary(d_g_momentum, m_ngrid[0], m_ngrid[1], m_ngrid[2])
             , f_force_boundary(d_g_force, m_ngrid[0], m_ngrid[1], m_ngrid[2])
-            , f_map_gidx(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1], 
-                m_ngrid[2], d_p_x, d_p_grid_idx)
+            , f_map_gidx(dcell, mingrid.data(), m_ngrid.data(), d_p_x, d_p_grid_idx)
             , f_find_neighbour_nodes(dcell, mingrid[0], mingrid[1], mingrid[2], m_ngrid[0], m_ngrid[1],
                 m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
             , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
@@ -353,8 +351,7 @@ namespace GraMPM {
             , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
             , f_momentum_boundary(d_g_momentum, m_ngrid[0], m_ngrid[1], m_ngrid[2])
             , f_force_boundary(d_g_force, m_ngrid[0], m_ngrid[1], m_ngrid[2])
-            , f_map_gidx(m_g_cell_size, m_g_extents.start[0], m_g_extents.start[1], m_g_extents.start[2], m_ngrid[0], 
-                m_ngrid[1], m_ngrid[2], d_p_x, d_p_grid_idx)
+            , f_map_gidx(m_g_cell_size, m_g_extents.start, m_ngrid.data(), d_p_x, d_p_grid_idx)
             , f_find_neighbour_nodes(m_g_cell_size, m_g_extents.start[0], m_g_extents.start[1], m_g_extents.start[2], 
                 m_ngrid[0], m_ngrid[1], m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, 
                 d_pg_dwdx, knl)

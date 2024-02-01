@@ -23,21 +23,17 @@ namespace GraMPM {
             
             template<typename F>
             struct map_gidx {
-                const F dcell, minx, miny, minz;
-                const int nx, ny, nz;
+                const F dcell, ming[3];
+                const int ng[3];
                 // NB const views means the data within the views can be changed, but not the container
                 const Kokkos::View<F*[3]> x;
                 const Kokkos::View<int*> gidx;
                 
-                map_gidx(F dcell_, F minx_, F miny_, F minz_, int nx_, int ny_, int nz_, Kokkos::View<F*[3]> x_, 
-                    Kokkos::View<int*> gidx_)
+                map_gidx(const F dcell_, const F ming_[3], const int ng_[3], const Kokkos::View<F*[3]> x_, 
+                    const Kokkos::View<int*> gidx_)
                     : dcell {dcell_}
-                    , minx {minx_}
-                    , miny {miny_}
-                    , minz {minz_}
-                    , nx {nx_}
-                    , ny {ny_}
-                    , nz {nz_}
+                    , ming {ming_[0], ming_[1], ming_[2]}
+                    , ng {ng_[0], ng_[1], ng_[2]}
                     , x {x_}
                     , gidx {gidx_}
                 {
@@ -45,9 +41,9 @@ namespace GraMPM {
 
                 KOKKOS_INLINE_FUNCTION 
                 void operator()(const int i) const {
-                    gidx(i) = static_cast<int>((x(i, 0)-minx)/dcell)*ny*nz +
-                    static_cast<int>((x(i, 1)-miny)/dcell)*nz +
-                    static_cast<int>((x(i, 2)-minz)/dcell);
+                    gidx(i) = static_cast<int>((x(i, 0)-ming[0])/dcell)*ng[1]*ng[2] +
+                    static_cast<int>((x(i, 1)-ming[1])/dcell)*ng[2] +
+                    static_cast<int>((x(i, 2)-ming[2])/dcell);
                 }
             };
 
