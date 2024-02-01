@@ -33,23 +33,23 @@ TEST(ORB, test_cax) {
     Kokkos::View<int***> p("number of particles in cells, local", 10, 5, 5);
     typename Kokkos::View<int***>::HostMirror h_p(create_mirror_view(p));
     Kokkos::deep_copy(h_p, 0);
-    int minidx[3], maxidx[3];
+    idx_box proc_box;
     if (procid==0) {
-        minidx[0] = 0; maxidx[0] = 20;
-        minidx[1] = 0; maxidx[1] = 5;
-        minidx[2] = 0; maxidx[2] = 5;
+        proc_box.start[0] = 0; proc_box.end[0] = 20;
+        proc_box.start[1] = 0; proc_box.end[1] = 5;
+        proc_box.start[2] = 0; proc_box.end[2] = 5;
     } else if (procid == 1) {
-        minidx[0] = 0; maxidx[0] = 20;
-        minidx[1] = 5; maxidx[1] = 10;
-        minidx[2] = 0; maxidx[2] = 5;
+        proc_box.start[0] = 0; proc_box.end[0] = 20;
+        proc_box.start[1] = 5; proc_box.end[1] = 10;
+        proc_box.start[2] = 0; proc_box.end[2] = 5;
     } else if (procid == 2) {
-        minidx[0] = 0; maxidx[0] = 20;
-        minidx[1] = 0; maxidx[1] = 5;
-        minidx[2] = 5; maxidx[2] = 10;
+        proc_box.start[0] = 0; proc_box.end[0] = 20;
+        proc_box.start[1] = 0; proc_box.end[1] = 5;
+        proc_box.start[2] = 5; proc_box.end[2] = 10;
     } else if (procid == 3) {
-        minidx[0] = 0; maxidx[0] = 20;
-        minidx[1] = 5; maxidx[1] = 10;
-        minidx[2] = 5; maxidx[2] = 10;
+        proc_box.start[0] = 0; proc_box.end[0] = 20;
+        proc_box.start[1] = 5; proc_box.end[1] = 10;
+        proc_box.start[2] = 5; proc_box.end[2] = 10;
     }
 
     // rectangle, x longest
@@ -89,15 +89,19 @@ TEST(ORB, test_cax) {
 
     Kokkos::deep_copy(p, h_p);
 
-    int start_idx[3] {0, 0, 0}, end_idx[3] {10, 10, 10};
+    idx_box node_box;
+    for (int d = 0; d < 3; ++d) {
+        node_box.start[d] = 0;
+        node_box.end[d] = 10;
+    }
 
-    int cax = choose_cut_axis(p, minidx, maxidx, start_idx, end_idx);
+    int cax = choose_cut_axis(p, proc_box, node_box);
 
     EXPECT_EQ(cax, 0);
 
-    end_idx[0] = 5;
+    node_box.end[0] = 5;
     
-    cax = choose_cut_axis(p, minidx, maxidx, start_idx, end_idx);
+    cax = choose_cut_axis(p, proc_box, node_box);
 
     EXPECT_EQ(cax, 1);
 
