@@ -2,6 +2,7 @@
 #define GRAMPM_EXTRA
 
 #include <Kokkos_Core.hpp>
+#include <type_traits>
 
 // class containing grid indices or min/max coordinates of a box on a grid
 template<typename T>
@@ -71,6 +72,18 @@ struct box {
             idxx < end[0] &&
             idxy < end[1] &&
             idxz < end[2];
+    }
+
+    template<typename F>
+    box<F> idx2coords(const F dcell, const F mingrid[3]) {
+        return box<F>(
+            mingrid[0] + start[0]*dcell,
+            mingrid[1] + start[1]*dcell,
+            mingrid[2] + start[2]*dcell,
+            mingrid[0] + end[0]*dcell,
+            mingrid[1] + end[1]*dcell,
+            mingrid[2] + end[2]*dcell
+        );
     }
 };
 #endif

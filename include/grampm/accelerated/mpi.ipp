@@ -247,8 +247,8 @@ struct ORB_sum_layers_by_z {
 typedef Kokkos::MinLoc<int, int>::value_type minloc_type;
 
 template<typename F>
-static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> proc_box, F ORB_mingrid[3], 
-    F ORB_maxgrid[3], const F mingrid_global[3], const F cell_size, const Kokkos::View<const int***> &pincell_in) {
+static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> proc_box, box<F> &ORB_extents, 
+    const F mingrid_global[3], const F cell_size, const Kokkos::View<const int***> &pincell_in) {
 
     /*                  node_in
                        /       \
@@ -328,29 +328,19 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> p
     // travel to lower node
     if (node_lo.proc_range[1]-node_lo.proc_range[0] == 1) {
         if (node_lo.proc_range[0]==procid) {
-            ORB_mingrid[0] = mingrid_global[0] + node_lo.extents.start[0]*cell_size;
-            ORB_mingrid[1] = mingrid_global[1] + node_lo.extents.start[1]*cell_size;
-            ORB_mingrid[2] = mingrid_global[2] + node_lo.extents.start[2]*cell_size;
-            ORB_maxgrid[0] = mingrid_global[0] + node_lo.extents.end[0]*cell_size;
-            ORB_maxgrid[1] = mingrid_global[1] + node_lo.extents.end[1]*cell_size;
-            ORB_maxgrid[2] = mingrid_global[2] + node_lo.extents.end[2]*cell_size;
+            ORB_extents = node_lo.extents.idx2coords<F>(cell_size, mingrid_global);
         }
     } else {
-        ORB(procid, node_lo, proc_box, ORB_mingrid, ORB_maxgrid, mingrid_global, cell_size, pincell_in);
+        ORB(procid, node_lo, proc_box, ORB_extents, mingrid_global, cell_size, pincell_in);
     }
 
     // travel to high node
     if (node_hi.proc_range[1]-node_hi.proc_range[0] == 1) {
         if (node_hi.proc_range[0]==procid) {
-        ORB_mingrid[0] = mingrid_global[0] + node_hi.extents.start[0]*cell_size;
-        ORB_mingrid[1] = mingrid_global[1] + node_hi.extents.start[1]*cell_size;
-        ORB_mingrid[2] = mingrid_global[2] + node_hi.extents.start[2]*cell_size;
-        ORB_maxgrid[0] = mingrid_global[0] + node_hi.extents.end[0]*cell_size;
-        ORB_maxgrid[1] = mingrid_global[1] + node_hi.extents.end[1]*cell_size;
-        ORB_maxgrid[2] = mingrid_global[2] + node_hi.extents.end[2]*cell_size;
+            ORB_extents = node_hi.extents.idx2coords<F>(cell_size, mingrid_global);
         }
     } else {
-        ORB(procid, node_hi, proc_box, ORB_mingrid, ORB_maxgrid, mingrid_global, cell_size, pincell_in);
+        ORB(procid, node_hi, proc_box, ORB_extents, mingrid_global, cell_size, pincell_in);
     }
 }
 
@@ -407,7 +397,7 @@ namespace GraMPM {
             node1.node_id = 1;
 
             // start ORB
-            ORB(procid, node1, proc_box, m_ORB_mingrid.data(), m_ORB_maxgrid.data(), m_g_extents.start, m_g_cell_size, pincell);
+            ORB(procid, node1, proc_box, m_ORB_extents, m_g_extents.start, m_g_cell_size, pincell);
 
         }
     }
