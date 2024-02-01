@@ -46,7 +46,6 @@ static int choose_cut_axis(const Kokkos::View<const int***> &pincell_in, const i
             policy1({start[0], start[2]}, {end[0], end[2]}),
             policy2({start[0], start[1]}, {end[0], end[1]});
         
-
         // finding x min
         int i = start[0];
         int sum = 0;
@@ -288,12 +287,6 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx
 
     Kokkos::deep_copy(gridsums, 0);
 
-    const int ngrid_in[3] {
-        node_in.idx_end[0]-node_in.idx_start[0],
-        node_in.idx_end[1]-node_in.idx_start[1],
-        node_in.idx_end[2]-node_in.idx_start[2]
-    };
-
     if (cax == 0) {
         Kokkos::parallel_for("sum layers by x", 
             pincell_in.extent(0), 
@@ -322,7 +315,8 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx
         partial_sum += val_i;
     });
 
-    Kokkos::deep_copy(h_gridsums, gridsums);
+    // pass default execution space for potential async
+    Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_gridsums, gridsums);
 
     const int numprocs_in = node_in.proc_range[1]-node_in.proc_range[0];
     const F target_ratio = std::ceil(F(numprocs_in)*0.5)/F(numprocs_in);
@@ -336,6 +330,9 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const int minidx
             lminloc.loc = i;
         }
     }, Kokkos::MinLoc<int, int>(minloc));
+
+    Kokkos::fence();
+
     const int loc = minloc.loc, np_lower = h_gridsums(minloc.loc);
 
     // determine next step in the tree
@@ -393,9 +390,11 @@ namespace GraMPM {
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::ORB_determine_boundaries() {
             
+            // initiate sharing of number of points amongst all processes
             MPI_Request req;
             MPI_Iallreduce(&m_p_size, &m_p_size_global, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, &req);
 
+            // find local minima/maxima of grid extents
             int minidx[3], maxidx[3];
             Kokkos::parallel_reduce(
                 "reduce",
@@ -409,23 +408,10 @@ namespace GraMPM {
                 Kokkos::Max<int>(maxidx[2])
             );
 
+            // adjust upper limit so it is an open interval
             maxidx[0]++;
             maxidx[1]++;
             maxidx[2]++;
-
-            const int ngridx_loc[3] {
-                maxidx[0]-minidx[0],
-                maxidx[1]-minidx[1],
-                maxidx[2]-minidx[2]
-            };
-
-            ORB_tree_node node1;
-            node1.proc_range[0] = 0;
-            node1.proc_range[1] = numprocs;
-            for (int d = 0; d < 3; ++d) {
-                node1.idx_start[d] = 0;
-                node1.idx_end[d] = m_ngrid[d];
-            }
 
             // declare pincell array and then zero
             Kokkos::View<int***> pincell("particles in local grid", ngridx_loc[0], ngridx_loc[1], ngridx_loc[2]);
@@ -436,10 +422,22 @@ namespace GraMPM {
                 ORB_populate_pincell_func(d_p_grid_idx, pincell, m_ngrid.data(), minidx)
             );
 
+            // wait for Iallreduce to finish
             MPI_Status stat;
             MPI_Wait(&req, &stat);
+
+            // define first ORB tree node info
+            ORB_tree_node node1;
+            node1.proc_range[0] = 0;
+            node1.proc_range[1] = numprocs;
+            for (int d = 0; d < 3; ++d) {
+                node1.idx_start[d] = 0;
+                node1.idx_end[d] = m_ngrid[d];
+            }
             node1.n = m_p_size_global;
             node1.node_id = 1;
+
+            // start ORB
             ORB(procid, node1, minidx, maxidx, m_ORB_mingrid.data(), m_ORB_maxgrid.data(), m_mingrid.data(), m_g_cell_size, pincell);
 
         }
