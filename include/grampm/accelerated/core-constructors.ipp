@@ -173,7 +173,8 @@ namespace GraMPM {
 #ifdef GRAMPM_MPI
             MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
             MPI_Comm_rank(MPI_COMM_WORLD, &procid);
-            m_ORB_extents.resize(numprocs);
+            Kokkos::resize(d_ORB_extents, numprocs);
+            h_ORB_extents = create_mirror_view(d_ORB_extents);
 #else
             numprocs = 1;
             procid = 1;
