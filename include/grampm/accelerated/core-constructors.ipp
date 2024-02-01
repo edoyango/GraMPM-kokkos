@@ -220,6 +220,7 @@ namespace GraMPM {
 #ifdef GRAMPM_MPI
             MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
             MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+            m_ORB_extents.resize(numprocs);
 #else
             numprocs = 1;
             procid = 1;
@@ -296,6 +297,7 @@ namespace GraMPM {
 #ifdef GRAMPM_MPI
             MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
             MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+            m_ORB_extents.resize(numprocs);
 #else
             numprocs = 1;
             procid = 1;
@@ -372,6 +374,7 @@ namespace GraMPM {
 #ifdef GRAMPM_MPI
             MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
             MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+            m_ORB_extents.resize(numprocs);
 #else
             numprocs = 1;
             procid = 1;

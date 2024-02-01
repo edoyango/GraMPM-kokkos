@@ -118,7 +118,7 @@ namespace GraMPM {
                 functors::update_density<F> f_p_update_density;
 
 #ifdef GRAMPM_MPI
-                box<F> m_ORB_extents;
+                std::vector<box<F>> m_ORB_extents;
 #endif
 
             public:
@@ -253,12 +253,12 @@ namespace GraMPM {
 
 #ifdef GRAMPM_MPI
                 void ORB_determine_boundaries();
-                F ORB_mingridx() const {return m_ORB_extents.start[0];}
-                F ORB_mingridy() const {return m_ORB_extents.start[1];}
-                F ORB_mingridz() const {return m_ORB_extents.start[2];}
-                F ORB_maxgridx() const {return m_ORB_extents.end[0];}
-                F ORB_maxgridy() const {return m_ORB_extents.end[1];}
-                F ORB_maxgridz() const {return m_ORB_extents.end[2];}
+                F ORB_mingridx(const int i) const {return m_ORB_extents[i].start[0];}
+                F ORB_mingridy(const int i) const {return m_ORB_extents[i].start[1];}
+                F ORB_mingridz(const int i) const {return m_ORB_extents[i].start[2];}
+                F ORB_maxgridx(const int i) const {return m_ORB_extents[i].end[0];}
+                F ORB_maxgridy(const int i) const {return m_ORB_extents[i].end[1];}
+                F ORB_maxgridz(const int i) const {return m_ORB_extents[i].end[2];}
 #endif
 
         };

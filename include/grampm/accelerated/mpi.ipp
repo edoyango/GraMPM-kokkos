@@ -6,6 +6,7 @@
 #include <limits>
 #include <iostream>
 #include <grampm/extra.hpp>
+#include <vector>
 
 static int choose_cut_axis(const Kokkos::View<const int***> &pincell_in, const box<int> &proc_box, const box<int> &node_box) {
     /* 0: cut plane orthogonal to x
@@ -247,8 +248,9 @@ struct ORB_sum_layers_by_z {
 typedef Kokkos::MinLoc<int, int>::value_type minloc_type;
 
 template<typename F>
-static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> proc_box, box<F> &ORB_extents, 
-    const F mingrid_global[3], const F cell_size, const Kokkos::View<const int***> &pincell_in) {
+static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> proc_box, 
+    std::vector<box<F>> &ORB_extents, const F mingrid_global[3], const F cell_size, 
+    const Kokkos::View<const int***> &pincell_in) {
 
     /*                  node_in
                        /       \
@@ -327,18 +329,14 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> p
 
     // travel to lower node
     if (node_lo.proc_range[1]-node_lo.proc_range[0] == 1) {
-        if (node_lo.proc_range[0]==procid) {
-            ORB_extents = node_lo.extents.idx2coords<F>(cell_size, mingrid_global);
-        }
+        ORB_extents[node_lo.proc_range[0]] = node_lo.extents.idx2coords<F>(cell_size, mingrid_global);
     } else {
         ORB(procid, node_lo, proc_box, ORB_extents, mingrid_global, cell_size, pincell_in);
     }
 
     // travel to high node
     if (node_hi.proc_range[1]-node_hi.proc_range[0] == 1) {
-        if (node_hi.proc_range[0]==procid) {
-            ORB_extents = node_hi.extents.idx2coords<F>(cell_size, mingrid_global);
-        }
+        ORB_extents[node_hi.proc_range[0]] = node_hi.extents.idx2coords<F>(cell_size, mingrid_global);
     } else {
         ORB(procid, node_hi, proc_box, ORB_extents, mingrid_global, cell_size, pincell_in);
     }
