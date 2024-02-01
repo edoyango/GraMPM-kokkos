@@ -407,7 +407,7 @@ namespace GraMPM {
             node1.node_id = 1;
 
             // start ORB
-            ORB(procid, node1, proc_box, m_ORB_mingrid.data(), m_ORB_maxgrid.data(), m_mingrid.data(), m_g_cell_size, pincell);
+            ORB(procid, node1, proc_box, m_ORB_mingrid.data(), m_ORB_maxgrid.data(), m_g_extents.start, m_g_cell_size, pincell);
 
         }
     }

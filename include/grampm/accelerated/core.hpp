@@ -5,11 +5,9 @@
 #include <array>
 #include <Kokkos_StdAlgorithms.hpp>
 #include <string>
-#include <fstream>
-#include <iostream>
-#include <sstream>
 #include <grampm/accelerated/kernels.hpp>
 #include <grampm/accelerated/functors.hpp>
+#include <grampm/extra.hpp>
 
 /*============================================================================================================*/
 
@@ -74,7 +72,7 @@ namespace GraMPM {
             protected:
                 const int m_p_size;
                 const F m_g_cell_size;
-                const std::array<F, dims> m_mingrid, m_maxgrid;
+                const box<F> m_g_extents;
                 const std::array<int, dims> m_ngrid;
                 const int m_g_size;
                 int procid, numprocs, m_p_size_global;
@@ -141,16 +139,16 @@ namespace GraMPM {
                 // getters/setters
                 int p_size() const {return m_p_size;}
                 F g_cell_size() const {return m_g_cell_size;}
-                std::array<F, dims> g_mingrid() const {return m_mingrid;}
-                std::array<F, dims> g_maxgrid() const {return m_maxgrid;}
+                std::array<F, dims> g_mingrid() const {return std::array<F, dims>{m_g_extents.start[0], m_g_extents.start[1], m_g_extents.start[2]};}
+                std::array<F, dims> g_maxgrid() const {return std::array<F, dims>{m_g_extents.end[0], m_g_extents.end[1], m_g_extents.end[2]};}
                 std::array<int, dims> g_ngrid() const { return m_ngrid;}
                 int g_size() const {return m_g_size;}
-                F g_mingridx() const {return m_mingrid[0];}
-                F g_mingridy() const {return m_mingrid[1];}
-                F g_mingridz() const {return m_mingrid[2];}
-                F g_maxgridx() const {return m_maxgrid[0];}
-                F g_maxgridy() const {return m_maxgrid[1];}
-                F g_maxgridz() const {return m_maxgrid[2];}
+                F g_mingridx() const {return m_g_extents.start[0];}
+                F g_mingridy() const {return m_g_extents.start[1];}
+                F g_mingridz() const {return m_g_extents.start[2];}
+                F g_maxgridx() const {return m_g_extents.end[0];}
+                F g_maxgridy() const {return m_g_extents.end[1];}
+                F g_maxgridz() const {return m_g_extents.end[2];}
                 int g_ngridx() const {return m_ngrid[0];}
                 int g_ngridy() const {return m_ngrid[1];}
                 int g_ngridz() const {return m_ngrid[2];}

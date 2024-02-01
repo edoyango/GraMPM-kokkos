@@ -3,7 +3,9 @@
 
 #include <string>
 #include <hdf5.h>
+#ifdef GRAMPM_MPI
 #include <mpi.h>
+#endif
 
 static int h5_get_nparticles(std::string fname) {
     hid_t f_id = H5Fopen(fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
@@ -136,8 +138,7 @@ namespace GraMPM {
             : knl(dcell)
             , m_p_size {static_cast<int>(pv.size())}
             , m_g_cell_size {dcell}
-            , m_mingrid {mingrid}
-            , m_maxgrid {maxgrid}
+            , m_g_extents(mingrid.data(), maxgrid.data())
             , m_ngrid {
                 static_cast<int>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
                 static_cast<int>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
@@ -217,8 +218,13 @@ namespace GraMPM {
                 h_p_mass(i) = pv[i].mass;
                 h_p_rho(i) = pv[i].rho;
             }
+#ifdef GRAMPM_MPI
             MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
             MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+#else
+            numprocs = 1;
+            procid = 1;
+#endif
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
@@ -226,8 +232,7 @@ namespace GraMPM {
             : knl(dcell)
             , m_p_size {n}
             , m_g_cell_size {dcell}
-            , m_mingrid {mingrid}
-            , m_maxgrid {maxgrid}
+            , m_g_extents(mingrid.data(), maxgrid.data())
             , m_ngrid{
                 static_cast<int>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
                 static_cast<int>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
@@ -290,8 +295,13 @@ namespace GraMPM {
             , f_p_update_density(d_p_rho, d_p_strainrate)
             , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
         {
+#ifdef GRAMPM_MPI
             MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
             MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+#else
+            numprocs = 1;
+            procid = 1;
+#endif
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
@@ -299,12 +309,11 @@ namespace GraMPM {
             : knl(h5_get_cellsize(fname))
             , m_p_size {h5_get_nparticles(fname)}
             , m_g_cell_size {h5_get_cellsize(fname)}
-            , m_mingrid {h5_get_mingrid(fname)}
-            , m_maxgrid {h5_get_maxgrid(fname)}
+            , m_g_extents {h5_get_mingrid(fname).data(), h5_get_mingrid(fname).data()}
             , m_ngrid{
-                static_cast<int>(std::ceil((m_maxgrid[0]-m_mingrid[0])/m_g_cell_size))+1,
-                static_cast<int>(std::ceil((m_maxgrid[1]-m_mingrid[1])/m_g_cell_size))+1,
-                static_cast<int>(std::ceil((m_maxgrid[2]-m_mingrid[2])/m_g_cell_size))+1
+                static_cast<int>(std::ceil((m_g_extents.end[0]-m_g_extents.start[0])/m_g_cell_size))+1,
+                static_cast<int>(std::ceil((m_g_extents.end[1]-m_g_extents.start[1])/m_g_cell_size))+1,
+                static_cast<int>(std::ceil((m_g_extents.end[2]-m_g_extents.start[2])/m_g_cell_size))+1
             }
             , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
             , d_p_x("Particles' 3D positions", m_p_size)
@@ -344,10 +353,11 @@ namespace GraMPM {
             , h_pg_dwdx {create_mirror_view(d_pg_dwdx)}
             , f_momentum_boundary(d_g_momentum, m_ngrid[0], m_ngrid[1], m_ngrid[2])
             , f_force_boundary(d_g_force, m_ngrid[0], m_ngrid[1], m_ngrid[2])
-            , f_map_gidx(m_g_cell_size, m_mingrid[0], m_mingrid[1], m_mingrid[2], m_ngrid[0], m_ngrid[1], 
-                m_ngrid[2], d_p_x, d_p_grid_idx)
-            , f_find_neighbour_nodes(m_g_cell_size, m_mingrid[0], m_mingrid[1], m_mingrid[2], m_ngrid[0], m_ngrid[1],
-                m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, d_pg_dwdx, knl)
+            , f_map_gidx(m_g_cell_size, m_g_extents.start[0], m_g_extents.start[1], m_g_extents.start[2], m_ngrid[0], 
+                m_ngrid[1], m_ngrid[2], d_p_x, d_p_grid_idx)
+            , f_find_neighbour_nodes(m_g_cell_size, m_g_extents.start[0], m_g_extents.start[1], m_g_extents.start[2], 
+                m_ngrid[0], m_ngrid[1], m_ngrid[2], static_cast<int>(knl.radius), d_p_x, d_p_grid_idx, d_pg_nn, d_pg_w, 
+                d_pg_dwdx, knl)
             , f_map_p2g_mass(pg_npp, d_p_mass, d_g_mass, d_pg_nn, d_pg_w)
             , f_map_p2g_momentum(pg_npp, d_p_mass, d_p_v, d_g_momentum, d_pg_nn, d_pg_w)
             , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
@@ -363,8 +373,13 @@ namespace GraMPM {
             , f_p_update_density(d_p_rho, d_p_strainrate)
             , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
         {
+#ifdef GRAMPM_MPI
             MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
             MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+#else
+            numprocs = 1;
+            procid = 1;
+#endif
             herr_t status;
             hid_t f_id = H5Fopen(fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
             hid_t g_id = H5Gopen(f_id, "/particles", H5P_DEFAULT);
