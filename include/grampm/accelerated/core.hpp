@@ -127,10 +127,10 @@ namespace GraMPM {
                 stress_update f_stress_update;
                 
                 // Constructors
-                // vector of particles
-                MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell);
                 // initialize size - fill data later
                 MPM_system(const int n, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell);
+                // vector of particles
+                MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell);
                 // from file
                 MPM_system(std::string fname);
                 // transfer data to device
