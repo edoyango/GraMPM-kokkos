@@ -10,6 +10,7 @@
 #include <Kokkos_Core.hpp>
 #include <mpi.h>
 #include <algorithm>
+#include <grampm/extra.hpp>
 
 using namespace GraMPM::accelerated;
 
@@ -33,7 +34,7 @@ TEST(ORB, test_cax) {
     Kokkos::View<int***> p("number of particles in cells, local", 10, 5, 5);
     typename Kokkos::View<int***>::HostMirror h_p(create_mirror_view(p));
     Kokkos::deep_copy(h_p, 0);
-    idx_box proc_box;
+    box<int> proc_box;
     if (procid==0) {
         proc_box.start[0] = 0; proc_box.end[0] = 20;
         proc_box.start[1] = 0; proc_box.end[1] = 5;
@@ -89,7 +90,7 @@ TEST(ORB, test_cax) {
 
     Kokkos::deep_copy(p, h_p);
 
-    idx_box node_box;
+    box<int> node_box;
     for (int d = 0; d < 3; ++d) {
         node_box.start[d] = 0;
         node_box.end[d] = 10;

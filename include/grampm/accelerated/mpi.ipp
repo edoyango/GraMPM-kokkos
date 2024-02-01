@@ -5,83 +5,15 @@
 #include <Kokkos_Core.hpp>
 #include <limits>
 #include <iostream>
+#include <grampm/extra.hpp>
 
-struct idx_box {
-    int start[3], end[3];
-    idx_box(int start_[3], int end_[3])
-        : start {start_[0], start_[1], start_[2]}
-        , end {end_[0], end_[1], end_[2]}
-    {}
-
-    idx_box(int startx, int starty, int startz, int endx, int endy, int endz)
-        : start {startx, starty, startz}
-        , end {endx, endy, endz}
-    {}
-
-    idx_box() {}
-
-    int range(const int d) const {return end[d]-start[d];}
-
-    bool no_overlap_with(const idx_box &other) const {
-        // <= and >= because end is open interval
-        return start[0] >= other.end[0] ||
-            start[1] >= other.end[1] ||
-            start[2] >= other.end[2] ||
-            end[0] <= other.start[0] ||
-            end[1] <= other.start[1] ||
-            end[2] <= other.start[2];
-    }
-
-    idx_box find_overlapping_box(const idx_box &other) const {
-        return idx_box(
-            Kokkos::max(start[0], other.start[0]),
-            Kokkos::max(start[1], other.start[1]),
-            Kokkos::max(start[2], other.start[2]),
-            Kokkos::min(end[0], other.end[0]),
-            Kokkos::min(end[1], other.end[1]),
-            Kokkos::min(end[2], other.end[2])
-        );
-    }
-
-    idx_box translate_origin_using(const int idx[3]) const {
-        return idx_box(
-            start[0] - idx[0],
-            start[1] - idx[1],
-            start[2] - idx[2],
-            end[0] - idx[0],
-            end[1] - idx[1],
-            end[2] - idx[2]
-        );
-    }
-
-    KOKKOS_INLINE_FUNCTION
-    bool contains_point(const int idx[3]) const {
-        return idx[0] >= start[0] &&
-            idx[1] >= start[1] && 
-            idx[2] >= start[2] &&
-            idx[0] < end[0] &&
-            idx[1] < end[1] &&
-            idx[2] < end[2];
-    }
-
-    KOKKOS_INLINE_FUNCTION
-    bool contains_point(const int idxx, const int idxy, const int idxz) const {
-        return idxx >= start[0] &&
-            idxy >= start[1] && 
-            idxz >= start[2] &&
-            idxx < end[0] &&
-            idxy < end[1] &&
-            idxz < end[2];
-    }
-};
-
-static int choose_cut_axis(const Kokkos::View<const int***> &pincell_in, const idx_box &proc_box, const idx_box &node_box) {
+static int choose_cut_axis(const Kokkos::View<const int***> &pincell_in, const box<int> &proc_box, const box<int> &node_box) {
     /* 0: cut plane orthogonal to x
        1: "                     " y
        2: "                     " z
     */
 
-    idx_box non_zero_box;
+    box<int> non_zero_box;
     // checking if this process should participate
     if (proc_box.no_overlap_with(node_box)) {
 
@@ -92,7 +24,7 @@ static int choose_cut_axis(const Kokkos::View<const int***> &pincell_in, const i
         
     } else {
 
-        const idx_box overlap_box {node_box.find_overlapping_box(proc_box).translate_origin_using(proc_box.start)};
+        const box<int> overlap_box {node_box.find_overlapping_box(proc_box).translate_origin_using(proc_box.start)};
 
         const Kokkos::MDRangePolicy<Kokkos::Rank<2>> 
             policy0({overlap_box.start[1], overlap_box.start[2]}, {overlap_box.end[1], overlap_box.end[2]}),
@@ -186,7 +118,7 @@ static int choose_cut_axis(const Kokkos::View<const int***> &pincell_in, const i
 
 struct ORB_tree_node {
     int node_id, proc_range[2], n;
-    idx_box extents;
+    box<int> extents;
 };
 
 struct ORB_find_local_coverage_func {
@@ -235,8 +167,8 @@ struct ORB_sum_layers_by_x {
     const Kokkos::View<const int***> p;
     const Kokkos::View<int*> gridsums;
     const int minidx[3];
-    const idx_box node_box;
-    ORB_sum_layers_by_x(Kokkos::View<const int***> p_, Kokkos::View<int*> gridsums_, const int minidx_[3], const idx_box node_box_)
+    const box<int> node_box;
+    ORB_sum_layers_by_x(Kokkos::View<const int***> p_, Kokkos::View<int*> gridsums_, const int minidx_[3], const box<int> node_box_)
         : p {p_}
         , gridsums {gridsums_}
         , minidx {minidx_[0], minidx_[1], minidx_[2]}
@@ -262,8 +194,8 @@ struct ORB_sum_layers_by_y {
     const Kokkos::View<const int***> p;
     const Kokkos::View<int*> gridsums;
     const int minidx[3];
-    const idx_box node_box;
-    ORB_sum_layers_by_y(Kokkos::View<const int***> p_, Kokkos::View<int*> gridsums_, const int minidx_[3], const idx_box node_box_)
+    const box<int> node_box;
+    ORB_sum_layers_by_y(Kokkos::View<const int***> p_, Kokkos::View<int*> gridsums_, const int minidx_[3], const box<int> node_box_)
         : p {p_}
         , gridsums {gridsums_}
         , minidx {minidx_[0], minidx_[1], minidx_[2]}
@@ -289,8 +221,8 @@ struct ORB_sum_layers_by_z {
     const Kokkos::View<const int***> p;
     const Kokkos::View<int*> gridsums;
     const int minidx[3];
-    const idx_box node_box;
-    ORB_sum_layers_by_z(Kokkos::View<const int***> p_, Kokkos::View<int*> gridsums_, const int minidx_[3], const idx_box node_box_)
+    const box<int> node_box;
+    ORB_sum_layers_by_z(Kokkos::View<const int***> p_, Kokkos::View<int*> gridsums_, const int minidx_[3], const box<int> node_box_)
         : p {p_}
         , gridsums {gridsums_}
         , minidx {minidx_[0], minidx_[1], minidx_[2]}
@@ -315,8 +247,8 @@ struct ORB_sum_layers_by_z {
 typedef Kokkos::MinLoc<int, int>::value_type minloc_type;
 
 template<typename F>
-static void ORB(const int procid, const ORB_tree_node &node_in, const idx_box proc_box, 
-    F ORB_mingrid[3], F ORB_maxgrid[3], const F mingrid_global[3], const F cell_size, const Kokkos::View<const int***> &pincell_in) {
+static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> proc_box, F ORB_mingrid[3], 
+    F ORB_maxgrid[3], const F mingrid_global[3], const F cell_size, const Kokkos::View<const int***> &pincell_in) {
 
     /*                  node_in
                        /       \
@@ -324,7 +256,7 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const idx_box pr
                      /           \
               node_lo             node_hi         */
 
-    // trim down the dims
+    // find the 
     const int cax = choose_cut_axis(pincell_in, proc_box, node_in.extents);
 
     Kokkos::View<int*> gridsums("Grid sums by layer", node_in.extents.range(cax));
@@ -432,7 +364,7 @@ namespace GraMPM {
             MPI_Iallreduce(&m_p_size, &m_p_size_global, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, &req);
 
             // find local minima/maxima of grid extents
-            idx_box proc_box;
+            box<int> proc_box;
             Kokkos::parallel_reduce(
                 "reduce",
                 m_p_size,
