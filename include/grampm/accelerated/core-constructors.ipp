@@ -67,25 +67,8 @@ static herr_t read_h5(const int r, hsize_t* dims, double* data, const hid_t gid,
 namespace GraMPM {
 
     template<typename F>
-    particle<F>::particle(const F inx, const F iny, const F inz, const F invx, const F invy, const F invz, 
-        const F inmass, const F inrho, const F insigmaxx, const F insigmayy, const F insigmazz, const F insigmaxy,
-        const F insigmaxz, const F insigmayz)
-        : x {inx, iny, inz}
-        , v {invx, invy, invz}
-        , a {0., 0., 0.}
-        , dxdt {0., 0., 0.}
-        , sigma {insigmaxx, insigmayy, insigmazz, insigmaxy, insigmaxz, insigmayz}
-        , strainrate {0., 0., 0., 0., 0., 0.}
-        , spinrate {0., 0., 0.}
-        , mass {inmass}
-        , rho {inrho}
-    {
-
-    }
-
-    template<typename F>
-    particle<F>::particle(const F inx, const F iny, const F inz, const F invx, const F invy, const F invz, 
-        const F inmass, const F inrho, const F insigmaxx, const F insigmayy, const F insigmazz, const F insigmaxy,
+    particle<F>::particle(const F inx, const F iny, const F inz, const F inmass, const F inrho, const F invx, 
+        const F invy, const F invz, const F insigmaxx, const F insigmayy, const F insigmazz, const F insigmaxy,
         const F insigmaxz, const F insigmayz, const F inax, const F inay, const F inaz, const F indxdt, 
         const F indydt, const F indzdt, const F instrainratexx, const F instrainrateyy, const F instrainratezz, 
         const F instrainratexy, const F instrainratexz, const F instrainrateyz, const F inspinratexy,
@@ -106,28 +89,15 @@ namespace GraMPM {
     particle<F>::particle(const std::array<F, 3> inx, const std::array<F, 3> inv, const F inmass, const F inrho, 
         const std::array<F, 6> insigma, const std::array<F, 3> ina, const std::array<F, 3> indxdt, 
         const std::array<F, 6> instrainrate, const std::array<F, 3> inspinrate)
-        : x {inx}
-        , v {inv}
-        , a {ina}
-        , dxdt {indxdt}
-        , sigma {insigma}
-        , strainrate {instrainrate}
-        , spinrate {inspinrate}
-        , mass {inmass}
-        , rho {inrho}
+        : particle<F>(inx[0], inx[1], inx[2], inmass, inrho, inv[0], inv[1], inv[2], insigma[0], insigma[1], insigma[2],
+            insigma[3], insigma[4], insigma[5], ina[0], ina[1], ina[2], indxdt[0], indxdt[1], indxdt[2],
+            instrainrate[0], instrainrate[1], instrainrate[2], instrainrate[3], instrainrate[4], instrainrate[5],
+            inspinrate[0], inspinrate[1], inspinrate[2])
     {
     }
 
     template<typename F> particle<F>::particle()
-        : x {0., 0., 0.}
-        , v {0., 0., 0.}
-        , a {0., 0., 0.}
-        , dxdt {0., 0., 0.}
-        , sigma {0., 0., 0., 0., 0., 0.}
-        , strainrate {0., 0., 0., 0., 0., 0.}
-        , spinrate {0., 0., 0.}
-        , mass {0.}
-        , rho {0.}
+        : particle(0., 0., 0., 0., 0.)
     {
     }
 

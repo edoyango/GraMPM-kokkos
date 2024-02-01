@@ -29,18 +29,20 @@ namespace GraMPM {
         std::array<F, 6> sigma, strainrate;
         std::array<F, 3> spinrate;
         F mass, rho;
-        particle(const F inx, const F iny, const F inz, const F invx, const F invy, const F invz, 
-            const F inmass, const F inrho, const F insigmaxx, const F insigmayy, const F insigmazz, 
-            const F insigmaxy, const F insigmaxz, const F insigmayz);
-        particle(const F inx, const F iny, const F inz, const F invx, const F invy, const F invz, const F inmass,
-            const F inrho, const F insigmaxx, const F insigmayy, const F insigmazz, const F insigmaxy, 
-            const F insigmaxz, const F insigmayz, const F inax, const F inay, const F inaz, const F indxdt, 
-            const F indydt, const F indzdt, const F instrainratexx, const F instrainrateyy, const F instrainratezz, 
-            const F instrainratexy, const F instrainratexz, const F instrainrateyz, const F inspinratexy,
-            const F inspinratexz, const F inspinrateyz);
+        particle(const F inx, const F iny, const F inz, const F inmass,  const F inrho, const F invx = F(0.), 
+            const F invy = F(0.), const F invz = F(0.), const F insigmaxx = F(0.), const F insigmayy = F(0.), 
+            const F insigmazz = F(0.), const F insigmaxy = F(0.), const F insigmaxz = F(0.), const F insigmayz = F(0.), 
+            const F inax = F(0.), const F inay = F(0.), const F inaz = F(0.), const F indxdt = F(0.), 
+            const F indydt = F(0.), const F indzdt = F(0.), const F instrainratexx = F(0.), 
+            const F instrainrateyy = F(0.), const F instrainratezz = F(0.), const F instrainratexy = F(0.), 
+            const F instrainratexz = F(0.), const F instrainrateyz = F(0.), const F inspinratexy = F(0.),
+            const F inspinratexz = F(0.), const F inspinrateyz = F(0.));
         particle(const std::array<F, 3> inx, const std::array<F, 3> inv, const F inmass, const F inrho, 
-            const std::array<F, 6> insigma, const std::array<F, 3> ina, const std::array<F, 3> indxdt, 
-            const std::array<F, 6> instrainrate, const std::array<F, 3> inspinrate);
+            const std::array<F, 6> insigma = std::array<F, 6>{F(0.), F(0.), F(0.), F(0.), F(0.), F(0.)}, 
+            const std::array<F, 3> ina = std::array<F, 6>{F(0.), F(0.), F(0.), F(0.), F(0.), F(0.)}, 
+            const std::array<F, 3> indxdt = std::array<F, 3>{F(0.), F(0.), F(0.)}, 
+            const std::array<F, 6> instrainrate = std::array<F, 6>{F(0.), F(0.), F(0.), F(0.), F(0.), F(0.)}, 
+            const std::array<F, 3> inspinrate = std::array<F, 3>{F(0.), F(0.), F(0.)});
         particle();
     };
 
@@ -202,8 +204,8 @@ namespace GraMPM {
                 std::array<int, dims> p_grid_idx_unravelled(const int i) {return unravel_idx<int>(h_p_grid_idx(i));}
 
                 particle<F> p_at(const int i) {
-                    return particle<F>(h_p_x(i, 0), h_p_x(i, 1), h_p_x(i, 2), h_p_v(i, 0), h_p_v(i, 1), h_p_v(i, 2), 
-                        h_p_mass(i), h_p_rho(i), h_p_sigma(i, 0), h_p_sigma(i, 1), h_p_sigma(i, 2), h_p_sigma(i, 3),
+                    return particle<F>(h_p_x(i, 0), h_p_x(i, 1), h_p_x(i, 2), h_p_mass(i), h_p_rho(i), h_p_v(i, 0), 
+                        h_p_v(i, 1), h_p_v(i, 2), h_p_sigma(i, 0), h_p_sigma(i, 1), h_p_sigma(i, 2), h_p_sigma(i, 3),
                         h_p_sigma(i, 4), h_p_sigma(i, 5), h_p_a(i, 0), h_p_a(i, 1), h_p_a(i, 2), h_p_dxdt(i, 0), 
                         h_p_dxdt(i, 1), h_p_dxdt(i, 2), h_p_strainrate(i, 0), h_p_strainrate(i, 1), 
                         h_p_strainrate(i, 2), h_p_strainrate(i, 3), h_p_strainrate(i, 4), h_p_strainrate(i, 5), 

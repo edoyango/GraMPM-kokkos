@@ -19,9 +19,8 @@ std::vector<GraMPM::particle<double>> generate_particles() {
             for (int k = 0; k < 30; ++k) {
                 vp.push_back(
                     GraMPM::particle<double>(0.1*(i+0.5), 0.1*(j+0.5), 0.1*(k+0.5), 
-                                             -i, -j, -k,
                                              10.*(i+j+k), 100.*(i+j+k+3.),
-                                             0., 0., 0., 0., 0., 0.)
+                                             -i, -j, -k)
                 );
             }
 
