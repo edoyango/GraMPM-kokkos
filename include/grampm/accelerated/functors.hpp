@@ -50,8 +50,8 @@ namespace GraMPM {
             template<typename F, typename kernel>
             struct find_neighbour_nodes {
 
-                const F dcell, minx, miny, minz;
-                const int nx, ny, nz, npp;
+                const F dcell, ming[3];
+                const int ng[3], npp;
                 const Kokkos::View<F*[3]> x;
                 const Kokkos::View<int*> gidx;
                 const Kokkos::View<int*> pg;
@@ -59,16 +59,12 @@ namespace GraMPM {
                 const Kokkos::View<F*[3]> dwdx;
                 const kernel knl;
 
-                find_neighbour_nodes(F dcell_, F minx_, F miny_, F minz_, int nx_, int ny_, int nz_, int r, 
-                    Kokkos::View<F*[3]> x_, Kokkos::View<int*> gidx_, Kokkos::View<int*> pg_, Kokkos::View<F*> w_, 
-                    Kokkos::View<F*[3]> dwdx_, kernel knl_)
+                find_neighbour_nodes(F dcell_, const F ming_[3], const int ng_[3], int r, Kokkos::View<F*[3]> x_, 
+                    Kokkos::View<int*> gidx_, Kokkos::View<int*> pg_, Kokkos::View<F*> w_, Kokkos::View<F*[3]> dwdx_, 
+                    kernel knl_)
                     : dcell {dcell_}
-                    , minx {minx_} 
-                    , miny {miny_}
-                    , minz {minz_}
-                    , nx {nx_}
-                    , ny {ny_}
-                    , nz {nz_}
+                    , ming {ming_[0], ming_[1], ming_[2]}
+                    , ng {ng_[0], ng_[1], ng_[2]}
                     , npp {r*r*r*8}
                     , x {x_}
                     , gidx {gidx_}
@@ -81,13 +77,15 @@ namespace GraMPM {
                 
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
-                    const int idx = gidx(i), idxx = idx/(ny*nz), idxy = (idx % (ny*nz))/nz, idxz = idx-idxx*ny*nz-idxy*nz;
+                    const int idx = gidx(i), idxx = idx/(ng[1]*ng[2]), idxy = (idx % (ng[1]*ng[2]))/ng[2], 
+                        idxz = idx-idxx*ng[1]*ng[2]-idxy*ng[2];
                     int j = i*npp;
                     for (int jdxx = idxx+1-knl.radius; jdxx <= idxx+knl.radius; ++jdxx) {
                         for (int jdxy = idxy+1-knl.radius; jdxy <= idxy+knl.radius; ++jdxy) {
                             for (int jdxz = idxz+1-knl.radius; jdxz <= idxz+knl.radius; ++jdxz) {
-                                pg(j) = jdxx*ny*nz + jdxy*nz + jdxz;
-                                const F dx = x(i, 0) - (jdxx*dcell+minx), dy = x(i, 1) - (jdxy*dcell+miny), dz = x(i, 2) - (jdxz*dcell+minz);
+                                pg(j) = jdxx*ng[1]*ng[2] + jdxy*ng[2] + jdxz;
+                                const F dx = x(i, 0) - (jdxx*dcell+ming[0]), dy = x(i, 1) - (jdxy*dcell+ming[1]), 
+                                    dz = x(i, 2) - (jdxz*dcell+ming[2]);
                                 knl(dx, dy, dz, w(j), dwdx(j, 0), dwdx(j, 1), dwdx(j, 2));
                                 j++;
                             }
@@ -313,15 +311,15 @@ namespace GraMPM {
 
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
-                    F strainratexxi = 0.;
-                    F strainrateyyi = 0.;
-                    F strainratezzi = 0.;
-                    F strainratexyi = 0.;
-                    F strainratexzi = 0.;
-                    F strainrateyzi = 0.;
-                    F spinratexyi = 0.;
-                    F spinratexzi = 0.;
-                    F spinrateyzi = 0.;
+                    F strainratexxi = F(0.);
+                    F strainrateyyi = F(0.);
+                    F strainratezzi = F(0.);
+                    F strainratexyi = F(0.);
+                    F strainratexzi = F(0.);
+                    F strainrateyzi = F(0.);
+                    F spinratexyi = F(0.);
+                    F spinratexzi = F(0.);
+                    F spinrateyzi = F(0.);
                     const int jstart = i*npp;
                     for (int j = jstart; j < jstart + npp; ++j) {
                         const int idx = pg(j);
