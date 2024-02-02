@@ -142,16 +142,16 @@ namespace GraMPM {
                 // getters/setters
                 int p_size() const {return m_p_size;}
                 F g_cell_size() const {return m_g_cell_size;}
-                std::array<F, dims> g_mingrid() const {return std::array<F, dims>{m_g_extents.start[0], m_g_extents.start[1], m_g_extents.start[2]};}
-                std::array<F, dims> g_maxgrid() const {return std::array<F, dims>{m_g_extents.end[0], m_g_extents.end[1], m_g_extents.end[2]};}
+                std::array<F, dims> g_mingrid() const {return std::array<F, dims>{m_g_extents.min[0], m_g_extents.min[1], m_g_extents.min[2]};}
+                std::array<F, dims> g_maxgrid() const {return std::array<F, dims>{m_g_extents.max[0], m_g_extents.max[1], m_g_extents.max[2]};}
                 std::array<int, dims> g_ngrid() const { return m_ngrid;}
                 int g_size() const {return m_g_size;}
-                F g_mingridx() const {return m_g_extents.start[0];}
-                F g_mingridy() const {return m_g_extents.start[1];}
-                F g_mingridz() const {return m_g_extents.start[2];}
-                F g_maxgridx() const {return m_g_extents.end[0];}
-                F g_maxgridy() const {return m_g_extents.end[1];}
-                F g_maxgridz() const {return m_g_extents.end[2];}
+                F g_mingridx() const {return m_g_extents.min[0];}
+                F g_mingridy() const {return m_g_extents.min[1];}
+                F g_mingridz() const {return m_g_extents.min[2];}
+                F g_maxgridx() const {return m_g_extents.max[0];}
+                F g_maxgridy() const {return m_g_extents.max[1];}
+                F g_maxgridz() const {return m_g_extents.max[2];}
                 int g_ngridx() const {return m_ngrid[0];}
                 int g_ngridy() const {return m_ngrid[1];}
                 int g_ngridz() const {return m_ngrid[2];}
@@ -256,12 +256,12 @@ namespace GraMPM {
 
 #ifdef GRAMPM_MPI
                 void ORB_determine_boundaries();
-                F ORB_mingridx(const int i) const {return h_ORB_extents[i].start[0];}
-                F ORB_mingridy(const int i) const {return h_ORB_extents[i].start[1];}
-                F ORB_mingridz(const int i) const {return h_ORB_extents[i].start[2];}
-                F ORB_maxgridx(const int i) const {return h_ORB_extents[i].end[0];}
-                F ORB_maxgridy(const int i) const {return h_ORB_extents[i].end[1];}
-                F ORB_maxgridz(const int i) const {return h_ORB_extents[i].end[2];}
+                F ORB_mingridx(const int i) const {return h_ORB_extents(i).min[0];}
+                F ORB_mingridy(const int i) const {return h_ORB_extents(i).min[1];}
+                F ORB_mingridz(const int i) const {return h_ORB_extents(i).min[2];}
+                F ORB_maxgridx(const int i) const {return h_ORB_extents(i).max[0];}
+                F ORB_maxgridy(const int i) const {return h_ORB_extents(i).max[1];}
+                F ORB_maxgridz(const int i) const {return h_ORB_extents(i).max[2];}
 #endif
 
         };
