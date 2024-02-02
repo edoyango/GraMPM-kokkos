@@ -64,6 +64,25 @@ static herr_t read_h5(const int r, hsize_t* dims, double* data, const hid_t gid,
     return status;
 }
 
+#ifdef GRAMPM_MPI
+static int get_MPI_Comm_rank() {
+    int procid;
+    MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+    return procid;
+}
+
+static int get_MPI_Comm_size() {
+    int numprocs;
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    return numprocs;
+}
+#else
+
+static int get_MPI_Comm_rank() {return 0;}
+static int get_MPI_Comm_size() {return 1;}
+
+#endif
+
 namespace GraMPM {
 
     template<typename F>
@@ -108,13 +127,15 @@ namespace GraMPM {
             : knl(dcell)
             , m_p_size {n}
             , m_g_cell_size {dcell}
-            , m_g_extents(mingrid.data(), maxgrid.data())
+            , m_g_extents{mingrid[0], mingrid[1], mingrid[2], maxgrid[0], maxgrid[1], maxgrid[2]}
             , m_ngrid{
                 static_cast<int>(std::ceil((maxgrid[0]-mingrid[0])/dcell))+1,
                 static_cast<int>(std::ceil((maxgrid[1]-mingrid[1])/dcell))+1,
                 static_cast<int>(std::ceil((maxgrid[2]-mingrid[2])/dcell))+1
             }
             , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
+            , procid {get_MPI_Comm_rank()}
+            , numprocs {get_MPI_Comm_size()}
             , d_p_x("Particles' 3D positions", m_p_size)
             , d_p_v("Particles' 3D velocity", m_p_size)
             , d_p_a("Particles' 3D accelerations", m_p_size)
@@ -169,17 +190,9 @@ namespace GraMPM {
             , f_p_update_position(d_p_x, d_p_dxdt)
             , f_p_update_density(d_p_rho, d_p_strainrate)
             , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
-        {
-#ifdef GRAMPM_MPI
-            MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-            MPI_Comm_rank(MPI_COMM_WORLD, &procid);
-            Kokkos::resize(d_ORB_extents, numprocs);
-            h_ORB_extents = create_mirror_view(d_ORB_extents);
-#else
-            numprocs = 1;
-            procid = 1;
-#endif
-        }
+            , d_ORB_extents("List of all process' boundary boxes", numprocs)
+            , h_ORB_extents(create_mirror_view(d_ORB_extents))
+        {}
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)

@@ -194,7 +194,7 @@ namespace GraMPM {
             hsize_t dims_grid_vec[4] {3, static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])},
                 dims_grid_scalar[3] {static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])};
             group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            status = write_grid_extents(group_id, m_g_extents.start, m_g_extents.end, m_g_cell_size);
+            status = write_grid_extents(group_id, m_g_extents.min, m_g_extents.max, m_g_cell_size);
             status = write2h5(4, dims_grid_vec, h_g_momentum.data(), group_id, "momentum");
             status = write2h5(4, dims_grid_vec, h_g_force.data(), group_id, "force");
             status = write2h5(3, dims_grid_scalar, h_g_mass.data(), group_id, "mass");
@@ -260,7 +260,7 @@ namespace GraMPM {
                 dims_grid_scalar[3] {static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])},
                 dims_grid_tens[4] {6, static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])};
             group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            status = write_grid_extents(group_id, m_g_extents.start, m_g_extents.end, m_g_cell_size);
+            status = write_grid_extents(group_id, m_g_extents.min, m_g_extents.max, m_g_cell_size);
             Kokkos::fence();
             Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_g_force, d_g_force);
             status = write2h5(4, dims_grid_vec, h_g_momentum.data(), group_id, "momentum");

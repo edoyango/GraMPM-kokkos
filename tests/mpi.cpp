@@ -36,21 +36,21 @@ TEST(ORB, test_cax) {
     Kokkos::deep_copy(h_p, 0);
     box<int> proc_box;
     if (procid==0) {
-        proc_box.start[0] = 0; proc_box.end[0] = 20;
-        proc_box.start[1] = 0; proc_box.end[1] = 5;
-        proc_box.start[2] = 0; proc_box.end[2] = 5;
+        proc_box.min[0] = 0; proc_box.max[0] = 20;
+        proc_box.min[1] = 0; proc_box.max[1] = 5;
+        proc_box.min[2] = 0; proc_box.max[2] = 5;
     } else if (procid == 1) {
-        proc_box.start[0] = 0; proc_box.end[0] = 20;
-        proc_box.start[1] = 5; proc_box.end[1] = 10;
-        proc_box.start[2] = 0; proc_box.end[2] = 5;
+        proc_box.min[0] = 0; proc_box.max[0] = 20;
+        proc_box.min[1] = 5; proc_box.max[1] = 10;
+        proc_box.min[2] = 0; proc_box.max[2] = 5;
     } else if (procid == 2) {
-        proc_box.start[0] = 0; proc_box.end[0] = 20;
-        proc_box.start[1] = 0; proc_box.end[1] = 5;
-        proc_box.start[2] = 5; proc_box.end[2] = 10;
+        proc_box.min[0] = 0; proc_box.max[0] = 20;
+        proc_box.min[1] = 0; proc_box.max[1] = 5;
+        proc_box.min[2] = 5; proc_box.max[2] = 10;
     } else if (procid == 3) {
-        proc_box.start[0] = 0; proc_box.end[0] = 20;
-        proc_box.start[1] = 5; proc_box.end[1] = 10;
-        proc_box.start[2] = 5; proc_box.end[2] = 10;
+        proc_box.min[0] = 0; proc_box.max[0] = 20;
+        proc_box.min[1] = 5; proc_box.max[1] = 10;
+        proc_box.min[2] = 5; proc_box.max[2] = 10;
     }
 
     // rectangle, x longest
@@ -92,15 +92,15 @@ TEST(ORB, test_cax) {
 
     box<int> node_box;
     for (int d = 0; d < 3; ++d) {
-        node_box.start[d] = 0;
-        node_box.end[d] = 10;
+        node_box.min[d] = 0;
+        node_box.max[d] = 10;
     }
 
     int cax = choose_cut_axis(p, proc_box, node_box);
 
     EXPECT_EQ(cax, 0);
 
-    node_box.end[0] = 5;
+    node_box.max[0] = 5;
     
     cax = choose_cut_axis(p, proc_box, node_box);
 
