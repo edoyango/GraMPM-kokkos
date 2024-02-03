@@ -152,30 +152,30 @@ TEST(ORB, boundaries) {
 
     myMPM.ORB_determine_boundaries();
 
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridx(0), -0.1) << "incorrect mingridx for proc 0 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridy(0), -0.1) << "incorrect mingridy for proc 0 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridz(0), -0.1) << "incorrect mingridz for proc 0 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridx(0), 0.5) << "incorrect maxgridx for proc 0 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridy(0), 0.5) << "incorrect maxgridy for proc 0 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridz(0), 3.2) << "incorrect maxgridz for proc 0 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridx(1), -0.1) << "incorrect mingridx for proc 1 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridy(1), 0.5) << "incorrect mingridy for proc 1 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridz(1), -0.1) << "incorrect mingridz for proc 1 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridx(1), 0.5) << "incorrect maxgridx for proc 1 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridy(1), 2.2) << "incorrect maxgridy for proc 1 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridz(1), 3.2) << "incorrect maxgridz for proc 1 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridx(2), 0.5) << "incorrect mingridx for proc 2 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridy(2), -0.1) << "incorrect mingridy for proc 2 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridz(2), -0.1) << "incorrect mingridz for proc 2 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridx(2), 1.3) << "incorrect maxgridx for proc 2 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridy(2), 0.5) << "incorrect maxgridy for proc 2 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridz(2), 3.2) << "incorrect maxgridz for proc 2 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridx(3), 0.5) << "incorrect mingridx for proc 3from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridy(3), 0.5) << "incorrect mingridy for proc 3from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_mingridz(3), -0.1) << "incorrect mingridz for proc 3 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridx(3), 1.3) << "incorrect maxgridx for proc 3 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridy(3), 2.2) << "incorrect maxgridy for proc 3 from procid " << procid;
-    EXPECT_DOUBLE_EQ(myMPM.ORB_maxgridz(3), 3.2) << "incorrect maxgridz for proc 3 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxx(0),                0) << "incorrect min_idxx for proc 0 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxy(0),                0) << "incorrect min_idxy for proc 0 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxz(0),                0) << "incorrect min_idxz for proc 0 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxx(0),                6) << "incorrect max_idxx for proc 0 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxy(0),                6) << "incorrect max_idxy for proc 0 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxz(0), myMPM.g_ngridz()) << "incorrect max_idxz for proc 0 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxx(1),                0) << "incorrect min_idxx for proc 1 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxy(1),                6) << "incorrect min_idxy for proc 1 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxz(1),                0) << "incorrect min_idxz for proc 1 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxx(1),                6) << "incorrect max_idxx for proc 1 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxy(1), myMPM.g_ngridy()) << "incorrect max_idxy for proc 1 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxz(1), myMPM.g_ngridz()) << "incorrect max_idxz for proc 1 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxx(2),                6) << "incorrect min_idxx for proc 2 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxy(2),                0) << "incorrect min_idxy for proc 2 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxz(2),                0) << "incorrect min_idxz for proc 2 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxx(2), myMPM.g_ngridx()) << "incorrect max_idxx for proc 2 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxy(2),                6) << "incorrect max_idxy for proc 2 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for proc 2 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxx(3),                6) << "incorrect min_idxx for proc 3from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxy(3),                6) << "incorrect min_idxy for proc 3from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxz(3),                0) << "incorrect min_idxz for proc 3 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxx(3), myMPM.g_ngridx()) << "incorrect max_idxx for proc 3 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxy(3), myMPM.g_ngridy()) << "incorrect max_idxy for proc 3 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_max_idxz(3), myMPM.g_ngridz()) << "incorrect max_idxz for proc 3 from procid " << procid;
 }
 
 int main(int argc, char *argv[]) {

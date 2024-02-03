@@ -120,8 +120,8 @@ namespace GraMPM {
                 functors::update_density<F> f_p_update_density;
 
 #ifdef GRAMPM_MPI
-                Kokkos::View<box<F>*> d_ORB_extents;
-                typename Kokkos::View<box<F>*>::HostMirror h_ORB_extents;
+                Kokkos::View<box<int>*> d_ORB_extents;
+                typename Kokkos::View<box<int>*>::HostMirror h_ORB_extents;
 #endif
 
             public:
@@ -256,12 +256,12 @@ namespace GraMPM {
 
 #ifdef GRAMPM_MPI
                 void ORB_determine_boundaries();
-                F ORB_mingridx(const int i) const {return h_ORB_extents(i).min[0];}
-                F ORB_mingridy(const int i) const {return h_ORB_extents(i).min[1];}
-                F ORB_mingridz(const int i) const {return h_ORB_extents(i).min[2];}
-                F ORB_maxgridx(const int i) const {return h_ORB_extents(i).max[0];}
-                F ORB_maxgridy(const int i) const {return h_ORB_extents(i).max[1];}
-                F ORB_maxgridz(const int i) const {return h_ORB_extents(i).max[2];}
+                int ORB_min_idxx(const int i) const {return h_ORB_extents(i).min[0];}
+                int ORB_min_idxy(const int i) const {return h_ORB_extents(i).min[1];}
+                int ORB_min_idxz(const int i) const {return h_ORB_extents(i).min[2];}
+                int ORB_max_idxx(const int i) const {return h_ORB_extents(i).max[0];}
+                int ORB_max_idxy(const int i) const {return h_ORB_extents(i).max[1];}
+                int ORB_max_idxz(const int i) const {return h_ORB_extents(i).max[2];}
 #endif
 
         };

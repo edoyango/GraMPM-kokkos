@@ -231,7 +231,7 @@ typedef Kokkos::MinLoc<int, int>::value_type minloc_type;
 
 template<typename F>
 static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> proc_box, 
-    const typename Kokkos::View<box<F>*>::HostMirror &ORB_extents, const box<F> &global_extents, 
+    const typename Kokkos::View<box<int>*>::HostMirror &ORB_extents, const box<F> &global_extents, 
     const F cell_size, const Kokkos::View<const int***> &pincell_in) {
 
     /*                  node_in
@@ -298,26 +298,42 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> p
 
     // travel to lower node
     if (node_lo.proc_range[1]-node_lo.proc_range[0] == 1) {
-        ORB_extents(node_lo.proc_range[0]) = idx2coords(node_lo.extents, cell_size, global_extents.min);
+        ORB_extents(node_lo.proc_range[0]) = node_lo.extents;
     } else {
         ORB(procid, node_lo, proc_box, ORB_extents, global_extents, cell_size, pincell_in);
     }
 
     // travel to high node
     if (node_hi.proc_range[1]-node_hi.proc_range[0] == 1) {
-        ORB_extents(node_hi.proc_range[0]) = idx2coords(node_hi.extents, cell_size, global_extents.min);
+        ORB_extents(node_hi.proc_range[0]) = node_hi.extents;
     } else {
         ORB(procid, node_hi, proc_box, ORB_extents, global_extents, cell_size, pincell_in);
     }
 }
 
+// template<typename F>
 // struct flag_neighbours_func {
-
+//     Kokkos::View<box<F>*> all_extents;
+//     box<F> my_extents;
+//     Kokkos::View<bool*> is_neighbour;
+//     F buffer;
+//     flag_neighbours_func(Kokkos::View<box<F>> all_extents_, box<F> my_extents_, Kokkos::View<bool*> is_neighbour_, 
+//         F buffer_)
+//         : all_extents {all_extents_}
+//         , my_extents {my_extents_}
+//         , is_neighbour {is_neighbour_}
+//         , buffer {buffer_}
+//     {}
+//     KOKKOS_INLINE_FUNCTION
+//     void operator()(const int i) {
+//         is_neighbour(i) = 
+//     }
 // }
 
 // static void ORB_find_neighbours(const std::vector<box<int>> &boundaries, const int procid, const int numprocs) {
-//     Kokkos::View<int*> isneighbour("View storing neighbour status", numprocs);
+//     Kokkos::View<bool*> isneighbour("View storing neighbour status", numprocs);
 //     Kokkos::parallel_for("Flag processes as neighbour", numprocs, KOKKOS_LAMBDA (const int i) {
+//         box<F> my_extents = m_g_extents()
 //         isneighbour(i) = 
 //     })
 // }
