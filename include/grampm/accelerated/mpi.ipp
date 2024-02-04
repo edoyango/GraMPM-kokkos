@@ -8,6 +8,29 @@
 #include <grampm/extra.hpp>
 #include <vector>
 
+static int find_first_nonzero_layer(const Kokkos::View<const int***> &pincell_in, const int start, const int end, const box<int> &overlap_box, const int ax) { 
+    int idx = start, sum = 0;
+    const int offax[2] {(ax+1)%3, (ax+2)%3};
+    while (sum == 0 && idx < end) {
+        Kokkos::parallel_reduce(
+            "sum layer", 
+            Kokkos::MDRangePolicy<Kokkos::Rank<2>>(
+                {overlap_box.min[offax[0]], overlap_box.min[offax[1]]},
+                {overlap_box.max[offax[0]], overlap_box.max[offax[1]]}
+            ), 
+            KOKKOS_LAMBDA (const int i, const int j, int &lsum) {
+                if (ax==0) {
+                    lsum += pincell_in(idx, i, j);
+                } else if (ax==1) {
+                    lsum += pincell_in(j, idx, i);
+                }
+        }, sum);
+        idx += (start < end) ? 1 : -1;
+    }
+    idx += (start < end) ? -1 : 2; // accounting for overshoot
+    return idx;
+}
+
 static int choose_cut_axis(const Kokkos::View<const int***> &pincell_in, const box<int> &proc_box, 
     const box<int> &node_box) {
     /* 0: cut plane orthogonal to x
@@ -29,77 +52,30 @@ static int choose_cut_axis(const Kokkos::View<const int***> &pincell_in, const b
         box<int> overlap_box {translate_origin(
            find_overlapping_box(node_box, proc_box), proc_box.min)
         };
-
-        const Kokkos::MDRangePolicy<Kokkos::Rank<2>> 
-            policy0({overlap_box.min[1], overlap_box.min[2]}, {overlap_box.max[1], overlap_box.max[2]}),
-            policy1({overlap_box.min[0], overlap_box.min[2]}, {overlap_box.max[0], overlap_box.max[2]}),
-            policy2({overlap_box.min[0], overlap_box.min[1]}, {overlap_box.max[0], overlap_box.max[1]});
         
         // finding x min
-        int i = overlap_box.min[0];
-        int sum = 0;
-        while (sum == 0 && i < overlap_box.max[0]) {
-            Kokkos::parallel_reduce("sum in yz layer", policy0, KOKKOS_LAMBDA (const int j, const int k, int &lsum) {
-                lsum += pincell_in(i, j, k);
-            }, sum);
-            i++;
-        }
-        non_zero_box.min[0] = proc_box.min[0] + i - 1;
+        int i = find_first_nonzero_layer(pincell_in, overlap_box.min[0], overlap_box.max[0], overlap_box, 0);
+        non_zero_box.min[0] = proc_box.min[0] + i;
 
         // finding y min
-        int j = overlap_box.min[1];
-        sum = 0;
-        while (sum == 0 && j < overlap_box.max[1]) {
-            Kokkos::parallel_reduce("sum in xz layer", policy1, KOKKOS_LAMBDA (const int i, const int k, int &lsum) {
-                lsum += pincell_in(i, j, k);
-            }, sum);
-            j++;
-        }
-        non_zero_box.min[1] = proc_box.min[1] + j - 1;
+        int j = find_first_nonzero_layer(pincell_in, overlap_box.min[1], overlap_box.max[1], overlap_box, 1);
+        non_zero_box.min[1] = proc_box.min[1] + j;
 
         // finding z min
-        int k = overlap_box.min[2];
-        sum = 0;
-        while (sum == 0 && k < overlap_box.max[2]) {
-            Kokkos::parallel_reduce("sum in xy layer", policy2, KOKKOS_LAMBDA (const int i, const int j, int &lsum) {
-                lsum += pincell_in(i, j, k);
-            }, sum);
-            k++;
-        }
-        non_zero_box.min[2] = proc_box.min[2] + k - 1;
+        int k = find_first_nonzero_layer(pincell_in, overlap_box.min[2], overlap_box.max[2], overlap_box, 2);
+        non_zero_box.min[2] = proc_box.min[2] + k;
 
         // finding x min
-        i = overlap_box.max[0];
-        sum = 0;
-        while (sum == 0 && i > overlap_box.min[0]) {
-            i--;
-            Kokkos::parallel_reduce("sum in yz layer", policy0, KOKKOS_LAMBDA (const int j, const int k, int &lsum) {
-                lsum += pincell_in(i, j, k);
-            }, sum);
-        }
-        non_zero_box.max[0] = proc_box.min[0] + i + 1;
+        i = find_first_nonzero_layer(pincell_in, overlap_box.max[0]-1, overlap_box.min[0]-1, overlap_box, 0);
+        non_zero_box.max[0] = proc_box.min[0] + i;
 
         // finding y min
-        j = overlap_box.max[1];
-        sum = 0;
-        while (sum == 0 && j > overlap_box.min[1]) {
-            j--;
-            Kokkos::parallel_reduce("sum in xz layer", policy1, KOKKOS_LAMBDA (const int i, const int k, int &lsum) {
-                lsum += pincell_in(i, j, k);
-            }, sum);
-        }
-        non_zero_box.max[1] = proc_box.min[1] + j + 1;
+        j = find_first_nonzero_layer(pincell_in, overlap_box.max[1]-1, overlap_box.min[1]-1, overlap_box, 1);
+        non_zero_box.max[1] = proc_box.min[1] + j;
 
         // finding z min
-        k = overlap_box.max[2];
-        sum = 0;
-        while (sum == 0 && k > overlap_box.min[2]) {
-            k--;
-            Kokkos::parallel_reduce("sum in xy layer", policy2, KOKKOS_LAMBDA (const int i, const int j, int &lsum) {
-                lsum += pincell_in(i, j, k);
-            }, sum);
-        }
-        non_zero_box.max[2] = proc_box.min[2] + k + 1;
+        k = find_first_nonzero_layer(pincell_in, overlap_box.max[2]-1, overlap_box.min[2]-1, overlap_box, 2);
+        non_zero_box.max[2] = proc_box.min[2] + k;
 
     }
 
