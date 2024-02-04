@@ -48,6 +48,10 @@ namespace GraMPM {
             deep_copy(d_pg_nn, h_pg_nn);
             deep_copy(d_pg_w, h_pg_w);
             deep_copy(d_pg_dwdx, h_pg_dwdx);
+#ifdef GRAMPM_MPI
+            deep_copy(d_ORB_extents, h_ORB_extents);
+            deep_copy(d_ORB_neighbours, h_ORB_neighbours);
+#endif
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
@@ -68,6 +72,10 @@ namespace GraMPM {
             deep_copy(h_pg_nn, d_pg_nn);
             deep_copy(h_pg_w, d_pg_w);
             deep_copy(h_pg_dwdx, d_pg_dwdx);
+#ifdef GRAMPM_MPI
+            deep_copy(h_ORB_extents, d_ORB_extents);
+            deep_copy(h_ORB_neighbours, d_ORB_neighbours);
+#endif
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>

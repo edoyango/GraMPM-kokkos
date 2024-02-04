@@ -122,6 +122,9 @@ namespace GraMPM {
 #ifdef GRAMPM_MPI
                 Kokkos::View<box<int>*> d_ORB_extents;
                 typename Kokkos::View<box<int>*>::HostMirror h_ORB_extents;
+                int n_ORB_neighbours;
+                Kokkos::View<int*> d_ORB_neighbours;
+                typename Kokkos::View<int*>::HostMirror h_ORB_neighbours;
 #endif
 
             public:
@@ -262,6 +265,8 @@ namespace GraMPM {
                 int ORB_max_idxx(const int i) const {return h_ORB_extents(i).max[0];}
                 int ORB_max_idxy(const int i) const {return h_ORB_extents(i).max[1];}
                 int ORB_max_idxz(const int i) const {return h_ORB_extents(i).max[2];}
+                int ORB_n_neighbours() const {return n_ORB_neighbours;}
+                int ORB_neighbour(const int i) const {return h_ORB_neighbours(i);}
 #endif
 
         };

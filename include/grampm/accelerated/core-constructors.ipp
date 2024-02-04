@@ -192,6 +192,8 @@ namespace GraMPM {
             , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
             , d_ORB_extents("List of all process' boundary boxes", numprocs)
             , h_ORB_extents(create_mirror_view(d_ORB_extents))
+            , d_ORB_neighbours("IDs of processes that are neighbours", numprocs)
+            , h_ORB_neighbours(create_mirror_view(d_ORB_neighbours))
         {}
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>

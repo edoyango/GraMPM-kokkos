@@ -311,32 +311,77 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> p
     }
 }
 
-// template<typename F>
-// struct flag_neighbours_func {
-//     Kokkos::View<box<F>*> all_extents;
-//     box<F> my_extents;
-//     Kokkos::View<bool*> is_neighbour;
-//     F buffer;
-//     flag_neighbours_func(Kokkos::View<box<F>> all_extents_, box<F> my_extents_, Kokkos::View<bool*> is_neighbour_, 
-//         F buffer_)
-//         : all_extents {all_extents_}
-//         , my_extents {my_extents_}
-//         , is_neighbour {is_neighbour_}
-//         , buffer {buffer_}
-//     {}
-//     KOKKOS_INLINE_FUNCTION
-//     void operator()(const int i) {
-//         is_neighbour(i) = 
-//     }
-// }
+struct locate_neighbours_func {
+    const Kokkos::View<const box<int>*> all_extents;
+    const Kokkos::View<int*> neighbours_location;
+    const int buffer, procid;
+    const box<int> my_extents;
+    locate_neighbours_func(Kokkos::View<const box<int>*> all_extents_, Kokkos::View<int*> neighbours_location_, 
+        int buffer_, int procid_)
+        : all_extents {all_extents_}
+        , neighbours_location {neighbours_location_}
+        , buffer {buffer_}
+        , procid {procid_}
+        , my_extents {all_extents(procid)}
+    {}
+    KOKKOS_INLINE_FUNCTION
+    void operator()(const int other_procid, int &partial_sum, const bool is_final) const {
+        bool is_neighbour = !(
+            my_extents.min[0] > all_extents(other_procid).max[0] + 2 ||
+            my_extents.min[1] > all_extents(other_procid).max[1] + 2 ||
+            my_extents.min[2] > all_extents(other_procid).max[2] + 2 ||
+            my_extents.max[0] < all_extents(other_procid).min[0] - 2 ||
+            my_extents.max[1] < all_extents(other_procid).min[1] - 2 ||
+            my_extents.max[2] < all_extents(other_procid).min[2] - 2
+        ) && procid != other_procid;
+        if (is_final) neighbours_location(other_procid) = partial_sum;
+        partial_sum += is_neighbour;
+    }
+};
 
-// static void ORB_find_neighbours(const std::vector<box<int>> &boundaries, const int procid, const int numprocs) {
-//     Kokkos::View<bool*> isneighbour("View storing neighbour status", numprocs);
-//     Kokkos::parallel_for("Flag processes as neighbour", numprocs, KOKKOS_LAMBDA (const int i) {
-//         box<F> my_extents = m_g_extents()
-//         isneighbour(i) = 
-//     })
-// }
+struct pack_neighbour_list_func {
+    const Kokkos::View<const int*> neighbours_location;
+    const Kokkos::View<int*> neighbours;
+    const int n_neighbours;
+    pack_neighbour_list_func(const Kokkos::View<int*> neighbours_location_, const Kokkos::View<int*> neighbours_, const int n_)
+        : neighbours_location {neighbours_location_}
+        , neighbours {neighbours_}
+        , n_neighbours {n_}
+    {}
+    void operator()(const int i) const {
+        if (i < n_neighbours-1) { // not the last element
+            if (neighbours_location(i) != neighbours_location(i+1)) 
+                neighbours(neighbours_location(i)) = i;
+        } else {
+            if (neighbours_location(i) < n_neighbours) neighbours(neighbours_location(i)) = i;
+        }
+    }
+};
+
+static void ORB_find_neighbours(const Kokkos::View<box<int>*> &boundaries, const int procid, const int numprocs, const int buffer, const Kokkos::View<int*> neighbours, int &n_neighbours) {
+    Kokkos::View<int*> neighbours_location("View storing neighbour status", numprocs);
+    Kokkos::parallel_scan(
+        "Flag processes as neighbour", 
+        numprocs, 
+        locate_neighbours_func(
+            boundaries, 
+            neighbours_location, 
+            buffer, 
+            procid
+        ),
+        n_neighbours
+    );
+
+    Kokkos::parallel_for(
+        "Pack neighbour processes into list",
+        numprocs,
+        pack_neighbour_list_func(
+            neighbours_location,
+            neighbours,
+            n_neighbours
+        )
+    );
+}
 
 namespace GraMPM {
     namespace accelerated {
@@ -389,6 +434,10 @@ namespace GraMPM {
 
             // start ORB
             ORB<F>(procid, node1, proc_box, h_ORB_extents, m_g_extents, m_g_cell_size, pincell);
+
+            Kokkos::deep_copy(d_ORB_extents, h_ORB_extents);
+
+            ORB_find_neighbours(d_ORB_extents, procid, numprocs, int(knl.radius), d_ORB_neighbours, n_ORB_neighbours);
 
         }
     }

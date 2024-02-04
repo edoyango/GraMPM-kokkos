@@ -152,6 +152,8 @@ TEST(ORB, boundaries) {
 
     myMPM.ORB_determine_boundaries();
 
+    myMPM.d2h();
+
     EXPECT_EQ(myMPM.ORB_min_idxx(0),                0) << "incorrect min_idxx for proc 0 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_min_idxy(0),                0) << "incorrect min_idxy for proc 0 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_min_idxz(0),                0) << "incorrect min_idxz for proc 0 from procid " << procid;
@@ -176,6 +178,15 @@ TEST(ORB, boundaries) {
     EXPECT_EQ(myMPM.ORB_max_idxx(3), myMPM.g_ngridx()) << "incorrect max_idxx for proc 3 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxy(3), myMPM.g_ngridy()) << "incorrect max_idxy for proc 3 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxz(3), myMPM.g_ngridz()) << "incorrect max_idxz for proc 3 from procid " << procid;
+
+    EXPECT_EQ(myMPM.ORB_n_neighbours(), 3);
+    n = 0;
+    for (int i = 0; i < numprocs; ++i) {
+        if (i != procid) {
+            EXPECT_EQ(myMPM.ORB_neighbour(n), i) << "Incorrect neighbour at " << n << " from procid " << procid;
+            n++;
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
