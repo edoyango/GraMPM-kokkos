@@ -190,6 +190,7 @@ namespace GraMPM {
             , f_p_update_position(d_p_x, d_p_dxdt)
             , f_p_update_density(d_p_rho, d_p_strainrate)
             , f_stress_update(d_p_sigma, d_p_strainrate, d_p_spinrate)
+#ifdef GRAMPM_MPI
             , d_ORB_extents("List of all process' boundary boxes", numprocs)
             , h_ORB_extents(create_mirror_view(d_ORB_extents))
             , d_ORB_send_halo("List of box indices of halo regions to send to neighbours", numprocs)
@@ -198,6 +199,7 @@ namespace GraMPM {
             , h_ORB_recv_halo(create_mirror_view(d_ORB_recv_halo))
             , d_ORB_neighbours("IDs of processes that are neighbours", numprocs)
             , h_ORB_neighbours(create_mirror_view(d_ORB_neighbours))
+#endif
         {}
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
