@@ -162,43 +162,17 @@ struct ORB_sum_layers_by {
     {}
     KOKKOS_INLINE_FUNCTION
     void operator()(const int id) const {
-        if (cax == 0) {
-            const int i = id;
-            const int globali = minidx[0] + i;
-            for (int j = 0; j < p.extent(1); ++j) {
-                for (int k = 0; k < p.extent(2); ++k) {
-                    int globalj = minidx[1] + j;
-                    int globalk = minidx[2] + k;
-                    if (contains_point(node_box, globali, globalj, globalk)) {
-                        const int nodei = globali - node_box.min[0];
-                        gridsums(nodei) += p(i, j, k);
-                    }
-                }
-            }
-        } else if (cax == 1) {
-            const int j = id;
-            const int globalj = minidx[1] + j;
-            for (int i = 0; i < p.extent(0); ++i) {
-                for (int k = 0; k < p.extent(2); ++k) {
-                    int globali = minidx[0] + i;
-                    int globalk = minidx[2] + k;
-                    if (contains_point(node_box, globali, globalj, globalk)) {
-                        const int nodej = globalj - node_box.min[1];
-                        gridsums(nodej) += p(i, j, k);
-                    }
-                }
-            }
-        } else if (cax == 2) {
-            const int k = id;
-            const int globalk = minidx[2] + k;
-            for (int i = 0; i < p.extent(0); ++i) {
-                for (int j = 0; j < p.extent(1); ++j) {
-                    int globali = minidx[0] + i;
-                    int globalj = minidx[1] + j;
-                    if (contains_point(node_box, globali, globalj, globalk)) {
-                        const int nodek = globalk - node_box.min[2];
-                        gridsums(nodek) += p(i, j, k);
-                    }
+        const int offax[2] {(cax+1)%3, (cax+2)%3}, i = id, globali = minidx[cax] + i, 
+            nodei = globali - node_box.min[cax];
+        for (int j = 0; j < p.extent(offax[0]); ++j) {
+            for (int k = 0; k < p.extent(offax[1]); ++k) {
+                const int globalj = minidx[offax[0]] + j, globalk = minidx[offax[1]] + k;
+                if (cax == 0) {
+                    if (contains_point(node_box, globali, globalj, globalk)) gridsums(nodei) += p(i, j, k);
+                } else if (cax == 1) {
+                    if (contains_point(node_box, globalk, globali, globalj)) gridsums(nodei) += p(k, i, j);
+                } else if (cax == 2) {
+                    if (contains_point(node_box, globalj, globalk, globali)) gridsums(nodei) += p(j, k, i);
                 }
             }
         }
