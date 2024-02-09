@@ -36,19 +36,19 @@ TEST(ORB, test_cax) {
     Kokkos::deep_copy(h_p, 0);
     box<int> proc_box;
     if (procid==0) {
-        proc_box.min[0] = 0; proc_box.max[0] = 20;
+        proc_box.min[0] = 0; proc_box.max[0] = 10;
         proc_box.min[1] = 0; proc_box.max[1] = 5;
         proc_box.min[2] = 0; proc_box.max[2] = 5;
     } else if (procid == 1) {
-        proc_box.min[0] = 0; proc_box.max[0] = 20;
+        proc_box.min[0] = 0; proc_box.max[0] = 10;
         proc_box.min[1] = 5; proc_box.max[1] = 10;
         proc_box.min[2] = 0; proc_box.max[2] = 5;
     } else if (procid == 2) {
-        proc_box.min[0] = 0; proc_box.max[0] = 20;
+        proc_box.min[0] = 0; proc_box.max[0] = 10;
         proc_box.min[1] = 0; proc_box.max[1] = 5;
         proc_box.min[2] = 5; proc_box.max[2] = 10;
     } else if (procid == 3) {
-        proc_box.min[0] = 0; proc_box.max[0] = 20;
+        proc_box.min[0] = 0; proc_box.max[0] = 10;
         proc_box.min[1] = 5; proc_box.max[1] = 10;
         proc_box.min[2] = 5; proc_box.max[2] = 10;
     }
@@ -90,6 +90,7 @@ TEST(ORB, test_cax) {
 
     Kokkos::deep_copy(p, h_p);
 
+    // start of with cube at node 1
     box<int> node_box;
     for (int d = 0; d < 3; ++d) {
         node_box.min[d] = 0;
@@ -100,11 +101,19 @@ TEST(ORB, test_cax) {
 
     EXPECT_EQ(cax, 0);
 
+    // cut cube in the x axis down the middle
     node_box.max[0] = 5;
     
     cax = choose_cut_axis(p, proc_box, node_box);
 
     EXPECT_EQ(cax, 1);
+
+    // cut cube in the y axis down the middle
+    node_box.max[1] = 5;
+
+    cax = choose_cut_axis(p, proc_box, node_box);
+
+    EXPECT_EQ(cax, 2);
 
 }
 
@@ -113,6 +122,8 @@ TEST(ORB, boundaries) {
     int numprocs, procid;
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+
+    ASSERT_EQ(numprocs, 4);
 
     const double dcell_in = 0.1;
     const std::array<double, 3> mingridx_in {-0.1, -0.1, -0.1}, maxgridx_in {1.1, 2.1, 3.1};
