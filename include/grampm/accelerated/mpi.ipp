@@ -335,6 +335,54 @@ static void ORB_find_neighbours(const Kokkos::View<box<int>*> &boundaries, const
     );
 }
 
+struct ORB_determine_neighbour_halos_func {
+    const int procid, numprocs, buffer, n_neighbours;
+    const Kokkos::View<const box<int>*> boundaries;
+    const Kokkos::View<const int*> neighbours;
+    const Kokkos::View<box<int>*> send_halo_boxes, recv_halo_boxes;
+    const box<int> mybox, mybox_w_buffer;
+    ORB_determine_neighbour_halos_func(const int procid_, const int numprocs_, const int buffer_, 
+        const int n_neighbours_, const Kokkos::View<const box<int>*> boundaries_, 
+        const Kokkos::View<const int*> neighbours_, const Kokkos::View<box<int>*> send_halo_boxes_, 
+        const Kokkos::View<box<int>*> recv_halo_boxes_)
+        : procid {procid_}
+        , numprocs {numprocs_}
+        , buffer {buffer_}
+        , n_neighbours {n_neighbours_}
+        , boundaries {boundaries_}
+        , neighbours {neighbours_}
+        , send_halo_boxes {send_halo_boxes_}
+        , recv_halo_boxes {recv_halo_boxes_}
+        , mybox {boundaries(procid)}
+        , mybox_w_buffer {extend(mybox, buffer)}
+    {}
+    KOKKOS_INLINE_FUNCTION
+    void operator()(const int i) const {
+        const int neighbouri = neighbours(i);
+        const box<int> neighbourbox {boundaries(neighbouri)}, neighbourbox_w_buffer {extend(neighbourbox, buffer)};
+        send_halo_boxes(i) = find_overlapping_box(mybox, neighbourbox_w_buffer);
+        recv_halo_boxes(i) = find_overlapping_box(mybox_w_buffer, neighbourbox);
+    }
+};
+
+static void ORB_determine_neighbour_halos(const Kokkos::View<const box<int>*> &boundaries, const int procid, const int numprocs, const int buffer, const Kokkos::View<const int*> neighbours,
+    const int &n_neighbours, const Kokkos::View<box<int>*> &send_halo_boxes, const Kokkos::View<box<int>*>  &recv_halo_boxes) {
+    
+    Kokkos::parallel_for("finding halo regions to send/recv", 
+        n_neighbours, 
+        ORB_determine_neighbour_halos_func(
+            procid, 
+            numprocs, 
+            buffer, 
+            n_neighbours, 
+            boundaries, 
+            neighbours, 
+            send_halo_boxes, 
+            recv_halo_boxes
+        )
+    );
+}
+
 namespace GraMPM {
     namespace accelerated {
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
@@ -387,9 +435,10 @@ namespace GraMPM {
             // start ORB
             ORB<F>(procid, node1, proc_box, h_ORB_extents, m_g_extents, m_g_cell_size, pincell);
 
-            Kokkos::deep_copy(d_ORB_extents, h_ORB_extents);
-
             ORB_find_neighbours(d_ORB_extents, procid, numprocs, int(knl.radius), d_ORB_neighbours, n_ORB_neighbours);
+
+            ORB_determine_neighbour_halos(d_ORB_extents, procid, numprocs, int(knl.radius), d_ORB_neighbours,
+                n_ORB_neighbours, d_ORB_send_halo, d_ORB_recv_halo);
 
         }
     }

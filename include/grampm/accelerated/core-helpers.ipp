@@ -50,6 +50,8 @@ namespace GraMPM {
             deep_copy(d_pg_dwdx, h_pg_dwdx);
 #ifdef GRAMPM_MPI
             deep_copy(d_ORB_extents, h_ORB_extents);
+            deep_copy(d_ORB_send_halo, h_ORB_send_halo);
+            deep_copy(d_ORB_recv_halo, h_ORB_recv_halo);
             deep_copy(d_ORB_neighbours, h_ORB_neighbours);
 #endif
         }
@@ -74,6 +76,8 @@ namespace GraMPM {
             deep_copy(h_pg_dwdx, d_pg_dwdx);
 #ifdef GRAMPM_MPI
             deep_copy(h_ORB_extents, d_ORB_extents);
+            deep_copy(h_ORB_send_halo, d_ORB_send_halo);
+            deep_copy(h_ORB_recv_halo, d_ORB_recv_halo);
             deep_copy(h_ORB_neighbours, d_ORB_neighbours);
 #endif
         }

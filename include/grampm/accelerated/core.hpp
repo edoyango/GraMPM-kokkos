@@ -120,8 +120,8 @@ namespace GraMPM {
                 functors::update_density<F> f_p_update_density;
 
 #ifdef GRAMPM_MPI
-                Kokkos::View<box<int>*> d_ORB_extents;
-                typename Kokkos::View<box<int>*>::HostMirror h_ORB_extents;
+                const Kokkos::View<box<int>*> d_ORB_extents, d_ORB_send_halo, d_ORB_recv_halo;
+                const typename Kokkos::View<box<int>*>::HostMirror h_ORB_extents, h_ORB_send_halo, h_ORB_recv_halo;
                 int n_ORB_neighbours;
                 Kokkos::View<int*> d_ORB_neighbours;
                 typename Kokkos::View<int*>::HostMirror h_ORB_neighbours;
@@ -267,6 +267,18 @@ namespace GraMPM {
                 int ORB_max_idxz(const int i) const {return h_ORB_extents(i).max[2];}
                 int ORB_n_neighbours() const {return n_ORB_neighbours;}
                 int ORB_neighbour(const int i) const {return h_ORB_neighbours(i);}
+                int ORB_send_halo_minx(const int neighbour) const {return h_ORB_send_halo(neighbour).min[0];}
+                int ORB_send_halo_miny(const int neighbour) const {return h_ORB_send_halo(neighbour).min[1];}
+                int ORB_send_halo_minz(const int neighbour) const {return h_ORB_send_halo(neighbour).min[2];}
+                int ORB_send_halo_maxx(const int neighbour) const {return h_ORB_send_halo(neighbour).max[0];}
+                int ORB_send_halo_maxy(const int neighbour) const {return h_ORB_send_halo(neighbour).max[1];}
+                int ORB_send_halo_maxz(const int neighbour) const {return h_ORB_send_halo(neighbour).max[2];}
+                int ORB_recv_halo_minx(const int neighbour) const {return h_ORB_recv_halo(neighbour).min[0];}
+                int ORB_recv_halo_miny(const int neighbour) const {return h_ORB_recv_halo(neighbour).min[1];}
+                int ORB_recv_halo_minz(const int neighbour) const {return h_ORB_recv_halo(neighbour).min[2];}
+                int ORB_recv_halo_maxx(const int neighbour) const {return h_ORB_recv_halo(neighbour).max[0];}
+                int ORB_recv_halo_maxy(const int neighbour) const {return h_ORB_recv_halo(neighbour).max[1];}
+                int ORB_recv_halo_maxz(const int neighbour) const {return h_ORB_recv_halo(neighbour).max[2];}
 #endif
 
         };

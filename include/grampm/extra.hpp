@@ -2,6 +2,7 @@
 #define GRAMPM_EXTRA
 
 #include "Kokkos_Core_fwd.hpp"
+#include "Kokkos_Macros.hpp"
 #include <Kokkos_Core.hpp>
 #include <string>
 
@@ -33,6 +34,7 @@ bool no_overlap(const box<T> &that, const box<T> &other) {
 }
 
 template<typename T>
+KOKKOS_INLINE_FUNCTION
 box<T> find_overlapping_box(const box<T> &that, const box<T> &other) {
     return box<T>(
         Kokkos::max(that.min[0], other.min[0]),
@@ -65,6 +67,19 @@ box<T> translate_origin(const box<T> &that, const T x[3]) {
         that.max[0] - x[0],
         that.max[1] - x[1],
         that.max[2] - x[2]
+    );
+}
+
+template<typename T>
+KOKKOS_INLINE_FUNCTION
+box<T> extend(const box<T> &that, const T buffer) {
+    return box<T>(
+        that.min[0] - buffer,
+        that.min[1] - buffer,
+        that.min[2] - buffer,
+        that.max[0] + buffer,
+        that.max[1] + buffer,
+        that.max[2] + buffer
     );
 }
 

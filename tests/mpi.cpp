@@ -190,6 +190,7 @@ TEST(ORB, boundaries_xy) {
     EXPECT_EQ(myMPM.ORB_max_idxy(3), myMPM.g_ngridy()) << "incorrect max_idxy for proc 3 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxz(3), myMPM.g_ngridz()) << "incorrect max_idxz for proc 3 from procid " << procid;
 
+    // checking correct neighbours
     EXPECT_EQ(myMPM.ORB_n_neighbours(), 3);
     n = 0;
     for (int i = 0; i < numprocs; ++i) {
@@ -197,6 +198,157 @@ TEST(ORB, boundaries_xy) {
             EXPECT_EQ(myMPM.ORB_neighbour(n), i) << "Incorrect neighbour at " << n << " from procid " << procid;
             n++;
         }
+    }
+
+    // checking correct halo boxes
+    if (procid==0) {
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(0),                0) << "incorrect min_idxx for halo region send from 0 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(0),                4) << "incorrect min_idxy for halo region send from 0 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(0),                0) << "incorrect min_idxz for halo region send from 0 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(0),                6) << "incorrect max_idxx for halo region send from 0 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(0),                6) << "incorrect max_idxy for halo region send from 0 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(0), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 0 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(1),                4) << "incorrect min_idxx for halo region send from 0 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(1),                0) << "incorrect min_idxy for halo region send from 0 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(1),                0) << "incorrect min_idxz for halo region send from 0 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(1),                6) << "incorrect max_idxx for halo region send from 0 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(1),                6) << "incorrect max_idxy for halo region send from 0 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(1), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 0 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(2),                4) << "incorrect min_idxx for halo region send from 0 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(2),                4) << "incorrect min_idxy for halo region send from 0 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(2),                0) << "incorrect min_idxz for halo region send from 0 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(2),                6) << "incorrect max_idxx for halo region send from 0 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(2),                6) << "incorrect max_idxy for halo region send from 0 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 0 to 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(0),                0) << "incorrect min_idxx for halo region recv by 0 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(0),                6) << "incorrect min_idxy for halo region recv by 0 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(0),                0) << "incorrect min_idxz for halo region recv by 0 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(0),                6) << "incorrect max_idxx for halo region recv by 0 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(0),                8) << "incorrect max_idxy for halo region recv by 0 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(0), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 0 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(1),                6) << "incorrect min_idxx for halo region recv by 0 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(1),                0) << "incorrect min_idxy for halo region recv by 0 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(1),                0) << "incorrect min_idxz for halo region recv by 0 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(1),                8) << "incorrect max_idxx for halo region recv by 0 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(1),                6) << "incorrect max_idxy for halo region recv by 0 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(1), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 0 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(2),                6) << "incorrect min_idxx for halo region recv by 0 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(2),                6) << "incorrect min_idxy for halo region recv by 0 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(2),                0) << "incorrect min_idxz for halo region recv by 0 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(2),                8) << "incorrect max_idxx for halo region recv by 0 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(2),                8) << "incorrect max_idxy for halo region recv by 0 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 0 from 3";
+    } else if (procid==1) {
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(0),                0) << "incorrect min_idxx for halo region send from 1 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(0),                6) << "incorrect min_idxy for halo region send from 1 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(0),                0) << "incorrect min_idxz for halo region send from 1 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(0),                6) << "incorrect max_idxx for halo region send from 1 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(0),                8) << "incorrect max_idxy for halo region send from 1 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(0), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 1 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(1),                4) << "incorrect min_idxx for halo region send from 1 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(1),                6) << "incorrect min_idxy for halo region send from 1 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(1),                0) << "incorrect min_idxz for halo region send from 1 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(1),                6) << "incorrect max_idxx for halo region send from 1 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(1),                8) << "incorrect max_idxy for halo region send from 1 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(1), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 1 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(2),                4) << "incorrect min_idxx for halo region send from 1 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(2),                6) << "incorrect min_idxy for halo region send from 1 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(2),                0) << "incorrect min_idxz for halo region send from 1 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(2),                6) << "incorrect max_idxx for halo region send from 1 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(2), myMPM.g_ngridy()) << "incorrect max_idxy for halo region send from 1 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 1 to 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(0),                0) << "incorrect min_idxx for halo region recv by 1 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(0),                4) << "incorrect min_idxy for halo region recv by 1 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(0),                0) << "incorrect min_idxz for halo region recv by 1 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(0),                6) << "incorrect max_idxx for halo region recv by 1 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(0),                6) << "incorrect max_idxy for halo region recv by 1 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(0), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 1 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(1),                6) << "incorrect min_idxx for halo region recv by 1 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(1),                4) << "incorrect min_idxy for halo region recv by 1 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(1),                0) << "incorrect min_idxz for halo region recv by 1 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(1),                8) << "incorrect max_idxx for halo region recv by 1 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(1),                6) << "incorrect max_idxy for halo region recv by 1 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(1), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 1 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(2),                6) << "incorrect min_idxx for halo region recv by 1 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(2),                6) << "incorrect min_idxy for halo region recv by 1 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(2),                0) << "incorrect min_idxz for halo region recv by 1 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(2),                8) << "incorrect max_idxx for halo region recv by 1 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(2), myMPM.g_ngridy()) << "incorrect max_idxy for halo region recv by 1 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 1 from 3";
+    } else if (procid==2) {
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(0),                6) << "incorrect min_idxx for halo region send from 2 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(0),                0) << "incorrect min_idxy for halo region send from 2 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(0),                0) << "incorrect min_idxz for halo region send from 2 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(0),                8) << "incorrect max_idxx for halo region send from 2 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(0),                6) << "incorrect max_idxy for halo region send from 2 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(0), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 2 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(1),                6) << "incorrect min_idxx for halo region send from 2 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(1),                4) << "incorrect min_idxy for halo region send from 2 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(1),                0) << "incorrect min_idxz for halo region send from 2 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(1),                8) << "incorrect max_idxx for halo region send from 2 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(1),                6) << "incorrect max_idxy for halo region send from 2 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(1), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 2 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(2),                6) << "incorrect min_idxx for halo region send from 2 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(2),                4) << "incorrect min_idxy for halo region send from 2 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(2),                0) << "incorrect min_idxz for halo region send from 2 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(2), myMPM.g_ngridx()) << "incorrect max_idxx for halo region send from 2 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(2),                6) << "incorrect max_idxy for halo region send from 2 to 3";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 2 to 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(0),                4) << "incorrect min_idxx for halo region recv by 2 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(0),                0) << "incorrect min_idxy for halo region recv by 2 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(0),                0) << "incorrect min_idxz for halo region recv by 2 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(0),                6) << "incorrect max_idxx for halo region recv by 2 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(0),                6) << "incorrect max_idxy for halo region recv by 2 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(0), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 2 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(1),                4) << "incorrect min_idxx for halo region recv by 2 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(1),                6) << "incorrect min_idxy for halo region recv by 2 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(1),                0) << "incorrect min_idxz for halo region recv by 2 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(1),                6) << "incorrect max_idxx for halo region recv by 2 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(1),                8) << "incorrect max_idxy for halo region recv by 2 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(1), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 2 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(2),                6) << "incorrect min_idxx for halo region recv by 2 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(2),                6) << "incorrect min_idxy for halo region recv by 2 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(2),                0) << "incorrect min_idxz for halo region recv by 2 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(2), myMPM.g_ngridx()) << "incorrect max_idxx for halo region recv by 2 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(2),                8) << "incorrect max_idxy for halo region recv by 2 from 3";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 2 from 3";
+    } else if (procid==3) {
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(0),                6) << "incorrect min_idxx for halo region send from 3 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(0),                6) << "incorrect min_idxy for halo region send from 3 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(0),                0) << "incorrect min_idxz for halo region send from 3 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(0),                8) << "incorrect max_idxx for halo region send from 3 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(0),                8) << "incorrect max_idxy for halo region send from 3 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(0), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 3 to 0";
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(1),                6) << "incorrect min_idxx for halo region send from 3 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(1),                6) << "incorrect min_idxy for halo region send from 3 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(1),                0) << "incorrect min_idxz for halo region send from 3 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(1),                8) << "incorrect max_idxx for halo region send from 3 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(1), myMPM.g_ngridy()) << "incorrect max_idxy for halo region send from 3 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(1), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 3 to 1";
+        EXPECT_EQ(myMPM.ORB_send_halo_minx(2),                6) << "incorrect min_idxx for halo region send from 3 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_miny(2),                6) << "incorrect min_idxy for halo region send from 3 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_minz(2),                0) << "incorrect min_idxz for halo region send from 3 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxx(2), myMPM.g_ngridx()) << "incorrect max_idxx for halo region send from 3 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxy(2),                8) << "incorrect max_idxy for halo region send from 3 to 2";
+        EXPECT_EQ(myMPM.ORB_send_halo_maxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for halo region send from 3 to 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(0),                4) << "incorrect min_idxx for halo region recv by 3 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(0),                4) << "incorrect min_idxy for halo region recv by 3 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(0),                0) << "incorrect min_idxz for halo region recv by 3 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(0),                6) << "incorrect max_idxx for halo region recv by 3 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(0),                6) << "incorrect max_idxy for halo region recv by 3 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(0), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 3 from 0";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(1),                4) << "incorrect min_idxx for halo region recv by 3 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(1),                6) << "incorrect min_idxy for halo region recv by 3 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(1),                0) << "incorrect min_idxz for halo region recv by 3 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(1),                6) << "incorrect max_idxx for halo region recv by 3 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(1), myMPM.g_ngridy()) << "incorrect max_idxy for halo region recv by 3 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(1), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 3 from 1";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minx(2),                6) << "incorrect min_idxx for halo region recv by 3 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_miny(2),                4) << "incorrect min_idxy for halo region recv by 3 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_minz(2),                0) << "incorrect min_idxz for halo region recv by 3 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxx(2), myMPM.g_ngridx()) << "incorrect max_idxx for halo region recv by 3 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxy(2),                6) << "incorrect max_idxy for halo region recv by 3 from 2";
+        EXPECT_EQ(myMPM.ORB_recv_halo_maxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for halo region recv by 3 from 2";
     }
 }
 
