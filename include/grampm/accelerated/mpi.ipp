@@ -23,11 +23,13 @@ static int find_first_nonzero_layer(const Kokkos::View<const int***> &pincell_in
                     lsum += pincell_in(idx, i, j);
                 } else if (ax==1) {
                     lsum += pincell_in(j, idx, i);
+                } else if (ax==2) {
+                    lsum += pincell_in(i, j, idx);
                 }
         }, sum);
         idx += (start < end) ? 1 : -1;
     }
-    idx += (start < end) ? -1 : 2; // accounting for overshoot
+    idx += (start < end) ? -1 : 1; // accounting for overshoot
     return idx;
 }
 
@@ -218,8 +220,7 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> p
 
     // find the 
     const int cax = choose_cut_axis(pincell_in, proc_box, node_in.extents);
-    Kokkos::View<int*> gridsums;
-    gridsums = Kokkos::View<int*>("Grid sums by layer", range(node_in.extents, cax));
+    Kokkos::View<int*> gridsums("Grid sums by layer", range(node_in.extents, cax));
     typename Kokkos::View<int*>::HostMirror h_gridsums(create_mirror_view(gridsums));
 
     Kokkos::deep_copy(gridsums, 0);
