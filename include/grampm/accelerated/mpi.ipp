@@ -395,7 +395,7 @@ namespace GraMPM {
             Kokkos::parallel_reduce(
                 "reduce",
                 m_p_size,
-                ORB_find_local_coverage_func(d_p_grid_idx, m_ngrid.data()),
+                ORB_find_local_coverage_func(m_p_grid_idx.d_view, m_ngrid.data()),
                 Kokkos::Min<int>(proc_box.min[0]),
                 Kokkos::Min<int>(proc_box.min[1]),
                 Kokkos::Min<int>(proc_box.min[2]),
@@ -414,7 +414,7 @@ namespace GraMPM {
 
             Kokkos::parallel_for("populate pincell", 
                 m_p_size, 
-                ORB_populate_pincell_func(d_p_grid_idx, pincell, m_ngrid.data(), proc_box.min)
+                ORB_populate_pincell_func(m_p_grid_idx.d_view, pincell, m_ngrid.data(), proc_box.min)
             );
 
             // wait for Iallreduce to finish
@@ -431,15 +431,15 @@ namespace GraMPM {
             node1.node_id = 1;
 
             // start ORB
-            ORB<F>(procid, node1, proc_box, h_ORB_extents, m_g_extents, m_g_cell_size, pincell);
+            ORB<F>(procid, node1, proc_box, m_ORB_extents.h_view, m_g_extents, m_g_cell_size, pincell);
 
             Kokkos::deep_copy(m_ORB_extents.d_view, m_ORB_extents.h_view);
 
             ORB_find_neighbours(m_ORB_extents.d_view, procid, numprocs, int(knl.radius), m_ORB_neighbours.d_view, 
                 n_ORB_neighbours);
 
-            ORB_determine_neighbour_halos(d_ORB_extents, procid, numprocs, int(knl.radius), d_ORB_neighbours,
-                n_ORB_neighbours, d_ORB_send_halo, d_ORB_recv_halo);
+            ORB_determine_neighbour_halos(m_ORB_extents.d_view, procid, numprocs, int(knl.radius), 
+                m_ORB_neighbours.d_view, n_ORB_neighbours, m_ORB_send_halo.d_view, m_ORB_recv_halo.d_view);
 
         }
     }
