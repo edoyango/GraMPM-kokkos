@@ -33,68 +33,68 @@ namespace GraMPM {
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::h2d() {
-            deep_copy(m_p_x.d_view, m_p_x.h_view);
-            deep_copy(m_p_v.d_view, m_p_v.h_view);
-            deep_copy(m_p_a.d_view, m_p_a.h_view);
-            deep_copy(m_p_dxdt.d_view, m_p_dxdt.h_view);
-            deep_copy(m_g_momentum.d_view, m_g_momentum.h_view);
-            deep_copy(m_g_force.d_view, m_g_force.h_view);
-            deep_copy(m_p_sigma.d_view, m_p_sigma.h_view);
-            deep_copy(m_p_strainrate.d_view, m_p_strainrate.h_view);
-            deep_copy(m_p_spinrate.d_view, m_p_spinrate.h_view);
-            deep_copy(m_p_mass.d_view, m_p_mass.h_view);
-            deep_copy(m_p_rho.d_view, m_p_rho.h_view);
-            deep_copy(m_g_mass.d_view, m_g_mass.h_view);
-            deep_copy(m_p_grid_idx.d_view, m_p_grid_idx.h_view);
-            deep_copy(m_pg_nn.d_view, m_pg_nn.h_view);
-            deep_copy(m_pg_w.d_view, m_pg_w.h_view);
-            deep_copy(m_pg_dwdx.d_view, m_pg_dwdx.h_view);
+            deep_copy(d_p_x, h_p_x);
+            deep_copy(d_p_v, h_p_v);
+            deep_copy(d_p_a, h_p_a);
+            deep_copy(d_p_dxdt, h_p_dxdt);
+            deep_copy(d_g_momentum, h_g_momentum);
+            deep_copy(d_g_force, h_g_force);
+            deep_copy(d_p_sigma, h_p_sigma);
+            deep_copy(d_p_strainrate, h_p_strainrate);
+            deep_copy(d_p_spinrate, h_p_spinrate);
+            deep_copy(d_p_mass, h_p_mass);
+            deep_copy(d_p_rho, h_p_rho);
+            deep_copy(d_g_mass, h_g_mass);
+            deep_copy(d_p_grid_idx, h_p_grid_idx);
+            deep_copy(d_pg_nn, h_pg_nn);
+            deep_copy(d_pg_w, h_pg_w);
+            deep_copy(d_pg_dwdx, h_pg_dwdx);
 #ifdef GRAMPM_MPI
-            deep_copy(m_ORB_extents.d_view, m_ORB_extents.h_view);
-            deep_copy(m_ORB_send_halo.d_view, m_ORB_send_halo.h_view);
-            deep_copy(m_ORB_recv_halo.d_view, m_ORB_recv_halo.h_view);
-            deep_copy(m_ORB_neighbours.d_view, m_ORB_neighbours.h_view);
+            deep_copy(d_ORB_extents, h_ORB_extents);
+            deep_copy(d_ORB_send_halo, h_ORB_send_halo);
+            deep_copy(d_ORB_recv_halo, h_ORB_recv_halo);
+            deep_copy(d_ORB_neighbours, h_ORB_neighbours);
 #endif
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::d2h() {
-            deep_copy(m_p_x.h_view, m_p_x.d_view);
-            deep_copy(m_p_v.h_view, m_p_v.d_view);
-            deep_copy(m_p_a.h_view, m_p_a.d_view);
-            deep_copy(m_p_dxdt.h_view, m_p_dxdt.d_view);
-            deep_copy(m_g_momentum.h_view, m_g_momentum.d_view);
-            deep_copy(m_g_force.h_view, m_g_force.d_view);
-            deep_copy(m_p_sigma.h_view, m_p_sigma.d_view);
-            deep_copy(m_p_strainrate.h_view, m_p_strainrate.d_view);
-            deep_copy(m_p_spinrate.h_view, m_p_spinrate.d_view);
-            deep_copy(m_p_mass.h_view, m_p_mass.d_view);
-            deep_copy(m_p_rho.h_view, m_p_rho.d_view);
-            deep_copy(m_g_mass.h_view, m_g_mass.d_view);
-            deep_copy(m_p_grid_idx.h_view, m_p_grid_idx.d_view);
-            deep_copy(m_pg_nn.h_view, m_pg_nn.d_view);
-            deep_copy(m_pg_w.h_view, m_pg_w.d_view);
-            deep_copy(m_pg_dwdx.h_view, m_pg_dwdx.d_view);
+            deep_copy(h_p_x, d_p_x);
+            deep_copy(h_p_v, d_p_v);
+            deep_copy(h_p_a, d_p_a);
+            deep_copy(h_p_dxdt, d_p_dxdt);
+            deep_copy(h_g_momentum, d_g_momentum);
+            deep_copy(h_g_force, d_g_force);
+            deep_copy(h_p_sigma, d_p_sigma);
+            deep_copy(h_p_strainrate, d_p_strainrate);
+            deep_copy(h_p_spinrate, d_p_spinrate);
+            deep_copy(h_p_mass, d_p_mass);
+            deep_copy(h_p_rho, d_p_rho);
+            deep_copy(h_g_mass, d_g_mass);
+            deep_copy(h_p_grid_idx, d_p_grid_idx);
+            deep_copy(h_pg_nn, d_pg_nn);
+            deep_copy(h_pg_w, d_pg_w);
+            deep_copy(h_pg_dwdx, d_pg_dwdx);
 #ifdef GRAMPM_MPI
-            deep_copy(m_ORB_extents.h_view, m_ORB_extents.d_view);
-            deep_copy(m_ORB_send_halo.h_view, m_ORB_send_halo.d_view);
-            deep_copy(m_ORB_recv_halo.h_view, m_ORB_recv_halo.d_view);
-            deep_copy(m_ORB_neighbours.h_view, m_ORB_neighbours.d_view);
+            deep_copy(h_ORB_extents, d_ORB_extents);
+            deep_copy(h_ORB_send_halo, d_ORB_send_halo);
+            deep_copy(h_ORB_recv_halo, d_ORB_recv_halo);
+            deep_copy(h_ORB_neighbours, d_ORB_neighbours);
 #endif
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::d_zero_grid() {
-            Kokkos::deep_copy(m_g_momentum.d_view, F(0.));
-            Kokkos::deep_copy(m_g_force.d_view, F(0.));
-            Kokkos::deep_copy(m_g_mass.d_view, F(0.));
+            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_momentum, F(0.));
+            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_force, F(0.));
+            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_mass, F(0.));
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::h_zero_grid() {
-            Kokkos::deep_copy(m_g_momentum.h_view, F(0.));
-            Kokkos::deep_copy(m_g_force.h_view, F(0.));
-            Kokkos::deep_copy(m_g_mass.h_view, F(0.));
+            Kokkos::deep_copy(h_g_momentum, F(0.));
+            Kokkos::deep_copy(h_g_force, F(0.));
+            Kokkos::deep_copy(h_g_mass, F(0.));
         }
 
         static herr_t write2h5(const int r, hsize_t* dims, const double* data, const hid_t gid, const char* dset_name) {
@@ -180,31 +180,31 @@ namespace GraMPM {
 
             herr_t status;
 
-            hsize_t dims_vec[2] {m_p_x.extent(1), m_p_x.extent(0)},
-                dims_tens[2] {m_p_sigma.extent(1), m_p_sigma.extent(0)},
-                dims_scalar[1] {m_p_rho.extent(0)},
-                dims_spintens[2] {m_p_spinrate.extent(1), m_p_spinrate.extent(0)};
+            hsize_t dims_vec[2] {h_p_x.extent(1), h_p_x.extent(0)},
+                dims_tens[2] {h_p_sigma.extent(1), h_p_sigma.extent(0)},
+                dims_scalar[1] {h_p_rho.extent(0)},
+                dims_spintens[2] {h_p_spinrate.extent(1), h_p_spinrate.extent(0)};
             
             hid_t file_id = H5Fcreate(fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
             hid_t group_id = H5Gcreate(file_id, "/particles", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            status = write2h5(2, dims_vec, m_p_x.h_view.data(), group_id, "x");
-            status = write2h5(2, dims_vec, m_p_v.h_view.data(), group_id, "v");
-            status = write2h5(2, dims_vec, m_p_a.h_view.data(), group_id, "a");
-            status = write2h5(2, dims_vec, m_p_dxdt.h_view.data(), group_id, "dxdt");
-            status = write2h5(2, dims_tens, m_p_sigma.h_view.data(), group_id, "sigma");
-            status = write2h5(2, dims_tens, m_p_strainrate.h_view.data(), group_id, "strainrate");
-            status = write2h5(2, dims_spintens, m_p_spinrate.h_view.data(), group_id, "spinrate");
-            status = write2h5(1, dims_scalar, m_p_mass.h_view.data(), group_id, "mass");
-            status = write2h5(1, dims_scalar, m_p_rho.h_view.data(), group_id, "rho");
+            status = write2h5(2, dims_vec, h_p_x.data(), group_id, "x");
+            status = write2h5(2, dims_vec, h_p_v.data(), group_id, "v");
+            status = write2h5(2, dims_vec, h_p_a.data(), group_id, "a");
+            status = write2h5(2, dims_vec, h_p_dxdt.data(), group_id, "dxdt");
+            status = write2h5(2, dims_tens, h_p_sigma.data(), group_id, "sigma");
+            status = write2h5(2, dims_tens, h_p_strainrate.data(), group_id, "strainrate");
+            status = write2h5(2, dims_spintens, h_p_spinrate.data(), group_id, "spinrate");
+            status = write2h5(1, dims_scalar, h_p_mass.data(), group_id, "mass");
+            status = write2h5(1, dims_scalar, h_p_rho.data(), group_id, "rho");
             status = H5Gclose(group_id);
 
             hsize_t dims_grid_vec[4] {3, static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])},
                 dims_grid_scalar[3] {static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])};
             group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
             status = write_grid_extents(group_id, m_g_extents.min, m_g_extents.max, m_g_cell_size);
-            status = write2h5(4, dims_grid_vec, m_g_momentum.h_view.data(), group_id, "momentum");
-            status = write2h5(4, dims_grid_vec, m_g_force.h_view.data(), group_id, "force");
-            status = write2h5(3, dims_grid_scalar, m_g_mass.h_view.data(), group_id, "mass");
+            status = write2h5(4, dims_grid_vec, h_g_momentum.data(), group_id, "momentum");
+            status = write2h5(4, dims_grid_vec, h_g_force.data(), group_id, "force");
+            status = write2h5(3, dims_grid_scalar, h_g_mass.data(), group_id, "mass");
             status = H5Gclose(group_id);
             status = H5Fclose(file_id);
         }
@@ -213,7 +213,7 @@ namespace GraMPM {
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::save_to_h5_async(const std::string &prefix, const int &timestep) const {
 
             // initiate transfer of first batch of data
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_x.h_view, m_p_x.d_view);
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_x, d_p_x);
 
             // do stuff
             // convert timestep number to string (width of 7 chars, for up to 9,999,999,999 timesteps)
@@ -224,10 +224,10 @@ namespace GraMPM {
 
             herr_t status;
 
-            hsize_t dims_vec[2] {m_p_x.extent(1), m_p_x.extent(0)},
-                dims_tens[2] {m_p_sigma.extent(1), m_p_sigma.extent(0)},
-                dims_scalar[1] {m_p_rho.extent(0)},
-                dims_spintens[2] {m_p_spinrate.extent(1), m_p_spinrate.extent(0)};
+            hsize_t dims_vec[2] {h_p_x.extent(1), h_p_x.extent(0)},
+                dims_tens[2] {h_p_sigma.extent(1), h_p_sigma.extent(0)},
+                dims_scalar[1] {h_p_rho.extent(0)},
+                dims_spintens[2] {h_p_spinrate.extent(1), h_p_spinrate.extent(0)};
             
             hid_t file_id = H5Fcreate(fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
             hid_t group_id = H5Gcreate(file_id, "/particles", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -235,32 +235,32 @@ namespace GraMPM {
             // wait for first batch of data
             Kokkos::fence();
             // initiate next batch
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_v.h_view, m_p_v.d_view);
-            status = write2h5(2, dims_vec, m_p_x.h_view.data(), group_id, "x");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_v, d_p_v);
+            status = write2h5(2, dims_vec, h_p_x.data(), group_id, "x");
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_a.h_view, m_p_a.d_view);
-            status = write2h5(2, dims_vec, m_p_v.h_view.data(), group_id, "v");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_a, d_p_a);
+            status = write2h5(2, dims_vec, h_p_v.data(), group_id, "v");
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_dxdt.h_view, m_p_dxdt.d_view);
-            status = write2h5(2, dims_vec, m_p_a.h_view.data(), group_id, "a");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_dxdt, d_p_dxdt);
+            status = write2h5(2, dims_vec, h_p_a.data(), group_id, "a");
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_sigma.h_view, m_p_sigma.d_view);
-            status = write2h5(2, dims_vec, m_p_dxdt.h_view.data(), group_id, "dxdt");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_sigma, d_p_sigma);
+            status = write2h5(2, dims_vec, h_p_dxdt.data(), group_id, "dxdt");
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_strainrate.h_view, m_p_strainrate.d_view);
-            status = write2h5(2, dims_tens, m_p_sigma.h_view.data(), group_id, "sigma");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_strainrate, d_p_strainrate);
+            status = write2h5(2, dims_tens, h_p_sigma.data(), group_id, "sigma");
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_spinrate.h_view, m_p_spinrate.d_view);
-            status = write2h5(2, dims_tens, m_p_strainrate.h_view.data(), group_id, "strainrate");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_spinrate, d_p_spinrate);
+            status = write2h5(2, dims_tens, h_p_strainrate.data(), group_id, "strainrate");
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_mass.h_view, m_p_mass.d_view);
-            status = write2h5(2, dims_spintens, m_p_spinrate.h_view.data(), group_id, "spinrate");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_mass, d_p_mass);
+            status = write2h5(2, dims_spintens, h_p_spinrate.data(), group_id, "spinrate");
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_rho.h_view, m_p_rho.d_view);
-            status = write2h5(1, dims_scalar, m_p_mass.h_view.data(), group_id, "mass");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_p_rho, d_p_rho);
+            status = write2h5(1, dims_scalar, h_p_mass.data(), group_id, "mass");
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_g_momentum.h_view, m_g_momentum.d_view);
-            status = write2h5(1, dims_scalar, m_p_rho.h_view.data(), group_id, "rho");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_g_momentum, d_g_momentum);
+            status = write2h5(1, dims_scalar, h_p_rho.data(), group_id, "rho");
             status = H5Gclose(group_id);
 
             hsize_t dims_grid_vec[4] {3, static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])},
@@ -268,13 +268,13 @@ namespace GraMPM {
             group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
             status = write_grid_extents(group_id, m_g_extents.min, m_g_extents.max, m_g_cell_size);
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_g_force.h_view, m_g_force.d_view);
-            status = write2h5(4, dims_grid_vec, m_g_momentum.h_view.data(), group_id, "momentum");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_g_force, d_g_force);
+            status = write2h5(4, dims_grid_vec, h_g_momentum.data(), group_id, "momentum");
             Kokkos::fence();
-            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_g_mass.h_view, m_g_mass.d_view);
-            status = write2h5(4, dims_grid_vec, m_g_force.h_view.data(), group_id, "force");
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_g_mass, d_g_mass);
+            status = write2h5(4, dims_grid_vec, h_g_force.data(), group_id, "force");
             Kokkos::fence();
-            status = write2h5(3, dims_grid_scalar, m_g_mass.h_view.data(), group_id, "mass");
+            status = write2h5(3, dims_grid_scalar, h_g_mass.data(), group_id, "mass");
             status = H5Gclose(group_id);
             status = H5Fclose(file_id);
         }

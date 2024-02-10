@@ -18,13 +18,13 @@ namespace GraMPM {
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::map_p2g_mass() {
-            Kokkos::deep_copy(m_g_mass.d_view, F(0.));
+            Kokkos::deep_copy(d_g_mass, F(0.));
             Kokkos::parallel_for("map particle mass to grid", m_p_size, f_map_p2g_mass);
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::map_p2g_momentum() {
-            Kokkos::deep_copy(m_g_momentum.d_view, F(0.));
+            Kokkos::deep_copy(d_g_momentum, F(0.));
             Kokkos::parallel_for("map particle momentum to grid", m_p_size, f_map_p2g_momentum);
         }
 
@@ -35,7 +35,7 @@ namespace GraMPM {
             f_map_p2g_force.bfy = m_body_force[1];
             f_map_p2g_force.bfz = m_body_force[2];
 
-            Kokkos::deep_copy(m_g_force.d_view, F(0.));
+            Kokkos::deep_copy(d_g_force, F(0.));
             Kokkos::parallel_for("map particle force to grid", m_p_size, f_map_p2g_force);
         }
 
