@@ -14,7 +14,7 @@ namespace GraMPM {
                 const F dcell, ming[3];
                 const int ng[3];
                 // NB const views means the data within the views can be changed, but not the container
-                const Kokkos::View<F*[3]> x;
+                const Kokkos::View<const F*[3]> x;
                 const Kokkos::View<int*> gidx;
                 
                 map_gidx(const F dcell_, const F ming_[3], const int ng_[3], const Kokkos::View<F*[3]> x_, 
@@ -40,8 +40,8 @@ namespace GraMPM {
 
                 const F dcell, ming[3];
                 const int ng[3], npp;
-                const Kokkos::View<F*[3]> x;
-                const Kokkos::View<int*> gidx;
+                const Kokkos::View<const F*[3]> x;
+                const Kokkos::View<const int*> gidx;
                 const Kokkos::View<int*> pg;
                 const Kokkos::View<F*> w;
                 const Kokkos::View<F*[3]> dwdx;
@@ -85,10 +85,10 @@ namespace GraMPM {
             template<typename F>
             struct map_p2g_mass {
                 const int npp;
-                const Kokkos::View<F*> p_mass;
+                const Kokkos::View<const F*> p_mass;
                 const Kokkos::View<F*, Kokkos::MemoryTraits<Kokkos::Atomic>> g_mass;
-                const Kokkos::View<int*> pg;
-                const Kokkos::View<F*> w;
+                const Kokkos::View<const int*> pg;
+                const Kokkos::View<const F*> w;
                 map_p2g_mass(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*> g_mass_, Kokkos::View<int*> pg_, 
                     Kokkos::View<F*> w_)
                     : npp {npp_}
@@ -113,11 +113,11 @@ namespace GraMPM {
             template<typename F>
             struct map_p2g_momentum {
                 const int npp;
-                const Kokkos::View<F*> p_mass;
-                const Kokkos::View<F*[3]> p_v;
+                const Kokkos::View<const F*> p_mass;
+                const Kokkos::View<const F*[3]> p_v;
                 const Kokkos::View<F*[3], Kokkos::MemoryTraits<Kokkos::Atomic>> g_momentum;
-                const Kokkos::View<int*> pg;
-                const Kokkos::View<F*> w;
+                const Kokkos::View<const int*> pg;
+                const Kokkos::View<const F*> w;
                 map_p2g_momentum(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*[3]> p_v_, Kokkos::View<F*[3]> g_momentum_, Kokkos::View<int*> pg_, 
                     Kokkos::View<F*> w_)
                     : npp {npp_}
@@ -147,12 +147,12 @@ namespace GraMPM {
             struct map_p2g_force {
                 const int npp;
                 F bfx, bfy, bfz;
-                const Kokkos::View<F*> p_mass, p_rho;
-                const Kokkos::View<F*[6]> p_sigma;
+                const Kokkos::View<const F*> p_mass, p_rho;
+                const Kokkos::View<const F*[6]> p_sigma;
                 const Kokkos::View<F*[3], Kokkos::MemoryTraits<Kokkos::Atomic>> g_force;
-                const Kokkos::View<int*> pg;
-                const Kokkos::View<F*> w;
-                const Kokkos::View<F*[3]> dwdx;
+                const Kokkos::View<const int*> pg;
+                const Kokkos::View<const F*> w;
+                const Kokkos::View<const F*[3]> dwdx;
                 map_p2g_force(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*> p_rho_, 
                     Kokkos::View<F*[6]> p_sigma_, Kokkos::View<F*[3]> g_force_, Kokkos::View<int*> pg_, 
                     Kokkos::View<F*> w_, Kokkos::View<F*[3]> dwdx_, F bfx_, F bfy_, F bfz_)
@@ -199,9 +199,10 @@ namespace GraMPM {
             template<typename F>
             struct map_g2p_acceleration {
                 const int npp;
-                const Kokkos::View<F*[3]> p_a, g_force, p_dxdt, g_momentum;
-                const Kokkos::View<F*> g_mass, w;
-                const Kokkos::View<int*> pg;
+                const Kokkos::View<F*[3]> p_a, p_dxdt;
+                const Kokkos::View<const F*[3]> g_force, g_momentum;
+                const Kokkos::View<const F*> g_mass, w;
+                const Kokkos::View<const int*> pg;
                 map_g2p_acceleration(int npp_, Kokkos::View<F*[3]> p_a_, Kokkos::View<F*[3]> g_force_, 
                     Kokkos::View<F*[3]> p_dxdt_, Kokkos::View<F*[3]> g_momentum_, Kokkos::View<F*> g_mass_, 
                     Kokkos::View<F*> w_, Kokkos::View<int*> pg_)
@@ -247,9 +248,10 @@ namespace GraMPM {
             struct map_g2p_strainrate {
                 const int npp;
                 const Kokkos::View<F*[6]> p_strainrate;
-                const Kokkos::View<F*[3]> p_spinrate, g_momentum, dwdx;
-                const Kokkos::View<F*> g_mass;
-                const Kokkos::View<int*> pg;
+                const Kokkos::View<F*[3]> p_spinrate;
+                const Kokkos::View<const F*[3]> g_momentum, dwdx;
+                const Kokkos::View<const F*> g_mass;
+                const Kokkos::View<const int*> pg;
 
                 map_g2p_strainrate(int npp_, Kokkos::View<F*[6]> p_strainrate_, 
                     Kokkos::View<F*[3]> p_spinrate_, Kokkos::View<F*[3]> g_momentum_,
@@ -305,7 +307,8 @@ namespace GraMPM {
             template<typename F>
             struct update_data {
                 double dt;
-                const Kokkos::View<F*[3]> data, update;
+                const Kokkos::View<F*[3]> data;
+                const Kokkos::View<const F*[3]> update;
 
                 update_data(Kokkos::View<F*[3]> data_, Kokkos::View<F*[3]> update_)
                     : data {data_}
@@ -324,7 +327,7 @@ namespace GraMPM {
             struct update_density {
                 double dt;
                 const Kokkos::View<F*> p_density;
-                const Kokkos::View<F*[6]> p_strainrate;
+                const Kokkos::View<const F*[6]> p_strainrate;
 
                 update_density(Kokkos::View<F*> p_density_, Kokkos::View<F*[6]> p_strainrate_)
                     : p_density {p_density_}
