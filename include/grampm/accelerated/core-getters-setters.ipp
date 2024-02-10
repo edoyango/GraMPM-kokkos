@@ -225,12 +225,14 @@ namespace GraMPM {
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::p_grid_idx(const int i) const {
-            return calc_idx(h_p_grid_idx(i, 0), h_p_grid_idx(i, 1), h_p_grid_idx(i, 2));
+            return h_p_grid_idx(i);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         std::array<int, dims> MPM_system<F, K, SU, MB, FB>::p_grid_idx_unravelled(const int i) const {
-            return std::array{h_p_grid_idx(i, 0), h_p_grid_idx(i, 1), h_p_grid_idx(i, 2)};
+            return unravel_idx<int>(
+                h_p_grid_idx(i)
+            );
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
@@ -247,98 +249,83 @@ namespace GraMPM {
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
-        F& MPM_system<F, K, SU, MB, FB>::g_momentumx(const int idx) {
-            int i, j, k;
-            unravel_idx(idx, i, j, k);
-            return h_g_momentum(i, j, k, 0);
+        F& MPM_system<F, K, SU, MB, FB>::g_momentumx(const int i) {
+            return h_g_momentum(i, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_momentumx(const int i, const int j, const int k) {
-            return h_g_momentum(i, j, k, 0);
+            return h_g_momentum(calc_idx(i, j, k), 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
-        F& MPM_system<F, K, SU, MB, FB>::g_momentumy(const int idx) {
-            int i, j, k;
-            unravel_idx(idx, i, j, k);
-            return h_g_momentum(i, j, k, 1);
+        F& MPM_system<F, K, SU, MB, FB>::g_momentumy(const int i) {
+            return h_g_momentum(i, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_momentumy(const int i, const int j, const int k) {
-            return h_g_momentum(i, j, k, 1);
+            return h_g_momentum(calc_idx(i, j, k), 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
-        F& MPM_system<F, K, SU, MB, FB>::g_momentumz(const int idx) {
-            int i, j, k;
-            unravel_idx(idx, i, j, k);
-            return h_g_momentum(i, j, k, 2);
+        F& MPM_system<F, K, SU, MB, FB>::g_momentumz(const int i) {
+            return h_g_momentum(i, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_momentumz(const int i, const int j, const int k) {
-            return h_g_momentum(i, j, k, 2);
+            return h_g_momentum(calc_idx(i, j, k), 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
-        F& MPM_system<F, K, SU, MB, FB>::g_forcex(const int idx) {
-            int i, j, k;
-            unravel_idx(idx, i, j, k);
-            return h_g_force(i, j, k, 0);
+        F& MPM_system<F, K, SU, MB, FB>::g_forcex(const int i) {
+            return h_g_force(i, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_forcex(const int i, const int j, const int k) {
-            return h_g_force(i, j, k, 0);
+            return h_g_force(calc_idx(i, j, k), 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
-        F& MPM_system<F, K, SU, MB, FB>::g_forcey(const int idx) {
-            int i, j, k;
-            unravel_idx(idx, i, j, k);
-            return h_g_force(i, j, k, 1);
+        F& MPM_system<F, K, SU, MB, FB>::g_forcey(const int i) {
+            return h_g_force(i, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_forcey(const int i, const int j, const int k) {
-            return h_g_force(i, j, k, 1);
+            return h_g_force(calc_idx(i, j, k), 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
-        F& MPM_system<F, K, SU, MB, FB>::g_forcez(const int idx) {
-            int i, j, k;
-            unravel_idx(idx, i, j, k);
-            return h_g_force(i, j, k, 2);
+        F& MPM_system<F, K, SU, MB, FB>::g_forcez(const int i) {
+            return h_g_force(i, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_forcez(const int i, const int j, const int k) {
-            return h_g_force(i, j, k, 2);
+            return h_g_force(calc_idx(i, j, k), 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
-        F& MPM_system<F, K, SU, MB, FB>::g_mass(const int idx) {
-            int i, j, k;
-            unravel_idx(idx, i, j, k);
-            return h_g_mass(i, j, k);
+        F& MPM_system<F, K, SU, MB, FB>::g_mass(const int i) {
+            return h_g_mass(i);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_mass(const int i, const int j, const int k) {
-            return h_g_mass(i, j, k);
+            return h_g_mass(calc_idx(i, j, k));
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::pg_nn(const int i) const {
-            return calc_idx(h_pg_nn(i, 0), h_pg_nn(i, 1), h_pg_nn(i, 2));
+            return h_pg_nn(i);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::pg_nn(const int i, const int j) const {
-            const int idx = i*pg_npp + j;
-            return calc_idx(h_pg_nn(idx, 0), h_pg_nn(idx, 1), h_pg_nn(idx, 2));
+            return h_pg_nn(i*pg_npp+j);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>

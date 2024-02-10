@@ -9,21 +9,20 @@ namespace GraMPM {
     namespace accelerated {
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        std::array<int, dims> MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::unravel_idx(const int &idx) const {
-            std::array<int, dims> unravelled_idx;
-            unravelled_idx[2] = idx % m_ngrid[2];
-            const int ij {idx / m_ngrid[2]};
-            unravelled_idx[1] = ij % m_ngrid[1];
-            unravelled_idx[0] = ij / m_ngrid[1];
+        template<typename I>
+        std::array<I, dims> MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::unravel_idx(const I &idx) const {
+            std::array<I, dims> unravelled_idx;
+            // div_t tmp = std::div(idx, m_g_ngridy*m_g_ngridz);
+            // unravelled_idx[0] = tmp.quot;
+            // tmp = std::div(tmp.rem, m_g_ngridz);
+            // unravelled_idx[1] = tmp.quot;
+            // unravelled_idx[2] = tmp.rem;
+            // return unravelled_idx;
+            unravelled_idx[0] = idx / (m_ngrid[1]*m_ngrid[2]);
+            I rem = idx % (m_ngrid[1]*m_ngrid[2]);
+            unravelled_idx[1] = rem / m_ngrid[2];
+            unravelled_idx[2] = rem % m_ngrid[2];
             return unravelled_idx;
-        }
-
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::unravel_idx(const int &idx, int &i, int &j, int &k) const {
-            k = idx % m_ngrid[2];
-            const int ij {idx / m_ngrid[2]};
-            j = ij % m_ngrid[1];
-            i = ij / m_ngrid[1];
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
@@ -92,9 +91,15 @@ namespace GraMPM {
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::h_zero_grid() {
-            Kokkos::deep_copy(h_g_momentum, F(0.));
-            Kokkos::deep_copy(h_g_force, F(0.));
-            Kokkos::deep_copy(h_g_mass, F(0.));
+            for (size_t i = 0; i < m_g_size; ++i) {
+                h_g_momentum(i, 0) = F(0.);
+                h_g_momentum(i, 1) = F(0.);
+                h_g_momentum(i, 2) = F(0.);
+                h_g_force(i, 0) = F(0.);
+                h_g_force(i, 1) = F(0.);
+                h_g_force(i, 2) = F(0.);
+                h_g_mass(i) = F(0.);
+            }
         }
 
         static herr_t write2h5(const int r, hsize_t* dims, const double* data, const hid_t gid, const char* dset_name) {
@@ -264,7 +269,8 @@ namespace GraMPM {
             status = H5Gclose(group_id);
 
             hsize_t dims_grid_vec[4] {3, static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])},
-                dims_grid_scalar[3] {static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])};
+                dims_grid_scalar[3] {static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])},
+                dims_grid_tens[4] {6, static_cast<hsize_t>(m_ngrid[2]), static_cast<hsize_t>(m_ngrid[1]), static_cast<hsize_t>(m_ngrid[0])};
             group_id = H5Gcreate(file_id, "/grid", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
             status = write_grid_extents(group_id, m_g_extents.min, m_g_extents.max, m_g_cell_size);
             Kokkos::fence();
@@ -274,7 +280,10 @@ namespace GraMPM {
             Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_g_mass, d_g_mass);
             status = write2h5(4, dims_grid_vec, h_g_force.data(), group_id, "force");
             Kokkos::fence();
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), h_g_sigma, d_g_sigma);
             status = write2h5(3, dims_grid_scalar, h_g_mass.data(), group_id, "mass");
+            Kokkos::fence();
+            status = write2h5(4, dims_grid_tens, h_g_sigma.data(), group_id, "sigma");
             status = H5Gclose(group_id);
             status = H5Fclose(file_id);
         }

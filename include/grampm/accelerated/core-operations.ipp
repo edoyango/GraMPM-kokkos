@@ -18,13 +18,13 @@ namespace GraMPM {
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::map_p2g_mass() {
-            Kokkos::deep_copy(d_g_mass, F(0.));
+            Kokkos::Experimental::fill(Kokkos::DefaultExecutionSpace(), d_g_mass, 0.);
             Kokkos::parallel_for("map particle mass to grid", m_p_size, f_map_p2g_mass);
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::map_p2g_momentum() {
-            Kokkos::deep_copy(d_g_momentum, F(0.));
+            Kokkos::parallel_for("zero grid momentum", m_g_size, functors::zero_3d_view<F>(d_g_momentum));
             Kokkos::parallel_for("map particle momentum to grid", m_p_size, f_map_p2g_momentum);
         }
 
@@ -35,8 +35,14 @@ namespace GraMPM {
             f_map_p2g_force.bfy = m_body_force[1];
             f_map_p2g_force.bfz = m_body_force[2];
 
-            Kokkos::deep_copy(d_g_force, F(0.));
+            Kokkos::parallel_for("zero grid force", m_g_size, functors::zero_3d_view<F>(d_g_force));
             Kokkos::parallel_for("map particle force to grid", m_p_size, f_map_p2g_force);
+        }
+
+        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
+        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::map_p2g_sigma() {
+            Kokkos::deep_copy(d_g_sigma, F(0.));
+            Kokkos::parallel_for("map particle sigma to grid", m_p_size, f_map_p2g_sigma);
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
@@ -83,10 +89,7 @@ namespace GraMPM {
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
         void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::g_update_momentum(const F &dt) {
             f_g_update_momentum.dt = dt;
-            Kokkos::parallel_for("update grid momentum", 
-                Kokkos::MDRangePolicy<Kokkos::Rank<3>>({0, 0, 0}, {m_ngrid[0], m_ngrid[1], m_ngrid[2]}), 
-                f_g_update_momentum
-            );
+            Kokkos::parallel_for("update grid momentum", m_g_size, f_g_update_momentum);
         }
 
         template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
