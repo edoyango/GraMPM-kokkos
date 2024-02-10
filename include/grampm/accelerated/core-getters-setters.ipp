@@ -80,305 +80,305 @@ namespace GraMPM {
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_x(const int i) {
-            return h_p_x(i, 0);
+            return m_p_x.h_view(i, 0);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_y(const int i) {
-            return h_p_x(i, 1);
+            return m_p_x.h_view(i, 1);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_z(const int i) {
-            return h_p_x(i, 2);
+            return m_p_x.h_view(i, 2);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_vx(const int i) {
-            return h_p_v(i, 0);
+            return m_p_v.h_view(i, 0);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_vy(const int i) {
-            return h_p_v(i, 1);
+            return m_p_v.h_view(i, 1);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_vz(const int i) {
-            return h_p_v(i, 2);
+            return m_p_v.h_view(i, 2);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_ax(const int i) {
-            return h_p_a(i, 0);
+            return m_p_a.h_view(i, 0);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_ay(const int i) {
-            return h_p_a(i, 1);
+            return m_p_a.h_view(i, 1);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_az(const int i) {
-            return h_p_a(i, 2);
+            return m_p_a.h_view(i, 2);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_dxdt(const int i) {
-            return h_p_dxdt(i, 0);
+            return m_p_dxdt.h_view(i, 0);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_dydt(const int i) {
-            return h_p_dxdt(i, 1);
+            return m_p_dxdt.h_view(i, 1);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_dzdt(const int i) {
-            return h_p_dxdt(i, 2);
+            return m_p_dxdt.h_view(i, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_mass(const int i) {
-            return h_p_mass(i);
+            return m_p_mass.h_view(i);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_rho(const int i) {
-            return h_p_rho(i);
+            return m_p_rho.h_view(i);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_sigmaxx(const int i) {
-            return h_p_sigma(i, 0);
+            return m_p_sigma.h_view(i, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_sigmayy(const int i) {
-            return h_p_sigma(i, 1);
+            return m_p_sigma.h_view(i, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_sigmazz(const int i) {
-            return h_p_sigma(i, 2);
+            return m_p_sigma.h_view(i, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_sigmaxy(const int i) {
-            return h_p_sigma(i, 3);
+            return m_p_sigma.h_view(i, 3);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_sigmaxz(const int i) {
-            return h_p_sigma(i, 4);
+            return m_p_sigma.h_view(i, 4);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_sigmayz(const int i) {
-            return h_p_sigma(i, 5);
+            return m_p_sigma.h_view(i, 5);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_strainratexx(const int i) {
-            return h_p_strainrate(i, 0);
+            return m_p_strainrate.h_view(i, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_strainrateyy(const int i) {
-            return h_p_strainrate(i, 1);
+            return m_p_strainrate.h_view(i, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_strainratezz(const int i) {
-            return h_p_strainrate(i, 2);
+            return m_p_strainrate.h_view(i, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_strainratexy(const int i) {
-            return h_p_strainrate(i, 3);
+            return m_p_strainrate.h_view(i, 3);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_strainratexz(const int i) {
-            return h_p_strainrate(i, 4);
+            return m_p_strainrate.h_view(i, 4);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_strainrateyz(const int i) {
-            return h_p_strainrate(i, 5);
+            return m_p_strainrate.h_view(i, 5);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_spinratexy(const int i) {
-            return h_p_spinrate(i, 0);
+            return m_p_spinrate.h_view(i, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_spinratexz(const int i) {
-            return h_p_spinrate(i, 1);
+            return m_p_spinrate.h_view(i, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_spinrateyz(const int i) {
-            return h_p_spinrate(i, 2);
+            return m_p_spinrate.h_view(i, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::p_grid_idx(const int i) const {
-            return calc_idx(h_p_grid_idx(i, 0), h_p_grid_idx(i, 1), h_p_grid_idx(i, 2));
+            return calc_idx(m_p_grid_idx.h_view(i, 0), m_p_grid_idx.h_view(i, 1), m_p_grid_idx.h_view(i, 2));
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         std::array<int, dims> MPM_system<F, K, SU, MB, FB>::p_grid_idx_unravelled(const int i) const {
-            return std::array{h_p_grid_idx(i, 0), h_p_grid_idx(i, 1), h_p_grid_idx(i, 2)};
+            return std::array{m_p_grid_idx.h_view(i, 0), m_p_grid_idx.h_view(i, 1), m_p_grid_idx.h_view(i, 2)};
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         particle<F> MPM_system<F, K, SU, MB, FB>::p_at(const int i) const {
-            return particle<F>(h_p_x(i, 0), h_p_x(i, 1), h_p_x(i, 2), 
-                h_p_mass(i), 
-                h_p_rho(i), 
-                h_p_v(i, 0), h_p_v(i, 1), h_p_v(i, 2), 
-                h_p_sigma(i, 0), h_p_sigma(i, 1), h_p_sigma(i, 2), h_p_sigma(i, 3), h_p_sigma(i, 4), h_p_sigma(i, 5), 
-                h_p_a(i, 0), h_p_a(i, 1), h_p_a(i, 2), 
-                h_p_dxdt(i, 0), h_p_dxdt(i, 1), h_p_dxdt(i, 2), 
-                h_p_strainrate(i, 0), h_p_strainrate(i, 1), h_p_strainrate(i, 2), h_p_strainrate(i, 3), h_p_strainrate(i, 4), h_p_strainrate(i, 5), 
-                h_p_spinrate(i, 0), h_p_spinrate(i, 1), h_p_spinrate(i, 2));
+            return particle<F>(m_p_x.h_view(i, 0), m_p_x.h_view(i, 1), m_p_x.h_view(i, 2), 
+                m_p_mass.h_view(i), 
+                m_p_rho.h_view(i), 
+                m_p_v.h_view(i, 0), m_p_v.h_view(i, 1), m_p_v.h_view(i, 2), 
+                m_p_sigma.h_view(i, 0), m_p_sigma.h_view(i, 1), m_p_sigma.h_view(i, 2), m_p_sigma.h_view(i, 3), m_p_sigma.h_view(i, 4), m_p_sigma.h_view(i, 5), 
+                m_p_a.h_view(i, 0), m_p_a.h_view(i, 1), m_p_a.h_view(i, 2), 
+                m_p_dxdt.h_view(i, 0), m_p_dxdt.h_view(i, 1), m_p_dxdt.h_view(i, 2), 
+                m_p_strainrate.h_view(i, 0), m_p_strainrate.h_view(i, 1), m_p_strainrate.h_view(i, 2), m_p_strainrate.h_view(i, 3), m_p_strainrate.h_view(i, 4), m_p_strainrate.h_view(i, 5), 
+                m_p_spinrate.h_view(i, 0), m_p_spinrate.h_view(i, 1), m_p_spinrate.h_view(i, 2));
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_momentumx(const int idx) {
             int i, j, k;
             unravel_idx(idx, i, j, k);
-            return h_g_momentum(i, j, k, 0);
+            return m_g_momentum.h_view(i, j, k, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_momentumx(const int i, const int j, const int k) {
-            return h_g_momentum(i, j, k, 0);
+            return m_g_momentum.h_view(i, j, k, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_momentumy(const int idx) {
             int i, j, k;
             unravel_idx(idx, i, j, k);
-            return h_g_momentum(i, j, k, 1);
+            return m_g_momentum.h_view(i, j, k, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_momentumy(const int i, const int j, const int k) {
-            return h_g_momentum(i, j, k, 1);
+            return m_g_momentum.h_view(i, j, k, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_momentumz(const int idx) {
             int i, j, k;
             unravel_idx(idx, i, j, k);
-            return h_g_momentum(i, j, k, 2);
+            return m_g_momentum.h_view(i, j, k, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_momentumz(const int i, const int j, const int k) {
-            return h_g_momentum(i, j, k, 2);
+            return m_g_momentum.h_view(i, j, k, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_forcex(const int idx) {
             int i, j, k;
             unravel_idx(idx, i, j, k);
-            return h_g_force(i, j, k, 0);
+            return m_g_force.h_view(i, j, k, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_forcex(const int i, const int j, const int k) {
-            return h_g_force(i, j, k, 0);
+            return m_g_force.h_view(i, j, k, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_forcey(const int idx) {
             int i, j, k;
             unravel_idx(idx, i, j, k);
-            return h_g_force(i, j, k, 1);
+            return m_g_force.h_view(i, j, k, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_forcey(const int i, const int j, const int k) {
-            return h_g_force(i, j, k, 1);
+            return m_g_force.h_view(i, j, k, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_forcez(const int idx) {
             int i, j, k;
             unravel_idx(idx, i, j, k);
-            return h_g_force(i, j, k, 2);
+            return m_g_force.h_view(i, j, k, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_forcez(const int i, const int j, const int k) {
-            return h_g_force(i, j, k, 2);
+            return m_g_force.h_view(i, j, k, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_mass(const int idx) {
             int i, j, k;
             unravel_idx(idx, i, j, k);
-            return h_g_mass(i, j, k);
+            return m_g_mass.h_view(i, j, k);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::g_mass(const int i, const int j, const int k) {
-            return h_g_mass(i, j, k);
+            return m_g_mass.h_view(i, j, k);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::pg_nn(const int i) const {
-            return calc_idx(h_pg_nn(i, 0), h_pg_nn(i, 1), h_pg_nn(i, 2));
+            return calc_idx(m_pg_nn.h_view(i, 0), m_pg_nn.h_view(i, 1), m_pg_nn.h_view(i, 2));
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::pg_nn(const int i, const int j) const {
             const int idx = i*pg_npp + j;
-            return calc_idx(h_pg_nn(idx, 0), h_pg_nn(idx, 1), h_pg_nn(idx, 2));
+            return calc_idx(m_pg_nn.h_view(idx, 0), m_pg_nn.h_view(idx, 1), m_pg_nn.h_view(idx, 2));
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F MPM_system<F, K, SU, MB, FB>::pg_w(const int i) const {
-            return h_pg_w(i);
+            return m_pg_w.h_view(i);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F MPM_system<F, K, SU, MB, FB>::pg_w(const int i, const int j) const {
-            return h_pg_w(i*pg_npp+j);
+            return m_pg_w.h_view(i*pg_npp+j);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F MPM_system<F, K, SU, MB, FB>::pg_dwdx(const int i) const {
-            return h_pg_dwdx(i, 0);
+            return m_pg_dwdx.h_view(i, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F MPM_system<F, K, SU, MB, FB>::pg_dwdx(const int i, const int j) const {
-            return h_pg_dwdx(i*pg_npp+j, 0);
+            return m_pg_dwdx.h_view(i*pg_npp+j, 0);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F MPM_system<F, K, SU, MB, FB>::pg_dwdy(const int i) const {
-            return h_pg_dwdx(i, 1);
+            return m_pg_dwdx.h_view(i, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F MPM_system<F, K, SU, MB, FB>::pg_dwdy(const int i, const int j) const {
-            return h_pg_dwdx(i*pg_npp+j, 1);
+            return m_pg_dwdx.h_view(i*pg_npp+j, 1);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F MPM_system<F, K, SU, MB, FB>::pg_dwdz(const int i) const {
-            return h_pg_dwdx(i, 2);
+            return m_pg_dwdx.h_view(i, 2);
         }
         
         template<typename F, typename K, typename SU, typename MB, typename FB>
         F MPM_system<F, K, SU, MB, FB>::pg_dwdz(const int i, const int j) const {
-            return h_pg_dwdx(i*pg_npp+j, 2);
+            return m_pg_dwdx.h_view(i*pg_npp+j, 2);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
@@ -404,32 +404,32 @@ namespace GraMPM {
 #ifdef GRAMPM_MPI
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_min_idxx(const int i) const {
-            return h_ORB_extents(i).min[0];
+            return m_ORB_extents.h_view(i).min[0];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_min_idxy(const int i) const {
-            return h_ORB_extents(i).min[1];
+            return m_ORB_extents.h_view(i).min[1];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_min_idxz(const int i) const {
-            return h_ORB_extents(i).min[2];
+            return m_ORB_extents.h_view(i).min[2];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_max_idxx(const int i) const {
-            return h_ORB_extents(i).max[0];
+            return m_ORB_extents.h_view(i).max[0];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_max_idxy(const int i) const {
-            return h_ORB_extents(i).max[1];
+            return m_ORB_extents.h_view(i).max[1];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_max_idxz(const int i) const {
-            return h_ORB_extents(i).max[2];
+            return m_ORB_extents.h_view(i).max[2];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
@@ -439,67 +439,67 @@ namespace GraMPM {
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_neighbour(const int i) const {
-            return h_ORB_neighbours(i);
+            return m_ORB_neighbours.h_view(i);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_send_halo_minx(const int neighbour) const {
-            return h_ORB_send_halo(neighbour).min[0];
+            return m_ORB_send_halo.h_view(neighbour).min[0];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_send_halo_miny(const int neighbour) const {
-            return h_ORB_send_halo(neighbour).min[1];
+            return m_ORB_send_halo.h_view(neighbour).min[1];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_send_halo_minz(const int neighbour) const {
-            return h_ORB_send_halo(neighbour).min[2];
+            return m_ORB_send_halo.h_view(neighbour).min[2];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_send_halo_maxx(const int neighbour) const {
-            return h_ORB_send_halo(neighbour).max[0];
+            return m_ORB_send_halo.h_view(neighbour).max[0];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_send_halo_maxy(const int neighbour) const {
-            return h_ORB_send_halo(neighbour).max[1];
+            return m_ORB_send_halo.h_view(neighbour).max[1];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_send_halo_maxz(const int neighbour) const {
-            return h_ORB_send_halo(neighbour).max[2];
+            return m_ORB_send_halo.h_view(neighbour).max[2];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_recv_halo_minx(const int neighbour) const {
-            return h_ORB_recv_halo(neighbour).min[0];
+            return m_ORB_recv_halo.h_view(neighbour).min[0];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_recv_halo_miny(const int neighbour) const {
-            return h_ORB_recv_halo(neighbour).min[1];
+            return m_ORB_recv_halo.h_view(neighbour).min[1];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_recv_halo_minz(const int neighbour) const {
-            return h_ORB_recv_halo(neighbour).min[2];
+            return m_ORB_recv_halo.h_view(neighbour).min[2];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_recv_halo_maxx(const int neighbour) const {
-            return h_ORB_recv_halo(neighbour).max[0];
+            return m_ORB_recv_halo.h_view(neighbour).max[0];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_recv_halo_maxy(const int neighbour) const {
-            return h_ORB_recv_halo(neighbour).max[1];
+            return m_ORB_recv_halo.h_view(neighbour).max[1];
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::ORB_recv_halo_maxz(const int neighbour) const {
-            return h_ORB_recv_halo(neighbour).max[2];
+            return m_ORB_recv_halo.h_view(neighbour).max[2];
         }
 
 #endif
