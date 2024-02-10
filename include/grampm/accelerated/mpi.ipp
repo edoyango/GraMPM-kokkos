@@ -264,74 +264,37 @@ static void ORB(const int procid, const ORB_tree_node &node_in, const box<int> p
 
 struct locate_neighbours_func {
     const Kokkos::View<const box<int>*> all_extents;
-    const Kokkos::View<int*> neighbours_location;
+    const Kokkos::View<int*> neighbours;
     const int buffer, procid;
-    locate_neighbours_func(Kokkos::View<const box<int>*> all_extents_, Kokkos::View<int*> neighbours_location_, 
+    locate_neighbours_func(Kokkos::View<const box<int>*> all_extents_, Kokkos::View<int*> neighbours_, 
         int buffer_, int procid_)
         : all_extents {all_extents_}
-        , neighbours_location {neighbours_location_}
+        , neighbours {neighbours_}
         , buffer {buffer_}
         , procid {procid_}
     {}
     KOKKOS_INLINE_FUNCTION
     void operator()(const int other_procid, int &partial_sum, const bool is_final) const {
-        bool is_neighbour = !(
-            all_extents(procid).min[0] > all_extents(other_procid).max[0] + buffer ||
-            all_extents(procid).min[1] > all_extents(other_procid).max[1] + buffer ||
-            all_extents(procid).min[2] > all_extents(other_procid).max[2] + buffer ||
-            all_extents(procid).max[0] < all_extents(other_procid).min[0] - buffer ||
-            all_extents(procid).max[1] < all_extents(other_procid).min[1] - buffer ||
-            all_extents(procid).max[2] < all_extents(other_procid).min[2] - buffer
+        const bool is_neighbour = !no_overlap(
+            all_extents(procid),
+            extend(all_extents(other_procid), buffer)
         ) && procid != other_procid;
-        if (is_final) neighbours_location(other_procid) = partial_sum;
+        if (is_final && is_neighbour) neighbours(partial_sum) = other_procid;
         partial_sum += is_neighbour;
     }
 };
 
-struct pack_neighbour_list_func {
-    const Kokkos::View<const int*> neighbours_location;
-    const Kokkos::View<int*> neighbours;
-    const int n_neighbours, numprocs;
-    pack_neighbour_list_func(const Kokkos::View<int*> neighbours_location_, const Kokkos::View<int*> neighbours_, const int n_, const int numprocs_)
-        : neighbours_location {neighbours_location_}
-        , neighbours {neighbours_}
-        , n_neighbours {n_}
-        , numprocs {numprocs_}
-    {}
-    KOKKOS_INLINE_FUNCTION
-    void operator()(const int i) const {
-        if (i < numprocs-1) { // not the last element
-            if (neighbours_location(i) != neighbours_location(i+1)) 
-                neighbours(neighbours_location(i)) = i;
-        } else {
-            if (neighbours_location(i) < n_neighbours) neighbours(neighbours_location(i)) = i;
-        }
-    }
-};
-
 static void ORB_find_neighbours(const Kokkos::View<box<int>*> &boundaries, const int procid, const int numprocs, const int buffer, const Kokkos::View<int*> neighbours, int &n_neighbours) {
-    Kokkos::View<int*> neighbours_location("View storing neighbour status", numprocs);
     Kokkos::parallel_scan(
         "Flag processes as neighbour", 
         numprocs, 
         locate_neighbours_func(
             boundaries, 
-            neighbours_location, 
+            neighbours, 
             buffer, 
             procid
         ),
         n_neighbours
-    );
-
-    Kokkos::parallel_for(
-        "Pack neighbour processes into list",
-        numprocs,
-        pack_neighbour_list_func(
-            neighbours_location,
-            neighbours,
-            n_neighbours,
-            numprocs
-        )
     );
 }
 

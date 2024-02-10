@@ -23,6 +23,7 @@ template<typename T>
 T range(const box<T> &box_, const int d) {return box_.max[d]-box_.min[d];}
 
 template<typename T>
+KOKKOS_INLINE_FUNCTION
 bool no_overlap(const box<T> &that, const box<T> &other) {
     // <= and >= because end is open interval
     return that.min[0] >= other.max[0] ||
