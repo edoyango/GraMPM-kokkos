@@ -334,7 +334,6 @@ struct ORB_determine_neighbour_halos_func {
     const Kokkos::View<const box<int>*> boundaries;
     const Kokkos::View<const int*> neighbours;
     const Kokkos::View<box<int>*> send_halo_boxes, recv_halo_boxes;
-    const box<int> mybox, mybox_w_buffer;
     ORB_determine_neighbour_halos_func(const int procid_, const int numprocs_, const int buffer_, 
         const int n_neighbours_, const Kokkos::View<const box<int>*> boundaries_, 
         const Kokkos::View<const int*> neighbours_, const Kokkos::View<box<int>*> send_halo_boxes_, 
@@ -347,12 +346,11 @@ struct ORB_determine_neighbour_halos_func {
         , neighbours {neighbours_}
         , send_halo_boxes {send_halo_boxes_}
         , recv_halo_boxes {recv_halo_boxes_}
-        , mybox {boundaries(procid)}
-        , mybox_w_buffer {extend(mybox, buffer)}
     {}
     KOKKOS_INLINE_FUNCTION
     void operator()(const int i) const {
         const int neighbouri = neighbours(i);
+        const box<int> mybox {boundaries(procid)}, mybox_w_buffer {extend(mybox, buffer)};
         const box<int> neighbourbox {boundaries(neighbouri)}, neighbourbox_w_buffer {extend(neighbourbox, buffer)};
         send_halo_boxes(i) = find_overlapping_box(mybox, neighbourbox_w_buffer);
         recv_halo_boxes(i) = find_overlapping_box(mybox_w_buffer, neighbourbox);
@@ -428,6 +426,8 @@ namespace GraMPM {
 
             // start ORB
             ORB<F>(procid, node1, proc_box, m_ORB_extents.h_view, m_g_extents, m_g_cell_size, pincell);
+
+            Kokkos::deep_copy(m_ORB_extents.d_view, m_ORB_extents.h_view);
 
             ORB_find_neighbours(m_ORB_extents.d_view, procid, numprocs, int(knl.radius), m_ORB_neighbours.d_view, 
                 n_ORB_neighbours);
