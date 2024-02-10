@@ -140,16 +140,15 @@ namespace GraMPM {
             , d_p_v("Particles' 3D velocity", m_p_size)
             , d_p_a("Particles' 3D accelerations", m_p_size)
             , d_p_dxdt("Particles' 3D dxdt", m_p_size)
-            , d_g_momentum("Grid cells' 3D momentum", m_g_size)
-            , d_g_force("Grid cells' 3D force", m_g_size)
             , d_p_sigma("Particles' 3D cauchy stress tensor", m_p_size)
             , d_p_strainrate("Particles' 3D cauchy strain rate tensor", m_p_size)
-            , d_g_sigma("Grid 3D cauchy stress tensor", m_g_size)
             , d_p_spinrate("Particles' 3D cauchy spin rate tensor (off-axis elements only)", m_p_size)
             , d_p_mass("Particles' mass", m_p_size)
             , d_p_rho("Particles' mass", m_p_size)
-            , d_g_mass("Grid cells' mass", m_g_size)
             , d_p_grid_idx("Particles' hashed grid indices", m_p_size)
+            , d_g_momentum("Grid cells' 3D momentum", m_ngrid[0], m_ngrid[1], m_ngrid[2])
+            , d_g_force("Grid cells' 3D force", m_ngrid[0], m_ngrid[1], m_ngrid[2])
+            , d_g_mass("Grid cells' mass", m_ngrid[0], m_ngrid[1], m_ngrid[2])
             , pg_npp {static_cast<int>(8*knl.radius*knl.radius*knl.radius)}
             , d_pg_nn("Particles' grid neighbour nodes", m_p_size*pg_npp)
             , d_pg_w("Particles' grid neighbour nodes' kernel values", m_p_size*pg_npp)
@@ -162,7 +161,6 @@ namespace GraMPM {
             , h_g_force{create_mirror_view(d_g_force)}
             , h_p_sigma{create_mirror_view(d_p_sigma)}
             , h_p_strainrate{create_mirror_view(d_p_strainrate)}
-            , h_g_sigma{create_mirror_view(d_g_sigma)}
             , h_p_spinrate{create_mirror_view(d_p_spinrate)}
             , h_p_mass{create_mirror_view(d_p_mass)}
             , h_p_rho{create_mirror_view(d_p_rho)}
@@ -180,7 +178,6 @@ namespace GraMPM {
             , f_map_p2g_momentum(pg_npp, d_p_mass, d_p_v, d_g_momentum, d_pg_nn, d_pg_w)
             , f_map_p2g_force(pg_npp, d_p_mass, d_p_rho, d_p_sigma, d_g_force, d_pg_nn, d_pg_w, d_pg_dwdx, 
                 m_body_force[0], m_body_force[1], m_body_force[2])
-            , f_map_p2g_sigma(pg_npp, d_p_sigma, d_g_sigma, d_pg_nn, d_pg_w)
             , f_map_g2p_acceleration(pg_npp, d_p_a, d_g_force, d_p_dxdt, d_g_momentum, d_g_mass, d_pg_w, 
                 d_pg_nn)
             , f_map_g2p_strainrate(pg_npp, d_p_strainrate, d_p_spinrate, d_g_momentum, d_pg_dwdx, d_g_mass, 

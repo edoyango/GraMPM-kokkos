@@ -104,18 +104,15 @@ struct ORB_tree_node {
 };
 
 struct ORB_find_local_coverage_func {
-    const Kokkos::View<const int*> grid_idx;
+    const Kokkos::View<const int*[3]> grid_idx;
     const int global_ngrid[3];
-    ORB_find_local_coverage_func(const Kokkos::View<int*> grid_idx_, const int global_ngrid_[3])
+    ORB_find_local_coverage_func(const Kokkos::View<int*[3]> grid_idx_, const int global_ngrid_[3])
         : grid_idx {grid_idx_}
         , global_ngrid {global_ngrid_[0], global_ngrid_[1], global_ngrid_[2]}
     {}
     KOKKOS_INLINE_FUNCTION
     void operator()(const int i, int& lminx, int& lminy, int& lminz, int& lmaxx, int& lmaxy, int& lmaxz) const {
-        const int idx = grid_idx(i), 
-            idxx = idx/(global_ngrid[1]*global_ngrid[2]), 
-            idxy = (idx % (global_ngrid[1]*global_ngrid[2]))/global_ngrid[2], 
-            idxz = idx-idxx*global_ngrid[1]*global_ngrid[2]-idxy*global_ngrid[2];
+        const int idxx = grid_idx(i, 0), idxy = grid_idx(i, 1), idxz = grid_idx(i, 2);
         if (idxx < lminx) lminx = idxx;
         if (idxy < lminy) lminy = idxy;
         if (idxz < lminz) lminz = idxz;
@@ -126,10 +123,10 @@ struct ORB_find_local_coverage_func {
 };
 
 struct ORB_populate_pincell_func {
-    const Kokkos::View<const int*> grid_idx;
+    const Kokkos::View<const int*[3]> grid_idx;
     const Kokkos::View<int***> p;
     const int global_ngrid[3], minidx[3];
-    ORB_populate_pincell_func(const Kokkos::View<int*> grid_idx_, const Kokkos::View<int***> p_, 
+    ORB_populate_pincell_func(const Kokkos::View<int*[3]> grid_idx_, const Kokkos::View<int***> p_, 
         const int global_ngrid_[3], const int minidx_[3])
         : grid_idx {grid_idx_}
         , p {p_}
@@ -138,10 +135,7 @@ struct ORB_populate_pincell_func {
     {}
     KOKKOS_INLINE_FUNCTION
     void operator()(const int i) const {
-        const int idx = grid_idx(i), 
-            idxx = idx/(global_ngrid[1]*global_ngrid[2]), 
-            idxy = (idx % (global_ngrid[1]*global_ngrid[2]))/global_ngrid[2], 
-            idxz = idx-idxx*global_ngrid[1]*global_ngrid[2]-idxy*global_ngrid[2];
+        const int idxx = grid_idx(i, 0), idxy = grid_idx(i, 1), idxz = grid_idx(i, 2);
         Kokkos::atomic_increment(&p(idxx-minidx[0], idxy-minidx[1], idxz-minidx[2]));
     }
 };

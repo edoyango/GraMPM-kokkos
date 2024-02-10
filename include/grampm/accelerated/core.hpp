@@ -14,7 +14,9 @@
 constexpr int dims {3}, voigt_tens_elems {6}, spin_tens_elems {3};
 
 template<typename F> using spatial_view_type = Kokkos::View<F*[dims]>;
+template<typename F> using spatial_grid_view_type = Kokkos::View<F***[dims]>;
 template<typename F> using scalar_view_type = Kokkos::View<F*>;
+template<typename F> using scalar_grid_view_type = Kokkos::View<F***>;
 template<typename F> using cauchytensor_view_type = Kokkos::View<F*[voigt_tens_elems]>;
 template<typename F> using spintensor_view_type = Kokkos::View<F*[spin_tens_elems]>;
 using intscalar_view_type = Kokkos::View<int*>;
@@ -53,8 +55,8 @@ namespace GraMPM {
             int itimestep;
             F dt;
             const double ngridx, ngridy, ngridz;
-            const Kokkos::View<F*[3]> data;
-            empty_boundary_func(Kokkos::View<F*[3]> data_, F ngridx_, F ngridy_, F ngridz_)
+            const Kokkos::View<F***[3]> data;
+            empty_boundary_func(Kokkos::View<F***[3]> data_, F ngridx_, F ngridy_, F ngridz_)
                 : data {data_} 
                 , ngridx {ngridx_}
                 , ngridy {ngridy_}
@@ -80,26 +82,32 @@ namespace GraMPM {
                 int procid, numprocs, m_p_size_global;
 
                 // device views
-                spatial_view_type<F> d_p_x, d_p_v, d_p_a, d_p_dxdt, d_g_momentum, d_g_force;
-                cauchytensor_view_type<F> d_p_sigma, d_p_strainrate, d_g_sigma;
+                spatial_view_type<F> d_p_x, d_p_v, d_p_a, d_p_dxdt;
+                cauchytensor_view_type<F> d_p_sigma, d_p_strainrate;
                 spintensor_view_type<F> d_p_spinrate;
-                scalar_view_type<F> d_p_mass, d_p_rho, d_g_mass;
+                scalar_view_type<F> d_p_mass, d_p_rho;
 
-                intscalar_view_type d_p_grid_idx;
+                Kokkos::View<int*[dims]> d_p_grid_idx;
+
+                spatial_grid_view_type<F> d_g_momentum, d_g_force;
+                scalar_grid_view_type<F> d_g_mass;
 
                 const int pg_npp;
-                intscalar_view_type d_pg_nn;
+                Kokkos::View<int*[dims]> d_pg_nn;
                 scalar_view_type<F> d_pg_w;
                 spatial_view_type<F> d_pg_dwdx;
 
-                typename spatial_view_type<F>::HostMirror h_p_x, h_p_v, h_p_a, h_p_dxdt, h_g_momentum, h_g_force;
-                typename cauchytensor_view_type<F>::HostMirror h_p_sigma, h_p_strainrate, h_g_sigma;
+                typename spatial_view_type<F>::HostMirror h_p_x, h_p_v, h_p_a, h_p_dxdt;
+                typename cauchytensor_view_type<F>::HostMirror h_p_sigma, h_p_strainrate;
                 typename spintensor_view_type<F>::HostMirror h_p_spinrate;
-                typename scalar_view_type<F>::HostMirror h_p_mass, h_p_rho, h_g_mass;
+                typename scalar_view_type<F>::HostMirror h_p_mass, h_p_rho;
 
-                typename intscalar_view_type::HostMirror h_p_grid_idx;
+                typename Kokkos::View<int*[dims]>::HostMirror h_p_grid_idx;
 
-                typename intscalar_view_type::HostMirror h_pg_nn;
+                typename spatial_grid_view_type<F>::HostMirror h_g_momentum, h_g_force;
+                typename scalar_grid_view_type<F>::HostMirror h_g_mass;
+
+                typename Kokkos::View<int*[dims]>::HostMirror h_pg_nn;
                 typename scalar_view_type<F>::HostMirror h_pg_w;
                 typename spatial_view_type<F>::HostMirror h_pg_dwdx;
 
@@ -113,10 +121,10 @@ namespace GraMPM {
                 const functors::map_p2g_mass<F> f_map_p2g_mass;
                 const functors::map_p2g_momentum<F> f_map_p2g_momentum;
                 functors::map_p2g_force<F> f_map_p2g_force;
-                const functors::map_p2g_sigma<F> f_map_p2g_sigma;
                 const functors::map_g2p_acceleration<F> f_map_g2p_acceleration;
                 const functors::map_g2p_strainrate<F> f_map_g2p_strainrate;
-                functors::update_data<F> f_g_update_momentum, f_p_update_velocity, f_p_update_position;
+                functors::update_grid_data<F> f_g_update_momentum;
+                functors::update_particle_data<F> f_p_update_velocity, f_p_update_position;
                 functors::update_density<F> f_p_update_density;
 
 #ifdef GRAMPM_MPI
@@ -225,7 +233,8 @@ namespace GraMPM {
                 void d_zero_grid();
                 void h_zero_grid();
 
-                template<typename I> std::array<I, dims> unravel_idx(const I &idx) const;
+                std::array<int, dims> unravel_idx(const int &idx) const;
+                void unravel_idx(const int &idx, int &i, int &j, int &k) const;
                 int calc_idx(const int i, const int j, const int k) const;
 
                 void save_to_h5(const std::string &prefix, const int &timestep) const;

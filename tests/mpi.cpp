@@ -20,7 +20,7 @@ using namespace GraMPM::accelerated;
 // GraMPM::kernel_linear_bspline<double> knl(dcell_in);
 
 // GraMPM::MPM_system<double> myMPM(5, bf, knl, mingridx_in, maxgridx_in, dcell_in);
-
+#ifdef GRAMPM_MPI
 // assumes running with 4 procs
 TEST(ORB, test_cax) {
 
@@ -434,13 +434,22 @@ TEST(ORB, boundaries_yz) {
         }
     }
 }
+#else
+TEST(dummy, dummy) {
+    ASSERT_EQ(1, 0) << "Not compiled with MPI support.";
+}
+#endif
 
 int main(int argc, char *argv[]) {
+    #ifdef GRAMPM_MPI
     MPI_Init(&argc, &argv);
+    #endif
     Kokkos::initialize(argc, argv);
     testing::InitGoogleTest(&argc, argv);
     int success = RUN_ALL_TESTS();
     Kokkos::finalize();
+    #ifdef GRAMPM_MPI
     MPI_Finalize();
+    #endif
     return success;
 }

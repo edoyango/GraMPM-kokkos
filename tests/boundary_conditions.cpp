@@ -9,8 +9,8 @@ struct apply_lower_momentum {
     int itimestep;
     double dt;
     const double ngridx, ngridy, ngridz;
-    const Kokkos::View<double*[3]> data;
-    apply_lower_momentum(Kokkos::View<double*[3]> data_, double ngridx_, double ngridy_, double ngridz_)
+    const Kokkos::View<double***[3]> data;
+    apply_lower_momentum(Kokkos::View<double***[3]> data_, double ngridx_, double ngridy_, double ngridz_)
         : data {data_} 
         , ngridx {ngridx_}
         , ngridy {ngridy_}
@@ -19,10 +19,9 @@ struct apply_lower_momentum {
     KOKKOS_INLINE_FUNCTION
     void operator()(const int i, const int j, const int k) const {
         if (k == 0) {
-            const int idx = i*ngridy*ngridz + j*ngridz + k;
-            data(idx, 0) = -1;
-            data(idx, 1) = -1;
-            data(idx, 2) = -1;
+            data(i, j, k, 0) = -1;
+            data(i, j, k, 1) = -1;
+            data(i, j, k, 2) = -1;
         }
     }
 };
@@ -31,8 +30,8 @@ struct apply_lower_force {
     int itimestep;
     double dt;
     const double ngridx, ngridy, ngridz;
-    const Kokkos::View<double*[3]> data;
-    apply_lower_force(Kokkos::View<double*[3]> data_, double ngridx_, double ngridy_, double ngridz_)
+    const Kokkos::View<double***[3]> data;
+    apply_lower_force(Kokkos::View<double***[3]> data_, double ngridx_, double ngridy_, double ngridz_)
         : data {data_} 
         , ngridx {ngridx_}
         , ngridy {ngridy_}
@@ -41,10 +40,9 @@ struct apply_lower_force {
     KOKKOS_INLINE_FUNCTION
     void operator()(const int i, const int j, const int k) const {
         if (k == 0) {
-            const int idx = i*ngridy*ngridz + j*ngridz + k;
-            data(idx, 0) = -2;
-            data(idx, 1) = -2;
-            data(idx, 2) = -2;
+            data(i, j, k, 0) = -2;
+            data(i, j, k, 1) = -2;
+            data(i, j, k, 2) = -2;
         }
     }
 };
