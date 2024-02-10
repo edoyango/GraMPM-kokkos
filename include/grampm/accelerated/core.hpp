@@ -143,98 +143,89 @@ namespace GraMPM {
                 void d2h();
 
                 // getters/setters
-                int p_size() const {return m_p_size;}
-                F g_cell_size() const {return m_g_cell_size;}
-                std::array<F, dims> g_mingrid() const {return std::array<F, dims>{m_g_extents.min[0], m_g_extents.min[1], m_g_extents.min[2]};}
-                std::array<F, dims> g_maxgrid() const {return std::array<F, dims>{m_g_extents.max[0], m_g_extents.max[1], m_g_extents.max[2]};}
-                std::array<int, dims> g_ngrid() const { return m_ngrid;}
-                int g_size() const {return m_g_size;}
-                F g_mingridx() const {return m_g_extents.min[0];}
-                F g_mingridy() const {return m_g_extents.min[1];}
-                F g_mingridz() const {return m_g_extents.min[2];}
-                F g_maxgridx() const {return m_g_extents.max[0];}
-                F g_maxgridy() const {return m_g_extents.max[1];}
-                F g_maxgridz() const {return m_g_extents.max[2];}
-                int g_ngridx() const {return m_ngrid[0];}
-                int g_ngridy() const {return m_ngrid[1];}
-                int g_ngridz() const {return m_ngrid[2];}
-                F& g_mass(int i) const {return h_g_mass(i);}
-                F& p_x(const int i) {return h_p_x(i, 0);}
-                F& p_y(const int i) {return h_p_x(i, 1);}
-                F& p_z(const int i) {return h_p_x(i, 2);}
-                F& p_vx(const int i) {return h_p_v(i, 0);}
-                F& p_vy(const int i) {return h_p_v(i, 1);}
-                F& p_vz(const int i) {return h_p_v(i, 2);}
-                F& p_ax(const int i) {return h_p_a(i, 0);}
-                F& p_ay(const int i) {return h_p_a(i, 1);}
-                F& p_az(const int i) {return h_p_a(i, 2);}
-                F& p_dxdt(const int i) {return h_p_dxdt(i, 0);}
-                F& p_dydt(const int i) {return h_p_dxdt(i, 1);}
-                F& p_dzdt(const int i) {return h_p_dxdt(i, 2);}
-                F& g_momentumx(const int i) {return h_g_momentum(i, 0);}
-                F& g_momentumx(const int i, const int j, const int k) {return h_g_momentum(calc_idx(i, j, k), 0);}
-                F& g_momentumy(const int i) {return h_g_momentum(i, 1);}
-                F& g_momentumy(const int i, const int j, const int k) {return h_g_momentum(calc_idx(i, j, k), 1);}
-                F& g_momentumz(const int i) {return h_g_momentum(i, 2);}
-                F& g_momentumz(const int i, const int j, const int k) {return h_g_momentum(calc_idx(i, j, k), 2);}
-                F& g_forcex(const int i) {return h_g_force(i, 0);}
-                F& g_forcex(const int i, const int j, const int k) {return h_g_force(calc_idx(i, j, k), 0);}
-                F& g_forcey(const int i) {return h_g_force(i, 1);}
-                F& g_forcey(const int i, const int j, const int k) {return h_g_force(calc_idx(i, j, k), 1);}
-                F& g_forcez(const int i) {return h_g_force(i, 2);}
-                F& g_forcez(const int i, const int j, const int k) {return h_g_force(calc_idx(i, j, k), 2);}
-                F& p_mass(const int i) {return h_p_mass(i);}
-                F& p_rho(const int i) {return h_p_rho(i);}
-                F& g_mass(const int i) {return h_g_mass(i);}
-                F& g_mass(const int i, const int j, const int k) {return h_g_mass(calc_idx(i, j, k));}
-                F& p_sigmaxx(const int i) {return h_p_sigma(i, 0);}
-                F& p_sigmayy(const int i) {return h_p_sigma(i, 1);}
-                F& p_sigmazz(const int i) {return h_p_sigma(i, 2);}
-                F& p_sigmaxy(const int i) {return h_p_sigma(i, 3);}
-                F& p_sigmaxz(const int i) {return h_p_sigma(i, 4);}
-                F& p_sigmayz(const int i) {return h_p_sigma(i, 5);}
-                F& p_strainratexx(const int i) {return h_p_strainrate(i, 0);}
-                F& p_strainrateyy(const int i) {return h_p_strainrate(i, 1);}
-                F& p_strainratezz(const int i) {return h_p_strainrate(i, 2);}
-                F& p_strainratexy(const int i) {return h_p_strainrate(i, 3);}
-                F& p_strainratexz(const int i) {return h_p_strainrate(i, 4);}
-                F& p_strainrateyz(const int i) {return h_p_strainrate(i, 5);}
-                F& p_spinratexy(const int i) {return h_p_spinrate(i, 0);}
-                F& p_spinratexz(const int i) {return h_p_spinrate(i, 1);}
-                F& p_spinrateyz(const int i) {return h_p_spinrate(i, 2);}
-                int p_grid_idx(const int i) {return h_p_grid_idx(i);}
-                template<typename I>
-                std::array<I, dims> unravel_idx(const I &idx) const;
-                std::array<int, dims> p_grid_idx_unravelled(const int i) {return unravel_idx<int>(h_p_grid_idx(i));}
+                int p_size() const;
+                F g_cell_size() const;
+                std::array<F, dims> g_mingrid() const;
+                std::array<F, dims> g_maxgrid() const;
+                std::array<int, dims> g_ngrid() const;
+                int g_size() const;
+                F g_mingridx() const;
+                F g_mingridy() const;
+                F g_mingridz() const;
+                F g_maxgridx() const;
+                F g_maxgridy() const;
+                F g_maxgridz() const;
+                int g_ngridx() const;
+                int g_ngridy() const;
+                int g_ngridz() const;
+                F& p_x(const int i);
+                F& p_y(const int i);
+                F& p_z(const int i);
+                F& p_vx(const int i);
+                F& p_vy(const int i);
+                F& p_vz(const int i);
+                F& p_ax(const int i);
+                F& p_ay(const int i);
+                F& p_az(const int i);
+                F& p_dxdt(const int i);
+                F& p_dydt(const int i);
+                F& p_dzdt(const int i);
+                F& p_mass(const int i);
+                F& p_rho(const int i);
+                F& p_sigmaxx(const int i);
+                F& p_sigmayy(const int i);
+                F& p_sigmazz(const int i);
+                F& p_sigmaxy(const int i);
+                F& p_sigmaxz(const int i);
+                F& p_sigmayz(const int i);
+                F& p_strainratexx(const int i);
+                F& p_strainrateyy(const int i);
+                F& p_strainratezz(const int i);
+                F& p_strainratexy(const int i);
+                F& p_strainratexz(const int i);
+                F& p_strainrateyz(const int i);
+                F& p_spinratexy(const int i);
+                F& p_spinratexz(const int i);
+                F& p_spinrateyz(const int i);
+                int p_grid_idx(const int i) const;
+                std::array<int, dims> p_grid_idx_unravelled(const int i) const;
+                F& g_momentumx(const int i);
+                F& g_momentumx(const int i, const int j, const int k);
+                F& g_momentumy(const int i);
+                F& g_momentumy(const int i, const int j, const int k);
+                F& g_momentumz(const int i);
+                F& g_momentumz(const int i, const int j, const int k);
+                F& g_forcex(const int i);
+                F& g_forcex(const int i, const int j, const int k);
+                F& g_forcey(const int i);
+                F& g_forcey(const int i, const int j, const int k);
+                F& g_forcez(const int i);
+                F& g_forcez(const int i, const int j, const int k);
+                F& g_mass(const int i);
+                F& g_mass(const int i, const int j, const int k);
 
-                particle<F> p_at(const int i) {
-                    return particle<F>(h_p_x(i, 0), h_p_x(i, 1), h_p_x(i, 2), h_p_mass(i), h_p_rho(i), h_p_v(i, 0), 
-                        h_p_v(i, 1), h_p_v(i, 2), h_p_sigma(i, 0), h_p_sigma(i, 1), h_p_sigma(i, 2), h_p_sigma(i, 3),
-                        h_p_sigma(i, 4), h_p_sigma(i, 5), h_p_a(i, 0), h_p_a(i, 1), h_p_a(i, 2), h_p_dxdt(i, 0), 
-                        h_p_dxdt(i, 1), h_p_dxdt(i, 2), h_p_strainrate(i, 0), h_p_strainrate(i, 1), 
-                        h_p_strainrate(i, 2), h_p_strainrate(i, 3), h_p_strainrate(i, 4), h_p_strainrate(i, 5), 
-                        h_p_spinrate(i, 0), h_p_spinrate(i, 1), h_p_spinrate(i, 2));
-                }
+                particle<F> p_at(const int i) const;
 
-                int pg_nn(const int i) {return h_pg_nn(i);}
-                int pg_nn(const int i, const int j) {return h_pg_nn(i*pg_npp+j);}
-                F pg_w(const int i) {return h_pg_w(i);}
-                F pg_w(const int i, const int j) {return h_pg_w(i*pg_npp+j);}
-                F pg_dwdx(const int i) {return h_pg_dwdx(i, 0);}
-                F pg_dwdx(const int i, const int j) {return h_pg_dwdx(i*pg_npp+j, 0);}
-                F pg_dwdy(const int i) {return h_pg_dwdx(i, 1);}
-                F pg_dwdy(const int i, const int j) {return h_pg_dwdx(i*pg_npp+j, 1);}
-                F pg_dwdz(const int i) {return h_pg_dwdx(i, 2);}
-                F pg_dwdz(const int i, const int j) {return h_pg_dwdx(i*pg_npp+j, 2);}
+                int pg_nn(const int i) const;
+                int pg_nn(const int i, const int j) const;
+                F pg_w(const int i) const;
+                F pg_w(const int i, const int j) const;
+                F pg_dwdx(const int i) const;
+                F pg_dwdx(const int i, const int j) const;
+                F pg_dwdy(const int i) const;
+                F pg_dwdy(const int i, const int j) const;
+                F pg_dwdz(const int i) const;
+                F pg_dwdz(const int i, const int j) const;
 
-                std::array<F, dims>& body_force() {return m_body_force;}
-                F& body_forcex() {return m_body_force[0];}
-                F& body_forcey() {return m_body_force[1];}
-                F& body_forcez() {return m_body_force[2];}
+                std::array<F, dims>& body_force();
+                F& body_forcex();
+                F& body_forcey();
+                F& body_forcez();
 
                 void d_zero_grid();
                 void h_zero_grid();
 
+                template<typename I> std::array<I, dims> unravel_idx(const I &idx) const;
                 int calc_idx(const int i, const int j, const int k) const;
 
                 void save_to_h5(const std::string &prefix, const int &timestep) const;
@@ -259,32 +250,33 @@ namespace GraMPM {
 
 #ifdef GRAMPM_MPI
                 void ORB_determine_boundaries();
-                int ORB_min_idxx(const int i) const {return h_ORB_extents(i).min[0];}
-                int ORB_min_idxy(const int i) const {return h_ORB_extents(i).min[1];}
-                int ORB_min_idxz(const int i) const {return h_ORB_extents(i).min[2];}
-                int ORB_max_idxx(const int i) const {return h_ORB_extents(i).max[0];}
-                int ORB_max_idxy(const int i) const {return h_ORB_extents(i).max[1];}
-                int ORB_max_idxz(const int i) const {return h_ORB_extents(i).max[2];}
-                int ORB_n_neighbours() const {return n_ORB_neighbours;}
-                int ORB_neighbour(const int i) const {return h_ORB_neighbours(i);}
-                int ORB_send_halo_minx(const int neighbour) const {return h_ORB_send_halo(neighbour).min[0];}
-                int ORB_send_halo_miny(const int neighbour) const {return h_ORB_send_halo(neighbour).min[1];}
-                int ORB_send_halo_minz(const int neighbour) const {return h_ORB_send_halo(neighbour).min[2];}
-                int ORB_send_halo_maxx(const int neighbour) const {return h_ORB_send_halo(neighbour).max[0];}
-                int ORB_send_halo_maxy(const int neighbour) const {return h_ORB_send_halo(neighbour).max[1];}
-                int ORB_send_halo_maxz(const int neighbour) const {return h_ORB_send_halo(neighbour).max[2];}
-                int ORB_recv_halo_minx(const int neighbour) const {return h_ORB_recv_halo(neighbour).min[0];}
-                int ORB_recv_halo_miny(const int neighbour) const {return h_ORB_recv_halo(neighbour).min[1];}
-                int ORB_recv_halo_minz(const int neighbour) const {return h_ORB_recv_halo(neighbour).min[2];}
-                int ORB_recv_halo_maxx(const int neighbour) const {return h_ORB_recv_halo(neighbour).max[0];}
-                int ORB_recv_halo_maxy(const int neighbour) const {return h_ORB_recv_halo(neighbour).max[1];}
-                int ORB_recv_halo_maxz(const int neighbour) const {return h_ORB_recv_halo(neighbour).max[2];}
+                int ORB_min_idxx(const int i) const;
+                int ORB_min_idxy(const int i) const;
+                int ORB_min_idxz(const int i) const;
+                int ORB_max_idxx(const int i) const;
+                int ORB_max_idxy(const int i) const;
+                int ORB_max_idxz(const int i) const;
+                int ORB_n_neighbours() const;
+                int ORB_neighbour(const int i) const;
+                int ORB_send_halo_minx(const int neighbour) const;
+                int ORB_send_halo_miny(const int neighbour) const;
+                int ORB_send_halo_minz(const int neighbour) const;
+                int ORB_send_halo_maxx(const int neighbour) const;
+                int ORB_send_halo_maxy(const int neighbour) const;
+                int ORB_send_halo_maxz(const int neighbour) const;
+                int ORB_recv_halo_minx(const int neighbour) const;
+                int ORB_recv_halo_miny(const int neighbour) const;
+                int ORB_recv_halo_minz(const int neighbour) const;
+                int ORB_recv_halo_maxx(const int neighbour) const;
+                int ORB_recv_halo_maxy(const int neighbour) const;
+                int ORB_recv_halo_maxz(const int neighbour) const;
 #endif
 
         };
     }
 }
 
+#include <grampm/accelerated/core-getters-setters.ipp>
 #include <grampm/accelerated/core-constructors.ipp>
 #include <grampm/accelerated/core-helpers.ipp>
 #include <grampm/accelerated/core-operations.ipp>
