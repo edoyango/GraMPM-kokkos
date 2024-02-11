@@ -136,18 +136,21 @@ namespace GraMPM {
             , m_g_size {m_ngrid[0]*m_ngrid[1]*m_ngrid[2]}
             , procid {get_MPI_Comm_rank()}
             , numprocs {get_MPI_Comm_size()}
+            , m_g_extents_local {F(0.), F(0.), F(0.), F(0.), F(0.), F(0.)}
+            , m_ngrid_local {0, 0, 0}
+            , m_g_size_local {0}
             , m_p_x("Particles' 3D positions", m_p_size)
             , m_p_v("Particles' 3D velocity", m_p_size)
             , m_p_a("Particles' 3D accelerations", m_p_size)
             , m_p_dxdt("Particles' 3D dxdt", m_p_size)
-            , m_g_momentum("Grid cells' 3D momentum", m_g_size)
-            , m_g_force("Grid cells' 3D force", m_g_size)
+            , m_g_momentum("Grid cells' 3D momentum", 0)
+            , m_g_force("Grid cells' 3D force", 0)
             , m_p_sigma("Particles' 3D cauchy stress tensor", m_p_size)
             , m_p_strainrate("Particles' 3D cauchy strain rate tensor", m_p_size)
             , m_p_spinrate("Particles' 3D cauchy spin rate tensor (off-axis elements only)", m_p_size)
             , m_p_mass("Particles' mass", m_p_size)
             , m_p_rho("Particles' mass", m_p_size)
-            , m_g_mass("Grid cells' mass", m_g_size)
+            , m_g_mass("Grid cells' mass", 0)
             , m_p_grid_idx("Particles' hashed grid indices", m_p_size)
             , pg_npp {static_cast<int>(8*knl.radius*knl.radius*knl.radius)}
             , m_pg_nn("Particles' grid neighbour nodes", m_p_size*pg_npp)
@@ -160,7 +163,14 @@ namespace GraMPM {
             , m_ORB_recv_halo("List of box indices of halo regions to receiv from neighbours", numprocs)
             , m_ORB_neighbours("IDs of processes that are neighbours", numprocs)
 #endif
-        {}
+        {
+            m_g_extents_local = m_g_extents;
+            m_ngrid_local = m_ngrid;
+            m_g_size_local = m_g_size;
+            m_g_momentum.realloc(m_g_size_local);
+            m_g_force.realloc(m_g_size_local);
+            m_g_mass.realloc(m_g_size_local);
+        }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         MPM_system<F, K, SU, MB, FB>::MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
