@@ -25,8 +25,7 @@ const int correct_ravelled_idx[5] {0, 0, 1*4*5+1*5+1, 1*4*5+1*5+2, 2*4*5+2*5+3};
 
 TEST(map_particles_to_grid, particle_to_grid_assignment) {
 
-    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(5, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(5, mingrid, maxgrid, dcell);
 
     // initialize particles
     for (int i = 0; i < myMPM.p_size(); ++i) {
@@ -53,8 +52,7 @@ TEST(map_particles_to_grid, particle_to_grid_assignment) {
 
 TEST(map_particles_to_grid, neighbours_radius1) {
 
-    MPM_system<double, kernels::linear_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(5, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::linear_bspline<double>> myMPM(5, mingrid, maxgrid, dcell);
 
     for (int i = 0; i < myMPM.p_size(); ++i) {
         myMPM.p_x(i) = i*dx + mingrid[0];
@@ -116,8 +114,7 @@ TEST(map_particles_to_grid, neighbours_radius2) {
 
     // initialize particle system with cublic spline kernel
     const std::array<double, 3> mingrid {-0.1, 0.05, 0.15}, maxgrid {0.19, 0.4, 0.6};
-    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(pv, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(pv, mingrid, maxgrid, dcell);
 
     ASSERT_EQ(myMPM.p_size(), 2);
     ASSERT_EQ(myMPM.g_ngridx(), 4);

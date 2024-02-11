@@ -306,12 +306,13 @@ namespace GraMPM {
 
             template<typename F>
             struct update_data {
-                double dt;
+                const F dt;
                 const Kokkos::View<F*[3]> data;
                 const Kokkos::View<const F*[3]> update;
 
-                update_data(Kokkos::View<F*[3]> data_, Kokkos::View<F*[3]> update_)
-                    : data {data_}
+                update_data(F dt_, Kokkos::View<F*[3]> data_, Kokkos::View<F*[3]> update_)
+                    : dt {dt_}
+                    , data {data_}
                     , update {update_}
                 {}
 
@@ -325,12 +326,13 @@ namespace GraMPM {
 
             template<typename F>
             struct update_density {
-                double dt;
+                const F dt;
                 const Kokkos::View<F*> p_density;
                 const Kokkos::View<const F*[6]> p_strainrate;
 
-                update_density(Kokkos::View<F*> p_density_, Kokkos::View<F*[6]> p_strainrate_)
-                    : p_density {p_density_}
+                update_density(F dt_, Kokkos::View<F*> p_density_, Kokkos::View<F*[6]> p_strainrate_)
+                    : dt {dt_}
+                    , p_density {p_density_}
                     , p_strainrate {p_strainrate_}
                 {}
 

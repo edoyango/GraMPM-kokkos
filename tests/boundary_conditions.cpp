@@ -6,15 +6,18 @@
 using namespace GraMPM::accelerated;
 
 struct apply_lower_momentum {
-    int itimestep;
-    double dt;
+    const int itimestep;
+    const double dt;
     const double ngridx, ngridy, ngridz;
     const Kokkos::View<double*[3]> data;
-    apply_lower_momentum(Kokkos::View<double*[3]> data_, double ngridx_, double ngridy_, double ngridz_)
+    apply_lower_momentum(Kokkos::View<double*[3]> data_, double ngridx_, double ngridy_, double ngridz_, double dt_,
+        int itimestep_)
         : data {data_} 
         , ngridx {ngridx_}
         , ngridy {ngridy_}
         , ngridz {ngridz_}
+        , dt {dt_}
+        , itimestep {itimestep_}
     {};
     KOKKOS_INLINE_FUNCTION
     void operator()(const int i, const int j, const int k) const {
@@ -28,15 +31,18 @@ struct apply_lower_momentum {
 };
 
 struct apply_lower_force {
-    int itimestep;
-    double dt;
+    const int itimestep;
+    const double dt;
     const double ngridx, ngridy, ngridz;
     const Kokkos::View<double*[3]> data;
-    apply_lower_force(Kokkos::View<double*[3]> data_, double ngridx_, double ngridy_, double ngridz_)
+    apply_lower_force(Kokkos::View<double*[3]> data_, double ngridx_, double ngridy_, double ngridz_, double dt_, 
+        int itimestep_)
         : data {data_} 
         , ngridx {ngridx_}
         , ngridy {ngridy_}
         , ngridz {ngridz_}
+        , dt {dt_}
+        , itimestep {itimestep_}
     {};
     KOKKOS_INLINE_FUNCTION
     void operator()(const int i, const int j, const int k) const {
@@ -55,7 +61,7 @@ TEST(check_boundary, all) {
     const double dcell = 0.2;
     // GraMPM::grid<double> g(0., 0., 0., 0.99, 1.99, 2.99, dcell, apply_lower_momentum, apply_lower_force);
     std::array<double, 3> bf, mingrid {0., 0., 0.}, maxgrid {0.99, 1.99, 2.99};
-    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>, apply_lower_momentum, apply_lower_force>
+    MPM_system<double, kernels::cubic_bspline<double>, empty_stress_update<double>, apply_lower_momentum, apply_lower_force>
         myMPM(0, mingrid, maxgrid, dcell);
 
     for (int i = 0; i < myMPM.g_size(); ++i) {

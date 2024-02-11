@@ -33,8 +33,7 @@ TEST(p2g_mass, linear_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::linear_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::linear_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
 
     ASSERT_EQ(myMPM.g_ngridx(), 6)  << "ngridx not calculated correctly";
     ASSERT_EQ(myMPM.g_ngridy(), 11) << "ngridy not calculated correctly";
@@ -70,8 +69,7 @@ TEST(p2g_mass, cubic_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
     
     ASSERT_EQ(myMPM.g_ngridx(), 8)  << "ngridx not calculated correctly";
     ASSERT_EQ(myMPM.g_ngridy(), 13) << "ngridy not calculated correctly";
@@ -107,8 +105,7 @@ TEST(p2g_momentum, linear_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::linear_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::linear_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
 
     ASSERT_EQ(myMPM.g_ngridx(), 6)  << "ngridx not calculated correctly";
     ASSERT_EQ(myMPM.g_ngridy(), 11) << "ngridy not calculated correctly";
@@ -159,8 +156,7 @@ TEST(p2g_momentum, cubic_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
 
     ASSERT_EQ(myMPM.g_ngridx(), 8)  << "ngridx not calculated correctly";
     ASSERT_EQ(myMPM.g_ngridy(), 13) << "ngridy not calculated correctly";
@@ -211,8 +207,7 @@ TEST(p2g_force, linear_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::linear_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::linear_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
 
     myMPM.body_force() = bf;
 
@@ -290,8 +285,7 @@ TEST(p2g_force, cubic_bspline) {
 
     std::vector<GraMPM::particle<double>> vp = generate_particles();
 
-    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(vp, mingrid, maxgrid, dcell);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(vp, mingrid, maxgrid, dcell);
 
     myMPM.body_force() = bf;
 

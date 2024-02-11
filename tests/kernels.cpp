@@ -13,8 +13,7 @@ double cell_size = 0.1;
 
 TEST(kernels, linear) {
 
-    MPM_system<double, kernels::linear_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(0, mingrid, maxgrid, cell_size);
+    MPM_system<double, kernels::linear_bspline<double>> myMPM(0, mingrid, maxgrid, cell_size);
 
     // check attributes are set correctly
     ASSERT_DOUBLE_EQ(myMPM.knl.radius, 1.) << "kernel radius not set correctly";
@@ -67,8 +66,7 @@ TEST(kernels, linear) {
 
 TEST(kernels, cubic) {
 
-    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
-        myMPM(0, mingrid, maxgrid, cell_size);
+    MPM_system<double, kernels::cubic_bspline<double>> myMPM(0, mingrid, maxgrid, cell_size);
 
     // check attributes are set correctly
     ASSERT_DOUBLE_EQ(myMPM.knl.radius, 2.) << "kernel radius not set correctly";

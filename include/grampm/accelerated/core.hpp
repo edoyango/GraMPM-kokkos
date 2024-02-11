@@ -51,20 +51,24 @@ namespace GraMPM {
 
         template<typename F>
         struct empty_boundary_func {
-            int itimestep;
-            F dt;
-            const double ngrid[dims];
-            const Kokkos::View<F*[3]> data;
-            empty_boundary_func(Kokkos::View<F*[3]> data_, F ngridx_, F ngridy_, F ngridz_)
-                : data {data_} 
-                , ngrid {ngridx_, ngridy_, ngridz_}
+            empty_boundary_func(Kokkos::View<F*[3]> data_, F ngridx_, F ngridy_, F ngridz_, F dt_, int itimestep_)
             {};
             KOKKOS_INLINE_FUNCTION
             void operator()(const int i, const int j, const int k) const {
             }
         };
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary = empty_boundary_func<F>, typename force_boundary = empty_boundary_func<F>>
+        template<typename F>
+        struct empty_stress_update {
+            empty_stress_update(Kokkos::View<F*[6]> p_sigma_, Kokkos::View<F*[6]> p_strainrate_,
+                Kokkos::View<F*[3]> p_spinrate_)
+            {}
+            KOKKOS_INLINE_FUNCTION
+            void operator()(const int i) const
+            {}
+        };
+
+        template<typename F, typename kernel, typename stress_update = empty_stress_update<F>, typename momentum_boundary = empty_boundary_func<F>, typename force_boundary = empty_boundary_func<F>>
         class MPM_system {
 
             public:
@@ -91,20 +95,7 @@ namespace GraMPM {
                 scalar_view_type<F> m_pg_w;
                 spatial_view_type<F> m_pg_dwdx;
 
-                momentum_boundary f_momentum_boundary;
-                force_boundary f_force_boundary;
-
                 std::array<F, dims> m_body_force;
-
-                const functors::map_gidx<F> f_map_gidx;
-                const functors::find_neighbour_nodes<F, kernel> f_find_neighbour_nodes;
-                const functors::map_p2g_mass<F> f_map_p2g_mass;
-                const functors::map_p2g_momentum<F> f_map_p2g_momentum;
-                functors::map_p2g_force<F> f_map_p2g_force;
-                const functors::map_g2p_acceleration<F> f_map_g2p_acceleration;
-                const functors::map_g2p_strainrate<F> f_map_g2p_strainrate;
-                functors::update_data<F> f_g_update_momentum, f_p_update_velocity, f_p_update_position;
-                functors::update_density<F> f_p_update_density;
 
 #ifdef GRAMPM_MPI
                 const Kokkos::DualView<box<int>*> m_ORB_extents, m_ORB_send_halo, m_ORB_recv_halo;

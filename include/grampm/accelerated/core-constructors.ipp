@@ -153,23 +153,6 @@ namespace GraMPM {
             , m_pg_nn("Particles' grid neighbour nodes", m_p_size*pg_npp)
             , m_pg_w("Particles' grid neighbour nodes' kernel values", m_p_size*pg_npp)
             , m_pg_dwdx("Particles' grid neighbour nodes' kernel gradient values", m_p_size*pg_npp)
-            , f_momentum_boundary(m_g_momentum.d_view, m_ngrid[0], m_ngrid[1], m_ngrid[2])
-            , f_force_boundary(m_g_force.d_view, m_ngrid[0], m_ngrid[1], m_ngrid[2])
-            , f_map_gidx(dcell, mingrid.data(), m_ngrid.data(), m_p_x.d_view, m_p_grid_idx.d_view)
-            , f_find_neighbour_nodes(dcell, mingrid.data(), m_ngrid.data(), static_cast<int>(knl.radius), m_p_x.d_view, 
-                m_p_grid_idx.d_view, m_pg_nn.d_view, m_pg_w.d_view, m_pg_dwdx.d_view, knl)
-            , f_map_p2g_mass(pg_npp, m_p_mass.d_view, m_g_mass.d_view, m_pg_nn.d_view, m_pg_w.d_view)
-            , f_map_p2g_momentum(pg_npp, m_p_mass.d_view, m_p_v.d_view, m_g_momentum.d_view, m_pg_nn.d_view, m_pg_w.d_view)
-            , f_map_p2g_force(pg_npp, m_p_mass.d_view, m_p_rho.d_view, m_p_sigma.d_view, m_g_force.d_view, m_pg_nn.d_view, m_pg_w.d_view, m_pg_dwdx.d_view, 
-                m_body_force[0], m_body_force[1], m_body_force[2])
-            , f_map_g2p_acceleration(pg_npp, m_p_a.d_view, m_g_force.d_view, m_p_dxdt.d_view, m_g_momentum.d_view, m_g_mass.d_view, m_pg_w.d_view, 
-                m_pg_nn.d_view)
-            , f_map_g2p_strainrate(pg_npp, m_p_strainrate.d_view, m_p_spinrate.d_view, m_g_momentum.d_view, m_pg_dwdx.d_view, m_g_mass.d_view, 
-                m_pg_nn.d_view)
-            , f_g_update_momentum(m_g_momentum.d_view, m_g_force.d_view)
-            , f_p_update_velocity(m_p_v.d_view, m_p_a.d_view)
-            , f_p_update_position(m_p_x.d_view, m_p_dxdt.d_view)
-            , f_p_update_density(m_p_rho.d_view, m_p_strainrate.d_view)
             , f_stress_update(m_p_sigma.d_view, m_p_strainrate.d_view, m_p_spinrate.d_view)
 #ifdef GRAMPM_MPI
             , m_ORB_extents("List of all process' boundary boxes", numprocs)
