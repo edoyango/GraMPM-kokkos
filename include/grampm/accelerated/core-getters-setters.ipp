@@ -79,6 +79,71 @@ namespace GraMPM {
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
+        std::array<F, dims> MPM_system<F, K, SU, MB, FB>::g_mingrid_local() const {
+            return std::array<F, dims>{m_g_extents_local.min[0], m_g_extents_local.min[1], m_g_extents_local.min[2]};
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        std::array<F, dims> MPM_system<F, K, SU, MB, FB>::g_maxgrid_local() const {
+            return std::array<F, dims>{m_g_extents_local.max[0], m_g_extents_local.max[1], m_g_extents_local.max[2]};
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        std::array<int, dims> MPM_system<F, K, SU, MB, FB>::g_ngrid_local() const {
+            return m_ngrid_local;
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        int MPM_system<F, K, SU, MB, FB>::g_size_local() const {
+            return m_g_size_local;
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        F MPM_system<F, K, SU, MB, FB>::g_mingridx_local() const {
+            return m_g_extents_local.min[0];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        F MPM_system<F, K, SU, MB, FB>::g_mingridy_local() const {
+            return m_g_extents_local.min[1];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        F MPM_system<F, K, SU, MB, FB>::g_mingridz_local() const {
+            return m_g_extents_local.min[2];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        F MPM_system<F, K, SU, MB, FB>::g_maxgridx_local() const {
+            return m_g_extents_local.max[0];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        F MPM_system<F, K, SU, MB, FB>::g_maxgridy_local() const {
+            return m_g_extents_local.max[1];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        F MPM_system<F, K, SU, MB, FB>::g_maxgridz_local() const {
+            return m_g_extents_local.max[2];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        int MPM_system<F, K, SU, MB, FB>::g_ngridx_local() const {
+            return m_ngrid_local[0];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        int MPM_system<F, K, SU, MB, FB>::g_ngridy_local() const {
+            return m_ngrid_local[1];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        int MPM_system<F, K, SU, MB, FB>::g_ngridz_local() const {
+            return m_ngrid_local[2];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
         F& MPM_system<F, K, SU, MB, FB>::p_x(const int i) {
             return m_p_x.h_view(i, 0);
         }

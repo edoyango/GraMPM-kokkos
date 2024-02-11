@@ -52,6 +52,26 @@ TEST(initialization_getters_setters, grid_init) {
     ASSERT_EQ(myMPM.g_ngridz(), 5) << "number of cells not retrieved correctly in z direction";
     ASSERT_EQ(myMPM.g_size(), 60) << "total number of cells not retrieved correctly";
 
+    // check local-global dimension equality
+    std::array<double, dims> mingridx_local_out {myMPM.g_mingrid_local()}, maxgridx_local_out {myMPM.g_maxgrid_local()};
+    std::array<int, dims> ngridx_local_out {myMPM.g_ngrid_local()};
+    for (int d = 0; d < dims; ++d) {
+        EXPECT_EQ(mingridx_local_out[d], mingridx_out[d]) << "local-global min extents of grid do not match in " << d << "th dim";
+        EXPECT_EQ(maxgridx_local_out[d], maxgridx_out[d]) << "local-global max extents of grid do not match in " << d << "th dim";
+    }
+    ASSERT_EQ(myMPM.g_mingridx_local(), myMPM.g_mingridx()) << "local-global x grid min extent does not match";
+    ASSERT_EQ(myMPM.g_mingridy_local(), myMPM.g_mingridy()) << "local-global y grid min extent does not match";
+    ASSERT_EQ(myMPM.g_mingridz_local(), myMPM.g_mingridz()) << "local-global z grid min extent does not match";
+    
+    ASSERT_EQ(myMPM.g_maxgridx_local(), myMPM.g_maxgridx()) << "local-global x grid max extent does not match";
+    ASSERT_EQ(myMPM.g_maxgridy_local(), myMPM.g_maxgridy()) << "local-global y grid max extent does not match";
+    ASSERT_EQ(myMPM.g_maxgridz_local(), myMPM.g_maxgridz()) << "local-global z grid max extent does not match";
+
+    ASSERT_EQ(myMPM.g_ngridx_local(), myMPM.g_ngridx()) << "local-global number of cells does not match in x direction";
+    ASSERT_EQ(myMPM.g_ngridy_local(), myMPM.g_ngridy()) << "local-global number of cells does not match in y direction";
+    ASSERT_EQ(myMPM.g_ngridz_local(), myMPM.g_ngridz()) << "local-global number of cells does not match in z direction";
+    ASSERT_EQ(myMPM.g_size_local(), myMPM.g_size()) << "local-global total number of cells does not match";
+
     myMPM.h_zero_grid();
 
     for (int i = 0; i < myMPM.g_size(); ++i) {

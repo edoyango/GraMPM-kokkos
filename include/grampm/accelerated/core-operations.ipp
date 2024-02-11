@@ -13,8 +13,8 @@ namespace GraMPM {
                 m_p_size, 
                 functors::map_gidx<F>(
                     m_g_cell_size,
-                    m_g_extents.min,
-                    m_ngrid.data(),
+                    m_g_extents_local.min,
+                    m_ngrid_local.data(),
                     m_p_x.d_view,
                     m_p_grid_idx.d_view
                 )
@@ -28,8 +28,8 @@ namespace GraMPM {
                 m_p_size, 
                 functors::find_neighbour_nodes<F, K>(
                     m_g_cell_size,
-                    m_g_extents.min,
-                    m_ngrid.data(),
+                    m_g_extents_local.min,
+                    m_ngrid_local.data(),
                     static_cast<int>(knl.radius),
                     m_p_x.d_view,
                     m_p_grid_idx.d_view,
@@ -137,13 +137,13 @@ namespace GraMPM {
                 "apply grid momentum boundary conditions", 
                 Kokkos::MDRangePolicy<Kokkos::Rank<3>>(
                     {0, 0, 0},
-                    {m_ngrid[0], m_ngrid[1], m_ngrid[2]}
+                    {m_ngrid_local[0], m_ngrid_local[1], m_ngrid_local[2]}
                 ),
                 MB(
                     m_g_momentum.d_view,
-                    m_ngrid[0],
-                    m_ngrid[1],
-                    m_ngrid[2],
+                    m_ngrid_local[0],
+                    m_ngrid_local[1],
+                    m_ngrid_local[2],
                     dt, itimestep
                 )
             );
@@ -155,13 +155,13 @@ namespace GraMPM {
                 "apply grid force boundary conditions", 
                 Kokkos::MDRangePolicy<Kokkos::Rank<3>>(
                     {0, 0, 0},
-                    {m_ngrid[0], m_ngrid[1], m_ngrid[2]}
+                    {m_ngrid_local[0], m_ngrid_local[1], m_ngrid_local[2]}
                 ),
                 FB(
                     m_g_force.d_view,
-                    m_ngrid[0],
-                    m_ngrid[1],
-                    m_ngrid[2],
+                    m_ngrid_local[0],
+                    m_ngrid_local[1],
+                    m_ngrid_local[2],
                     dt, itimestep
                 )
             );
@@ -177,7 +177,7 @@ namespace GraMPM {
         void MPM_system<F, K, SU, MB, FB>::g_update_momentum(const F &dt) {
             Kokkos::parallel_for(
                 "update grid momentum", 
-                m_g_size, 
+                m_g_size_local, 
                 functors::update_data<F>(
                     dt,
                     m_g_momentum.d_view,
