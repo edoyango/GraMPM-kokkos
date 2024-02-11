@@ -218,6 +218,7 @@ namespace GraMPM {
                 void h_zero_grid();
 
                 template<typename I> std::array<I, dims> unravel_idx(const I &idx) const;
+                KOKKOS_INLINE_FUNCTION void unravel_idx(const int idx, int &i, int &j, int &k) const;
                 int calc_idx(const int i, const int j, const int k) const;
 
                 void save_to_h5(const std::string &prefix, const int &timestep) const;
@@ -241,6 +242,7 @@ namespace GraMPM {
 
 #ifdef GRAMPM_MPI
                 void ORB_determine_boundaries();
+                void ORB_distribute_particles();
                 int ORB_min_idxx(const int i) const;
                 int ORB_min_idxy(const int i) const;
                 int ORB_min_idxz(const int i) const;

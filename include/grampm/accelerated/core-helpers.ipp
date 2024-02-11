@@ -20,6 +20,15 @@ namespace GraMPM {
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
+        KOKKOS_INLINE_FUNCTION
+        void MPM_system<F, K, SU, MB, FB>::unravel_idx(const int idx, int &i, int &j, int &k) const {
+            k = idx % m_ngrid[2];
+            int rem = idx / m_ngrid[2];
+            j = rem % m_ngrid[1];
+            i = rem / m_ngrid[1];
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
         int MPM_system<F, K, SU, MB, FB>::calc_idx(const int i, const int j, const int k) const {
             return i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[2] + k;
         }

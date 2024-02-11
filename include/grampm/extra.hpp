@@ -128,4 +128,22 @@ box<F> idx2coords(const box<T> &that, const F dcell, const F mingrid[3]) {
         mingrid[2] + that.max[2]*dcell
     );
 }
+
+template<typename T>
+KOKKOS_INLINE_FUNCTION
+T distance_from_face(const box<T> &that, const T x, const T y, const T z) {
+    T tmp = Kokkos::max(
+        {T(0), that.min[0] - x, x - that.max[0]}
+    );
+    T dr = tmp*tmp;
+    tmp = Kokkos::max(
+        {T(0), that.min[1] - y, y - that.max[1]}
+    );
+    dr += tmp*tmp;
+    tmp = Kokkos::max(
+        {T(0), that.min[2] - z, z - that.max[2]}
+    );
+    dr += tmp*tmp;
+    return dr;
+}
 #endif

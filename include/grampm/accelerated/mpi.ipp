@@ -344,6 +344,23 @@ static void ORB_determine_neighbour_halos(const Kokkos::View<const box<int>*> &b
     );
 }
 
+template<typename F>
+struct p_pack {
+    Kokkos::View<F*[3]> x, v;
+    Kokkos::View<F*[6]> sigma, strainrate;
+    Kokkos::View<F*[3]> spinrate;
+    Kokkos::View<F*> mass, rho;
+    p_pack(const int n)
+        : x("positions", n)
+        , v("velocities", n)
+        , sigma("stresses", n)
+        , strainrate("strainrates", n)
+        , spinrate("spinrates", n)
+        , mass("mass", n)
+        , rho("rho", n)
+    {}
+};
+
 namespace GraMPM {
     namespace accelerated {
         template<typename F, typename K, typename SU, typename MB, typename FB>
@@ -415,6 +432,46 @@ namespace GraMPM {
             ORB_determine_neighbour_halos(m_ORB_extents.d_view, procid, numprocs, int(knl.radius), 
                 m_ORB_neighbours.d_view, n_ORB_neighbours, m_ORB_send_halo.d_view, m_ORB_recv_halo.d_view);
 
+        }
+
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        void MPM_system<F, K, SU, MB, FB>::ORB_distribute_particles() {
+
+            // update particles' grid indices
+            update_particle_to_cell_map();
+            
+            Kokkos::View<int*> dest_proc("destination process for particle out of domain", m_p_size);
+
+            // assign -1 if particle is to be kept
+            // assign the relevant process id elsewhere
+            Kokkos::parallel_for(
+                "find which particles to remove and destination processes",
+                m_p_size,
+                KOKKOS_LAMBDA (const int i) {
+                    int idxx, idxy, idxz;
+                    unravel_idx(m_p_grid_idx.d_view(i), idxx, idxy, idxz);
+                    if (contains_point(m_ORB_extents.d_view(procid), idxx, idxy, idxz)) {
+                        dest_proc(i) = -1;
+                    } else {
+                        bool found_neighbour = false;
+                        int mindist = 1e6, mindest;
+                        // check neighbours
+                        for (int neighbouri = 0; neighbouri < n_ORB_neighbours; ++neighbouri) {
+                            const int neighbour_procid {m_ORB_neighbours.d_view(neighbouri)};
+                            if (contains_point(m_ORB_extents.d_view(neighbour_procid), idxx, idxy, idxz)) {
+                                dest_proc(i) = neighbouri;
+                                found_neighbour = true;
+                            }
+                            int tmp = distance_from_face(m_ORB_extents.d_view(neighbour_procid), idxx, idxy, idxz);
+                            if (tmp < mindist) {
+                                mindist = tmp;
+                                mindest = neighbouri;
+                            }
+                        }
+                        if (!found_neighbour) dest_proc(i) = mindest;
+                    }
+                }
+            );
         }
     }
 }

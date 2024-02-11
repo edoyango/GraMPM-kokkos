@@ -457,6 +457,56 @@ TEST(ORB, boundaries_yz) {
     }
 }
 
+TEST(ORB, distribute_particles) {
+
+    int numprocs, procid;
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+
+    ASSERT_EQ(numprocs, 4);
+
+    const double dcell_in = 0.1;
+    const std::array<double, 3> mingridx_in {-0.1, -0.1, -0.1}, maxgridx_in {1.1, 2.1, 3.1};
+    const int xp = 10, yp = 20, zp = 20, ntotal = xp*yp*zp;
+
+    const int nperproc = std::ceil(static_cast<double>(ntotal)/numprocs);
+
+    EXPECT_EQ(nperproc, 1000);
+    const int nstart = procid*nperproc;
+    const int nend = std::min(ntotal, (procid+1)*nperproc);
+    
+    int nlocal = 0, n = 0;
+    std::vector<GraMPM::particle<double>> vp;
+    for (int i = 0; i < xp; ++i) {
+        for (int j = 0; j < yp; ++j) {
+            for (int k = 0; k < zp; ++k) {
+                if (n >= nstart && n < nend) {
+                    GraMPM::particle<double> p;
+                    p.x[0] = (i+0.5)*dcell_in/2.;
+                    p.x[1] = (j+0.5)*dcell_in/2.;
+                    p.x[2] = (k+0.5)*dcell_in/2.;
+                    vp.push_back(p);
+                }
+                n++;
+            }
+        }
+    }
+    
+    MPM_system<double, kernels::cubic_bspline<double>, functors::stress_update::hookes_law<double>> 
+        myMPM(vp, mingridx_in, maxgridx_in, dcell_in);
+    
+    myMPM.h2d();
+
+    myMPM.update_particle_to_cell_map();
+
+    myMPM.ORB_determine_boundaries();
+
+    myMPM.ORB_distribute_particles();
+
+    myMPM.d2h();
+
+}
+
 int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);
     Kokkos::initialize(argc, argv);
