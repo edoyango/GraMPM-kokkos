@@ -80,7 +80,7 @@ namespace GraMPM {
 
                 // device views
                 spatial_view_type<F> m_p_x, m_p_v, m_p_a, m_p_dxdt, m_g_momentum, m_g_force;
-                cauchytensor_view_type<F> m_p_sigma, m_p_strainrate, m_g_sigma;
+                cauchytensor_view_type<F> m_p_sigma, m_p_strainrate;
                 spintensor_view_type<F> m_p_spinrate;
                 scalar_view_type<F> m_p_mass, m_p_rho, m_g_mass;
 

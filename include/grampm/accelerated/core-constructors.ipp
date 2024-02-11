@@ -144,7 +144,6 @@ namespace GraMPM {
             , m_g_force("Grid cells' 3D force", m_g_size)
             , m_p_sigma("Particles' 3D cauchy stress tensor", m_p_size)
             , m_p_strainrate("Particles' 3D cauchy strain rate tensor", m_p_size)
-            , m_g_sigma("Grid 3D cauchy stress tensor", m_g_size)
             , m_p_spinrate("Particles' 3D cauchy spin rate tensor (off-axis elements only)", m_p_size)
             , m_p_mass("Particles' mass", m_p_size)
             , m_p_rho("Particles' mass", m_p_size)
