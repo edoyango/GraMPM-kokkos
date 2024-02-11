@@ -396,7 +396,18 @@ namespace GraMPM {
             // start ORB
             ORB<F>(procid, node1, proc_box, m_ORB_extents.h_view, m_g_extents, m_g_cell_size, pincell);
 
-            Kokkos::deep_copy(m_ORB_extents.d_view, m_ORB_extents.h_view);
+            Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_ORB_extents.d_view, m_ORB_extents.h_view);
+
+            box<int> new_idx_extents {extend(m_ORB_extents.h_view(procid), int(knl.radius))};
+            m_g_extents_local = idx2coords(new_idx_extents, m_g_cell_size, m_g_extents.min);
+            for (int d = 0; d < 3; ++d) m_ngrid_local[d] = range(new_idx_extents, d);
+            m_g_size_local = m_ngrid_local[0]*m_ngrid_local[1]*m_ngrid_local[2];
+            m_g_momentum.realloc(m_g_size_local);
+            m_g_force.realloc(m_g_size_local);
+            m_g_mass.realloc(m_g_size_local);
+
+            // wait for transfer to complete
+            Kokkos::fence();
 
             ORB_find_neighbours(m_ORB_extents.d_view, procid, numprocs, int(knl.radius), m_ORB_neighbours.d_view, 
                 n_ORB_neighbours);

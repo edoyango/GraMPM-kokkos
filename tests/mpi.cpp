@@ -183,12 +183,23 @@ TEST(ORB, boundaries_xy) {
     EXPECT_EQ(myMPM.ORB_max_idxx(2), myMPM.g_ngridx()) << "incorrect max_idxx for proc 2 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxy(2),                6) << "incorrect max_idxy for proc 2 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxz(2), myMPM.g_ngridz()) << "incorrect max_idxz for proc 2 from procid " << procid;
-    EXPECT_EQ(myMPM.ORB_min_idxx(3),                6) << "incorrect min_idxx for proc 3from procid " << procid;
-    EXPECT_EQ(myMPM.ORB_min_idxy(3),                6) << "incorrect min_idxy for proc 3from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxx(3),                6) << "incorrect min_idxx for proc 3 from procid " << procid;
+    EXPECT_EQ(myMPM.ORB_min_idxy(3),                6) << "incorrect min_idxy for proc 3 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_min_idxz(3),                0) << "incorrect min_idxz for proc 3 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxx(3), myMPM.g_ngridx()) << "incorrect max_idxx for proc 3 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxy(3), myMPM.g_ngridy()) << "incorrect max_idxy for proc 3 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxz(3), myMPM.g_ngridz()) << "incorrect max_idxz for proc 3 from procid " << procid;
+
+    // check that grid extents have been updated
+    EXPECT_EQ(myMPM.g_ngridx_local(), myMPM.ORB_max_idxx(procid)-myMPM.ORB_min_idxx(procid)+2*int(myMPM.knl.radius)) << "incorrect number of local grid cells in x";
+    EXPECT_EQ(myMPM.g_ngridy_local(), myMPM.ORB_max_idxy(procid)-myMPM.ORB_min_idxy(procid)+2*int(myMPM.knl.radius)) << "incorrect number of local grid cells in y";
+    EXPECT_EQ(myMPM.g_ngridz_local(), myMPM.ORB_max_idxz(procid)-myMPM.ORB_min_idxz(procid)+2*int(myMPM.knl.radius)) << "incorrect number of local grid cells in z";
+    EXPECT_DOUBLE_EQ(myMPM.g_mingridx_local(), mingridx_in[0] + myMPM.g_cell_size()*(myMPM.ORB_min_idxx(procid)-int(myMPM.knl.radius))) << "incorrect local min extent in x";
+    EXPECT_DOUBLE_EQ(myMPM.g_mingridy_local(), mingridx_in[1] + myMPM.g_cell_size()*(myMPM.ORB_min_idxy(procid)-int(myMPM.knl.radius))) << "incorrect local min extent in y";
+    EXPECT_DOUBLE_EQ(myMPM.g_mingridz_local(), mingridx_in[2] + myMPM.g_cell_size()*(myMPM.ORB_min_idxz(procid)-int(myMPM.knl.radius))) << "incorrect local min extent in z";
+    EXPECT_DOUBLE_EQ(myMPM.g_maxgridx_local(), mingridx_in[0] + myMPM.g_cell_size()*(myMPM.ORB_max_idxx(procid)+int(myMPM.knl.radius))) << "incorrect local max extent in x";
+    EXPECT_DOUBLE_EQ(myMPM.g_maxgridy_local(), mingridx_in[1] + myMPM.g_cell_size()*(myMPM.ORB_max_idxy(procid)+int(myMPM.knl.radius))) << "incorrect local max extent in y";
+    EXPECT_DOUBLE_EQ(myMPM.g_maxgridz_local(), mingridx_in[2] + myMPM.g_cell_size()*(myMPM.ORB_max_idxz(procid)+int(myMPM.knl.radius))) << "incorrect local max extent in z";
 
     // checking correct neighbours
     EXPECT_EQ(myMPM.ORB_n_neighbours(), 3);
@@ -424,6 +435,17 @@ TEST(ORB, boundaries_yz) {
     EXPECT_EQ(myMPM.ORB_max_idxx(3), myMPM.g_ngridx()) << "incorrect max_idxx for proc 3 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxy(3), myMPM.g_ngridy()) << "incorrect max_idxy for proc 3 from procid " << procid;
     EXPECT_EQ(myMPM.ORB_max_idxz(3), myMPM.g_ngridz()) << "incorrect max_idxz for proc 3 from procid " << procid;
+
+    // check that grid extents have been updated
+    EXPECT_EQ(myMPM.g_ngridx_local(), myMPM.ORB_max_idxx(procid)-myMPM.ORB_min_idxx(procid)+2*int(myMPM.knl.radius)) << "incorrect number of local grid cells in x";
+    EXPECT_EQ(myMPM.g_ngridy_local(), myMPM.ORB_max_idxy(procid)-myMPM.ORB_min_idxy(procid)+2*int(myMPM.knl.radius)) << "incorrect number of local grid cells in y";
+    EXPECT_EQ(myMPM.g_ngridz_local(), myMPM.ORB_max_idxz(procid)-myMPM.ORB_min_idxz(procid)+2*int(myMPM.knl.radius)) << "incorrect number of local grid cells in z";
+    EXPECT_DOUBLE_EQ(myMPM.g_mingridx_local(), mingridx_in[0] + myMPM.g_cell_size()*(myMPM.ORB_min_idxx(procid)-int(myMPM.knl.radius))) << "incorrect local min extent in x";
+    EXPECT_DOUBLE_EQ(myMPM.g_mingridy_local(), mingridx_in[1] + myMPM.g_cell_size()*(myMPM.ORB_min_idxy(procid)-int(myMPM.knl.radius))) << "incorrect local min extent in y";
+    EXPECT_DOUBLE_EQ(myMPM.g_mingridz_local(), mingridx_in[2] + myMPM.g_cell_size()*(myMPM.ORB_min_idxz(procid)-int(myMPM.knl.radius))) << "incorrect local min extent in z";
+    EXPECT_DOUBLE_EQ(myMPM.g_maxgridx_local(), mingridx_in[0] + myMPM.g_cell_size()*(myMPM.ORB_max_idxx(procid)+int(myMPM.knl.radius))) << "incorrect local max extent in x";
+    EXPECT_DOUBLE_EQ(myMPM.g_maxgridy_local(), mingridx_in[1] + myMPM.g_cell_size()*(myMPM.ORB_max_idxy(procid)+int(myMPM.knl.radius))) << "incorrect local max extent in y";
+    EXPECT_DOUBLE_EQ(myMPM.g_maxgridz_local(), mingridx_in[2] + myMPM.g_cell_size()*(myMPM.ORB_max_idxz(procid)+int(myMPM.knl.radius))) << "incorrect local max extent in z";
 
     EXPECT_EQ(myMPM.ORB_n_neighbours(), 3);
     n = 0;
