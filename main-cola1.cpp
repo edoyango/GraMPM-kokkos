@@ -13,12 +13,10 @@ using ftype = double;
 
 template<typename F>
 struct apply_boundary {
-    int itimestep;
-    F dt;
     const int ngridx, ngridy, ngridz;
     const Kokkos::View<F*[3]> data;
 
-    apply_boundary(Kokkos::View<F*[3]> data_, int ngridx_, int ngridy_, int ngridz_)
+    apply_boundary(Kokkos::View<F*[3]> data_, int ngridx_, int ngridy_, int ngridz_, double dt_, int itimestep_)
         : data {data_} 
         , ngridx {ngridx_}
         , ngridy {ngridy_}
