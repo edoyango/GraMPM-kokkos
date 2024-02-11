@@ -8,9 +8,9 @@
 namespace GraMPM {
     namespace accelerated {
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
+        template<typename F, typename K, typename SU, typename MB, typename FB>
         template<typename I>
-        std::array<I, dims> MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::unravel_idx(const I &idx) const {
+        std::array<I, dims> MPM_system<F, K, SU, MB, FB>::unravel_idx(const I &idx) const {
             std::array<I, dims> unravelled_idx;
             unravelled_idx[2] = idx % m_ngrid[2];
             I rem = idx / m_ngrid[2];
@@ -19,13 +19,13 @@ namespace GraMPM {
             return unravelled_idx;
         }
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        int MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::calc_idx(const int i, const int j, const int k) const {
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        int MPM_system<F, K, SU, MB, FB>::calc_idx(const int i, const int j, const int k) const {
             return i*m_ngrid[1]*m_ngrid[2] + j*m_ngrid[2] + k;
         }
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::h2d() {
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        void MPM_system<F, K, SU, MB, FB>::h2d() {
             deep_copy(m_p_x.d_view, m_p_x.h_view);
             deep_copy(m_p_v.d_view, m_p_v.h_view);
             deep_copy(m_p_a.d_view, m_p_a.h_view);
@@ -50,8 +50,8 @@ namespace GraMPM {
 #endif
         }
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::d2h() {
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        void MPM_system<F, K, SU, MB, FB>::d2h() {
             deep_copy(m_p_x.h_view, m_p_x.d_view);
             deep_copy(m_p_v.h_view, m_p_v.d_view);
             deep_copy(m_p_a.h_view, m_p_a.d_view);
@@ -76,15 +76,15 @@ namespace GraMPM {
 #endif
         }
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::d_zero_grid() {
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        void MPM_system<F, K, SU, MB, FB>::d_zero_grid() {
             Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_g_momentum.d_view, F(0.));
             Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_g_force.d_view, F(0.));
             Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_g_mass.d_view, F(0.));
         }
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::h_zero_grid() {
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        void MPM_system<F, K, SU, MB, FB>::h_zero_grid() {
             Kokkos::deep_copy(m_g_momentum.h_view, F(0.));
             Kokkos::deep_copy(m_g_force.h_view, F(0.));
             Kokkos::deep_copy(m_g_mass.h_view, F(0.));
@@ -162,8 +162,8 @@ namespace GraMPM {
             return status;
         }
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::save_to_h5(const std::string &prefix, const int &timestep) const {
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        void MPM_system<F, K, SU, MB, FB>::save_to_h5(const std::string &prefix, const int &timestep) const {
 
             // convert timestep number to string (width of 7 chars, for up to 9,999,999,999 timesteps)
             std::string str_timestep = std::to_string(timestep);
@@ -202,8 +202,8 @@ namespace GraMPM {
             status = H5Fclose(file_id);
         }
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::save_to_h5_async(const std::string &prefix, const int &timestep) const {
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        void MPM_system<F, K, SU, MB, FB>::save_to_h5_async(const std::string &prefix, const int &timestep) const {
 
             // initiate transfer of first batch of data
             Kokkos::deep_copy(Kokkos::DefaultExecutionSpace(), m_p_x.h_view, m_p_x.d_view);

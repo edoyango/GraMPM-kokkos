@@ -346,8 +346,8 @@ static void ORB_determine_neighbour_halos(const Kokkos::View<const box<int>*> &b
 
 namespace GraMPM {
     namespace accelerated {
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        void MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::ORB_determine_boundaries() {
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        void MPM_system<F, K, SU, MB, FB>::ORB_determine_boundaries() {
             
             // initiate sharing of number of points amongst all processes
             MPI_Request req;

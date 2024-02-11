@@ -122,8 +122,8 @@ namespace GraMPM {
 
     namespace accelerated {
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(const int n, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        MPM_system<F, K, SU, MB, FB>::MPM_system(const int n, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
             : knl(dcell)
             , m_p_size {n}
             , m_g_cell_size {dcell}
@@ -179,9 +179,9 @@ namespace GraMPM {
 #endif
         {}
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
-            : MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        MPM_system<F, K, SU, MB, FB>::MPM_system(std::vector<particle<F>> &pv, std::array<F, 3> mingrid, std::array<F, 3> maxgrid, F dcell)
+            : MPM_system<F, K, SU, MB, FB>::MPM_system(
                 static_cast<int>(pv.size()),
                 mingrid,
                 maxgrid,
@@ -206,9 +206,9 @@ namespace GraMPM {
             }
         }
 
-        template<typename F, typename kernel, typename stress_update, typename momentum_boundary, typename force_boundary>
-        MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(std::string fname)
-            : MPM_system<F, kernel, stress_update, momentum_boundary, force_boundary>::MPM_system(
+        template<typename F, typename K, typename SU, typename MB, typename FB>
+        MPM_system<F, K, SU, MB, FB>::MPM_system(std::string fname)
+            : MPM_system<F, K, SU, MB, FB>::MPM_system(
                 h5_get_nparticles(fname),
                 h5_get_mingrid(fname),
                 h5_get_maxgrid(fname),
