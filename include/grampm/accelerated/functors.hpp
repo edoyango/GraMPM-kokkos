@@ -2,6 +2,7 @@
 #define GRAMPM_KOKKOS_FUNCTORS
 
 #include <Kokkos_Core.hpp>
+#include <Kokkos_ScatterView.hpp>
 #include <grampm/accelerated/kernels.hpp>
 #include <stdio.h>
 
@@ -86,25 +87,25 @@ namespace GraMPM {
             struct map_p2g_mass {
                 const int npp;
                 const Kokkos::View<const F*> p_mass;
-                const Kokkos::View<F*, Kokkos::MemoryTraits<Kokkos::Atomic>> g_mass;
+                const Kokkos::Experimental::ScatterView<F*> scatter_g_mass;
                 const Kokkos::View<const int*> pg;
                 const Kokkos::View<const F*> w;
-                map_p2g_mass(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*> g_mass_, Kokkos::View<int*> pg_, 
-                    Kokkos::View<F*> w_)
+                map_p2g_mass(int npp_, Kokkos::View<F*> p_mass_, Kokkos::Experimental::ScatterView<F*> scatter_g_mass_, 
+                    Kokkos::View<int*> pg_, Kokkos::View<F*> w_)
                     : npp {npp_}
                     , p_mass {p_mass_}
-                    , g_mass {g_mass_}
+                    , scatter_g_mass {scatter_g_mass_}
                     , pg {pg_}
                     , w {w_}
                 {
                 }
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
+                    const auto g_mass = scatter_g_mass.access();
                     const int jstart = i*npp;
                     const F massi = p_mass(i);
                     for (int j = jstart; j < jstart + npp; ++j) {
                         const int idx = pg(j);
-                        // Kokkos::atomic_add(&g_mass(idx), p_mass(i)*w(j));
                         g_mass(idx) += massi*w(j);
                     }
                 }
@@ -115,27 +116,28 @@ namespace GraMPM {
                 const int npp;
                 const Kokkos::View<const F*> p_mass;
                 const Kokkos::View<const F*[3]> p_v;
-                const Kokkos::View<F*[3], Kokkos::MemoryTraits<Kokkos::Atomic>> g_momentum;
+                const Kokkos::Experimental::ScatterView<F*[3]> scatter_g_momentum;
                 const Kokkos::View<const int*> pg;
                 const Kokkos::View<const F*> w;
-                map_p2g_momentum(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*[3]> p_v_, Kokkos::View<F*[3]> g_momentum_, Kokkos::View<int*> pg_, 
+                map_p2g_momentum(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*[3]> p_v_, 
+                    Kokkos::Experimental::ScatterView<F*[3]> scatter_g_momentum_, Kokkos::View<int*> pg_, 
                     Kokkos::View<F*> w_)
                     : npp {npp_}
                     , p_mass {p_mass_}
                     , p_v {p_v_}
-                    , g_momentum {g_momentum_}
+                    , scatter_g_momentum {scatter_g_momentum_}
                     , pg {pg_}
                     , w {w_}
                 {
                 }
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
+                    const auto g_momentum = scatter_g_momentum.access();
                     const int jstart = i*npp;
                     const F massi = p_mass(i), vxi = p_v(i, 0), vyi = p_v(i, 1), vzi = p_v(i, 2);
                     for (int j = jstart; j < jstart + npp; ++j) {
                         const int idx = pg(j);
                         const F massiwj = massi*w(j);
-                        // Kokkos::atomic_add(&g_mass(idx), p_mass(i)*w(j));
                         g_momentum(idx, 0) += vxi*massiwj;
                         g_momentum(idx, 1) += vyi*massiwj;
                         g_momentum(idx, 2) += vzi*massiwj;
@@ -149,13 +151,13 @@ namespace GraMPM {
                 F bfx, bfy, bfz;
                 const Kokkos::View<const F*> p_mass, p_rho;
                 const Kokkos::View<const F*[6]> p_sigma;
-                const Kokkos::View<F*[3], Kokkos::MemoryTraits<Kokkos::Atomic>> g_force;
+                const Kokkos::Experimental::ScatterView<F*[3]> scatter_g_force;
                 const Kokkos::View<const int*> pg;
                 const Kokkos::View<const F*> w;
                 const Kokkos::View<const F*[3]> dwdx;
                 map_p2g_force(int npp_, Kokkos::View<F*> p_mass_, Kokkos::View<F*> p_rho_, 
-                    Kokkos::View<F*[6]> p_sigma_, Kokkos::View<F*[3]> g_force_, Kokkos::View<int*> pg_, 
-                    Kokkos::View<F*> w_, Kokkos::View<F*[3]> dwdx_, F bfx_, F bfy_, F bfz_)
+                    Kokkos::View<F*[6]> p_sigma_, Kokkos::Experimental::ScatterView<F*[3]> scatter_g_force_, 
+                    Kokkos::View<int*> pg_, Kokkos::View<F*> w_, Kokkos::View<F*[3]> dwdx_, F bfx_, F bfy_, F bfz_)
                     : npp {npp_}
                     , bfx {bfx_}
                     , bfy {bfy_}
@@ -163,7 +165,7 @@ namespace GraMPM {
                     , p_mass {p_mass_}
                     , p_rho {p_rho_}
                     , p_sigma {p_sigma_}
-                    , g_force {g_force_}
+                    , scatter_g_force {scatter_g_force_}
                     , pg {pg_}
                     , w {w_}
                     , dwdx {dwdx_}
@@ -171,6 +173,7 @@ namespace GraMPM {
                 }
                 KOKKOS_INLINE_FUNCTION
                 void operator()(const int i) const {
+                    const auto g_force = scatter_g_force.access();
                     const int jstart = i*npp;
                     const F massi = p_mass(i), vi = massi/p_rho(i), sigixx = p_sigma(i, 0), sigiyy = p_sigma(i, 1), 
                         sigizz = p_sigma(i, 2), sigixy = p_sigma(i, 3), sigixz = p_sigma(i, 4), sigiyz = p_sigma(i, 5);

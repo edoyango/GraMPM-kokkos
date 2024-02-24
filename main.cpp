@@ -18,7 +18,7 @@ struct apply_boundary {
     const int ngridx, ngridy, ngridz;
     const Kokkos::View<F*[3]> data;
 
-    apply_boundary(Kokkos::View<F*[3]> data_, int ngridx_, int ngridy_, int ngridz_)
+    apply_boundary(Kokkos::View<F*[3]> data_, int ngridx_, int ngridy_, int ngridz_, double dt, int itimestep)
         : data {data_} 
         , ngridx {ngridx_}
         , ngridy {ngridy_}

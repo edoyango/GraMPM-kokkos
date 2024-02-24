@@ -2,6 +2,7 @@
 #define GRAMPM_KOKKOS_INTEGRATORS
 
 #include <cstdlib>
+#include <iostream>
 
 namespace GraMPM {
     namespace integrators {
@@ -68,7 +69,6 @@ namespace GraMPM {
 
                 if (itimestep % save_timestep_interval == 0) {
                     // myMPM.d2h();
-                    myMPM.map_p2g_sigma();
                     myMPM.save_to_h5_async("grampm_out_", itimestep);
                 }
 

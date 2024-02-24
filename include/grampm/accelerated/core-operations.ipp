@@ -2,6 +2,7 @@
 #define GRAMPM_ACCELERATED_CORE_OPERATIONS
 
 #include <Kokkos_Core.hpp>
+#include <Kokkos_ScatterView.hpp>
 
 namespace GraMPM {
     namespace accelerated {
@@ -44,22 +45,25 @@ namespace GraMPM {
         template<typename F, typename K, typename SU, typename MB, typename FB>
         void MPM_system<F, K, SU, MB, FB>::map_p2g_mass() {
             Kokkos::deep_copy(m_g_mass.d_view, F(0.));
+            Kokkos::Experimental::ScatterView<F*> scatter_g_mass(m_g_mass.d_view);
             Kokkos::parallel_for(
                 "map particle mass to grid", 
                 m_p_size, 
                 functors::map_p2g_mass<F>(
                     pg_npp,
                     m_p_mass.d_view,
-                    m_g_mass.d_view, 
+                    scatter_g_mass, 
                     m_pg_nn.d_view, 
                     m_pg_w.d_view
                 )
             );
+            Kokkos::Experimental::contribute(m_g_mass.d_view, scatter_g_mass);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         void MPM_system<F, K, SU, MB, FB>::map_p2g_momentum() {
             Kokkos::deep_copy(m_g_momentum.d_view, F(0.));
+            Kokkos::Experimental::ScatterView<F*[3]> scatter_g_momentum(m_g_momentum.d_view);
             Kokkos::parallel_for(
                 "map particle momentum to grid", 
                 m_p_size, 
@@ -67,16 +71,18 @@ namespace GraMPM {
                     pg_npp,
                     m_p_mass.d_view,
                     m_p_v.d_view,
-                    m_g_momentum.d_view,
+                    scatter_g_momentum,
                     m_pg_nn.d_view,
                     m_pg_w.d_view
                 )
             );
+            Kokkos::Experimental::contribute(m_g_momentum.d_view, scatter_g_momentum);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
         void MPM_system<F, K, SU, MB, FB>::map_p2g_force() {
             Kokkos::deep_copy(m_g_force.d_view, F(0.));
+            Kokkos::Experimental::ScatterView<F*[3]> scatter_g_force(m_g_force.d_view);
             Kokkos::parallel_for(
                 "map particle force to grid", 
                 m_p_size, 
@@ -85,7 +91,7 @@ namespace GraMPM {
                     m_p_mass.d_view,
                     m_p_rho.d_view,
                     m_p_sigma.d_view,
-                    m_g_force.d_view,
+                    scatter_g_force,
                     m_pg_nn.d_view,
                     m_pg_w.d_view,
                     m_pg_dwdx.d_view,
@@ -94,6 +100,7 @@ namespace GraMPM {
                     m_body_force[2]
                 )
             );
+            Kokkos::Experimental::contribute(m_g_force.d_view, scatter_g_force);
         }
 
         template<typename F, typename K, typename SU, typename MB, typename FB>
